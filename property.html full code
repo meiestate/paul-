@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Property — Details</title>
+  <meta name="description" content="Property details from verified broker network." />
+  <style>
+    :root{
+      --bg:#0b0f17; --card:#0f1624; --text:#e7eefc; --muted:#a8b3c7;
+      --line:#1f2a3d; --accent:#6ee7ff; --accent2:#a78bfa;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:radial-gradient(1200px 600px at 20% 10%, rgba(110,231,255,.18), transparent 50%),
+      radial-gradient(900px 500px at 70% 20%, rgba(167,139,250,.18), transparent 55%), var(--bg);
+      color:var(--text)}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1050px;margin:0 auto;padding:22px}
+    header{position:sticky;top:0;background:rgba(11,15,23,.65);backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(31,42,61,.6);z-index:10}
+    header .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .logo{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+    nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:14px;
+      border:1px solid rgba(31,42,61,.9);background:rgba(15,22,36,.7);cursor:pointer}
+    .btn.primary{background:linear-gradient(135deg, rgba(110,231,255,.25), rgba(167,139,250,.25));
+      border-color:rgba(110,231,255,.35)}
+    .btn.small{padding:8px 12px;border-radius:12px;font-size:14px}
+    .card{background:rgba(15,22,36,.55);border:1px solid rgba(31,42,61,.85);border-radius:22px;padding:16px}
+    .top{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;margin-top:16px}
+    @media (max-width: 980px){.top{grid-template-columns:1fr}}
+    .gallery{border-radius:22px;overflow:hidden;border:1px solid rgba(31,42,61,.85)}
+    .heroimg{height:290px;background:
+      linear-gradient(135deg, rgba(110,231,255,.18), rgba(167,139,250,.18)),
+      radial-gradient(600px 260px at 15% 15%, rgba(110,231,255,.22), transparent 60%),
+      radial-gradient(500px 240px at 70% 25%, rgba(167,139,250,.22), transparent 60%);}
+    .thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px;background:rgba(11,15,23,.45)}
+    .th{height:66px;border-radius:14px;border:1px solid rgba(31,42,61,.75);background:rgba(15,22,36,.55)}
+    .h1{margin:0;font-size:24px;line-height:1.2}
+    .sub{margin:8px 0 0;color:var(--muted);line-height:1.6}
+    .price{font-size:28px;font-weight:950;margin-top:10px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .chip{font-size:12px;color:var(--muted);border:1px solid rgba(31,42,61,.85);padding:6px 9px;border-radius:999px;background:rgba(11,15,23,.45)}
+    .spec{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+    @media (max-width: 700px){.spec{grid-template-columns:1fr}}
+    .spec .box{border:1px solid rgba(31,42,61,.85);background:rgba(11,15,23,.45);border-radius:18px;padding:12px}
+    .spec .k{font-size:12px;color:var(--muted)}
+    .spec .v{font-size:16px;font-weight:900;margin-top:3px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+    @media (max-width: 980px){.grid2{grid-template-columns:1fr}}
+    ul{margin:10px 0 0;color:var(--muted);line-height:1.8}
+    footer{padding:22px 0;color:var(--muted);border-top:1px solid rgba(31,42,61,.6);margin-top:18px}
+    .toast{position:fixed;right:18px;bottom:18px;max-width:360px;background:rgba(15,22,36,.92);
+      border:1px solid rgba(31,42,61,.9);padding:12px 14px;border-radius:16px;display:none}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap row">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div>Broker Network</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:600">Property • Deal Room Ready</div>
+        </div>
+      </div>
+      <nav>
+        <a class="btn small" href="index.html">Home</a>
+        <a class="btn small" href="listings.html">⬅ Back to Listings</a>
+        <a class="btn primary small" href="index.html#lead">Post Lead</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="top">
+      <!-- Gallery -->
+      <div class="gallery">
+        <div class="heroimg" id="heroImg" aria-label="Property image"></div>
+        <div class="thumbs">
+          <div class="th"></div><div class="th"></div><div class="th"></div><div class="th"></div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="card">
+        <div class="h1" id="title">Property</div>
+        <div class="sub" id="subtitle">Locality, City • Type • Area</div>
+        <div class="price" id="price">₹0</div>
+
+        <div class="chips" id="chips"></div>
+
+        <div class="spec">
+          <div class="box">
+            <div class="k">Type</div>
+            <div class="v" id="ptype">—</div>
+          </div>
+          <div class="box">
+            <div class="k">Area</div>
+            <div class="v" id="area">—</div>
+          </div>
+          <div class="box">
+            <div class="k">BHK</div>
+            <div class="v" id="bhk">—</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+          <a class="btn primary" id="interestBtn" href="index.html#lead">I'm Interested</a>
+          <button class="btn" id="shareBtn" type="button">Share</button>
+          <button class="btn" id="apiBtn" type="button">Connect API (later)</button>
+        </div>
+
+        <p class="sub" style="font-size:13px;margin-top:10px">
+          Broker badge + approvals build trust. Deal Room opens for serious clients.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <section class="card">
+        <h3 style="margin:0 0 8px">Highlights</h3>
+        <ul id="highlights"></ul>
+      </section>
+
+      <section class="card">
+        <h3 style="margin:0 0 8px">Broker & Trust</h3>
+        <ul id="trust"></ul>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:14px">
+      <h3 style="margin:0 0 8px">Description</h3>
+      <p class="sub" id="desc" style="margin:0">
+        —
+      </p>
+    </section>
+
+    <footer>
+      © <span id="yr"></span> Broker Network • Whitefield
+    </footer>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    const toast = (msg) => {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.display = 'block';
+      clearTimeout(window.__t);
+      window.__t = setTimeout(() => el.style.display = 'none', 2600);
+    };
+
+    // TODO later: set API base and fetch property by id:
+    const API_BASE = "https://api.yourplatform.in";
+
+    const INR = (n) => "₹" + Number(n).toLocaleString("en-IN");
+
+    // Static sample properties (same IDs as listings.html)
+    const data = {
+      p1:{ id:"p1", city:"Bangalore", locality:"Whitefield", type:"APARTMENT", price:8200000, area:1180, bhk:2, badge:"Verified",
+        title:"2BHK near ITPL", note:"Gated community • Lift • Parking",
+        highlights:["Near ITPL & tech parks","Good rental demand","Parking available","Lift + security"],
+        trust:["KYC Verified broker","Listing approved by admin","Deal Room timeline available","Dispute support enabled"],
+        desc:"A clean 2BHK apartment close to ITPL with strong rental demand. Suitable for end-users and investors. Site visit can be scheduled quickly."
+      },
+      p2:{ id:"p2", city:"Bangalore", locality:"Hoodi", type:"APARTMENT", price:6900000, area:1030, bhk:2, badge:"Verified+",
+        title:"2BHK Hoodi main road", note:"Near Metro • Good rental demand",
+        highlights:["Metro connectivity","Main road access","Family-friendly layout","Low maintenance"],
+        trust:["KYC Verified+ broker","Listing approved by admin","Deal Room available","Audit trail for steps"],
+        desc:"Comfortable 2BHK with metro access and steady rental potential. Great for families and working professionals."
+      },
+      p3:{ id:"p3", city:"Bangalore", locality:"ITPL", type:"COMMERCIAL", price:15500000, area:920, bhk:null, badge:"Elite",
+        title:"Commercial office near ITPL", note:"High footfall • Ideal for clinic/office",
+        highlights:["High footfall area","Ideal for office/clinic","Flexible interior","Strong demand zone"],
+        trust:["Elite broker badge","Admin approved listing","Deal Room enabled for documents","Dispute control supported"],
+        desc:"Commercial space near ITPL suitable for clinic, office, or studio setup. High visibility and demand location."
+      },
+      p4:{ id:"p4", city:"Bangalore", locality:"Whitefield", type:"VILLA", price:26500000, area:2400, bhk:4, badge:"Elite",
+        title:"4BHK Villa (Whitefield)", note:"Premium layout • Calm street",
+        highlights:["Premium locality","Spacious 4BHK layout","Calm street","Good appreciation potential"],
+        trust:["Elite broker badge","Admin approved listing","Step-by-step deal tracking","Support for registration phase"],
+        desc:"Premium villa in Whitefield with a spacious layout and strong long-term value. Ideal for families wanting privacy and comfort."
+      },
+      p5:{ id:"p5", city:"Bangalore", locality:"KR Puram", type:"PLOT", price:9800000, area:1200, bhk:null, badge:"Verified",
+        title:"Plot near KR Puram", note:"Clear docs • Ready to register",
+        highlights:["Clear documentation","Ready to register","Good connectivity","Suitable for construction"],
+        trust:["KYC Verified broker","Admin approved listing","Document upload in deal room","Dispute support available"],
+        desc:"A clean plot near KR Puram with clear docs and quick registration readiness. Suitable for immediate construction or investment."
+      },
+      p6:{ id:"p6", city:"Bangalore", locality:"Marathahalli", type:"APARTMENT", price:9100000, area:1250, bhk:3, badge:"Verified",
+        title:"3BHK Marathahalli", note:"Family friendly • Schools nearby",
+        highlights:["Schools nearby","3BHK family layout","Good connectivity","Strong resale"],
+        trust:["KYC Verified broker","Admin approved listing","Deal Room steps enabled","Dispute control supported"],
+        desc:"Spacious 3BHK in Marathahalli—great for families with easy access to schools, shopping, and major roads."
+      }
+    };
+
+    function getQueryParam(key){
+      const url = new URL(window.location.href);
+      return url.searchParams.get(key);
+    }
+
+    function setList(id, items){
+      const ul = document.getElementById(id);
+      ul.innerHTML = "";
+      items.forEach(x=>{
+        const li = document.createElement("li");
+        li.textContent = x;
+        ul.appendChild(li);
+      });
+    }
+
+    function setChips(badge, city, locality){
+      const wrap = document.getElementById("chips");
+      wrap.innerHTML = "";
+      ["Approved", "KYC "+badge, "Deal Room", locality, city].forEach(t=>{
+        const s = document.createElement("span");
+        s.className = "chip";
+        s.textContent = t;
+        wrap.appendChild(s);
+      });
+    }
+
+    function hydrate(item){
+      document.title = item.title + " — Details";
+      document.getElementById("title").textContent = item.title;
+      document.getElementById("subtitle").textContent = `${item.locality}, ${item.city} • ${item.type} • ${item.area} sqft`;
+      document.getElementById("price").textContent = INR(item.price);
+      document.getElementById("ptype").textContent = item.type;
+      document.getElementById("area").textContent = item.area + " sqft";
+      document.getElementById("bhk").textContent = item.bhk ? item.bhk : "—";
+      setChips(item.badge, item.city, item.locality);
+      setList("highlights", item.highlights);
+      setList("trust", item.trust);
+      document.getElementById("desc").textContent = item.desc;
+
+      // Pre-fill interest flow: link to lead form
+      document.getElementById("interestBtn").href = `index.html#lead`;
+    }
+
+    const id = getQueryParam("id") || "p1";
+    const item = data[id];
+
+    if(!item){
+      toast("Property not found. Redirecting to listings…");
+      setTimeout(()=> window.location.href="listings.html", 1200);
+    }else{
+      hydrate(item);
+    }
+
+    document.getElementById("shareBtn").addEventListener("click", async ()=>{
+      const shareUrl = window.location.href;
+      try{
+        if(navigator.share){
+          await navigator.share({ title: document.title, url: shareUrl });
+        }else{
+          await navigator.clipboard.writeText(shareUrl);
+          toast("Link copied ✅");
+        }
+      }catch(e){
+        toast("Share failed (browser blocked).");
+      }
+    });
+
+    document.getElementById("apiBtn").addEventListener("click", ()=>{
+      toast("API connect next: GET /properties/{id} ✅");
+      // Later:
+      // fetch(`${API_BASE}/properties/${id}`).then(r=>r.json()).then(hydrate)
+    });
+  </script>
+</body>
+</html>
