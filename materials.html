@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Construction Materials | MEI Estate</title>
+  <meta name="description" content="Find verified construction material suppliers for cement, steel, bricks, sand, tiles, plumbing, electrical and more." />
+  <style>
+    :root{
+      --bg:#0b0f17;
+      --panel:#121826;
+      --panel-2:#0f1522;
+      --card:#151c2c;
+      --line:rgba(255,255,255,.08);
+      --text:#edf2ff;
+      --muted:#9fb0d0;
+      --gold:#d6a94f;
+      --gold-2:#f0c975;
+      --accent:#64b5ff;
+      --success:#2ecc71;
+      --danger:#ff6b6b;
+      --shadow:0 18px 40px rgba(0,0,0,.35);
+      --radius:20px;
+      --radius-sm:14px;
+      --max:1200px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:linear-gradient(180deg,#0a0e16 0%, #0d1320 100%);
+      color:var(--text);
+      line-height:1.55;
+    }
+
+    a{text-decoration:none;color:inherit}
+    img{max-width:100%;display:block}
+    button,input,select,textarea{font:inherit}
+
+    .container{
+      width:min(var(--max), calc(100% - 32px));
+      margin:auto;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:1000;
+      backdrop-filter:blur(10px);
+      background:rgba(10,14,22,.78);
+      border-bottom:1px solid var(--line);
+    }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      min-height:74px;
+      gap:16px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:700;
+      letter-spacing:.5px;
+    }
+
+    .brand-badge{
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      background:linear-gradient(135deg,var(--gold),#8e691f);
+      color:#111;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      box-shadow:var(--shadow);
+    }
+
+    .nav-links{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+
+    .nav-links a{
+      color:var(--muted);
+      padding:10px 14px;
+      border-radius:12px;
+      transition:.25s ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active{
+      color:var(--text);
+      background:rgba(255,255,255,.05);
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      border:none;
+      border-radius:14px;
+      padding:13px 18px;
+      cursor:pointer;
+      transition:.25s ease;
+      font-weight:700;
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg,var(--gold),var(--gold-2));
+      color:#17120a;
+      box-shadow:0 10px 30px rgba(214,169,79,.25);
+    }
+
+    .btn-primary:hover{
+      transform:translateY(-2px);
+      filter:brightness(1.03);
+    }
+
+    .btn-secondary{
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+
+    .btn-secondary:hover{
+      background:rgba(255,255,255,.1);
+    }
+
+    .hero{
+      padding:72px 0 34px;
+    }
+
+    .hero-wrap{
+      display:grid;
+      grid-template-columns:1.12fr .88fr;
+      gap:26px;
+      align-items:stretch;
+    }
+
+    .hero-card,
+    .info-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid var(--line);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+    }
+
+    .hero-card{
+      padding:38px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-card::after{
+      content:"";
+      position:absolute;
+      inset:auto -80px -80px auto;
+      width:220px;
+      height:220px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(214,169,79,.18) 0%, rgba(214,169,79,0) 68%);
+      pointer-events:none;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:.9rem;
+      color:var(--gold-2);
+      background:rgba(214,169,79,.1);
+      border:1px solid rgba(214,169,79,.22);
+      padding:8px 12px;
+      border-radius:999px;
+      margin-bottom:16px;
+    }
+
+    h1,h2,h3{
+      line-height:1.12;
+      margin:0 0 12px;
+    }
+
+    h1{
+      font-size:clamp(2rem, 4vw, 3.6rem);
+      letter-spacing:-1px;
+    }
+
+    .lead{
+      color:var(--muted);
+      font-size:1.05rem;
+      max-width:60ch;
+      margin-bottom:24px;
+    }
+
+    .hero-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:22px;
+    }
+
+    .hero-points{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      margin-top:20px;
+    }
+
+    .mini{
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+    }
+
+    .mini strong{
+      display:block;
+      font-size:1rem;
+      margin-bottom:6px;
+    }
+
+    .mini span{
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .info-card{
+      padding:24px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .quote-box{
+      background:linear-gradient(180deg, rgba(214,169,79,.09), rgba(255,255,255,.02));
+      border:1px solid rgba(214,169,79,.18);
+      border-radius:22px;
+      padding:22px;
+    }
+
+    .quote-box h3{
+      margin-bottom:10px;
+    }
+
+    .quote-box p{
+      color:var(--muted);
+      margin:0 0 16px;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
+    }
+
+    .stat{
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+    }
+
+    .stat .num{
+      font-size:1.6rem;
+      font-weight:800;
+      color:var(--gold-2);
+      margin-bottom:6px;
+    }
+
+    .stat .label{
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    section{
+      padding:34px 0;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:18px;
+    }
+
+    .section-head p{
+      color:var(--muted);
+      max-width:60ch;
+      margin:0;
+    }
+
+    .grid{
+      display:grid;
+      gap:18px;
+    }
+
+    .categories{
+      grid-template-columns:repeat(4,1fr);
+    }
+
+    .category-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:20px;
+      transition:.25s ease;
+      box-shadow:var(--shadow);
+    }
+
+    .category-card:hover{
+      transform:translateY(-4px);
+      border-color:rgba(214,169,79,.28);
+    }
+
+    .icon{
+      width:54px;
+      height:54px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      background:rgba(214,169,79,.12);
+      border:1px solid rgba(214,169,79,.22);
+      font-size:1.4rem;
+      margin-bottom:14px;
+    }
+
+    .category-card h3{
+      font-size:1.05rem;
+      margin-bottom:8px;
+    }
+
+    .category-card p{
+      color:var(--muted);
+      font-size:.94rem;
+      margin:0 0 14px;
+    }
+
+    .card-links{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .link-chip{
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      color:var(--text);
+      font-size:.9rem;
+    }
+
+    .suppliers{
+      grid-template-columns:repeat(3,1fr);
+    }
+
+    .supplier-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid var(--line);
+      border-radius:24px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-direction:column;
+    }
+
+    .supplier-top{
+      padding:22px 22px 10px;
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      align-items:start;
+    }
+
+    .badge{
+      white-space:nowrap;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(46,204,113,.12);
+      color:#8ef1b6;
+      border:1px solid rgba(46,204,113,.22);
+      font-size:.8rem;
+      font-weight:700;
+    }
+
+    .supplier-body{
+      padding:0 22px 18px;
+      color:var(--muted);
+      flex:1;
+    }
+
+    .supplier-meta{
+      display:grid;
+      gap:9px;
+      margin:14px 0;
+      font-size:.94rem;
+    }
+
+    .supplier-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      padding:0 22px 22px;
+    }
+
+    .supplier-actions .btn{
+      flex:1;
+      min-width:120px;
+    }
+
+    .how-it-works{
+      grid-template-columns:repeat(3,1fr);
+    }
+
+    .step{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .step-num{
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,var(--gold),var(--gold-2));
+      color:#1a1306;
+      font-weight:900;
+      margin-bottom:14px;
+    }
+
+    .step p{
+      color:var(--muted);
+      margin:0;
+    }
+
+    .form-wrap{
+      display:grid;
+      grid-template-columns:1fr .95fr;
+      gap:22px;
+      align-items:start;
+    }
+
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid var(--line);
+      border-radius:26px;
+      box-shadow:var(--shadow);
+      padding:24px;
+    }
+
+    .panel p{
+      color:var(--muted);
+    }
+
+    form{
+      display:grid;
+      gap:14px;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
+    }
+
+    label{
+      display:grid;
+      gap:8px;
+      font-weight:700;
+      font-size:.95rem;
+    }
+
+    input, select, textarea{
+      width:100%;
+      background:#0d1421;
+      color:var(--text);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:13px 14px;
+      outline:none;
+      transition:.2s ease;
+    }
+
+    input:focus, select:focus, textarea:focus{
+      border-color:rgba(214,169,79,.42);
+      box-shadow:0 0 0 3px rgba(214,169,79,.12);
+    }
+
+    textarea{
+      min-height:130px;
+      resize:vertical;
+    }
+
+    .full{
+      grid-column:1 / -1;
+    }
+
+    .success-box{
+      display:none;
+      margin-top:12px;
+      padding:14px 16px;
+      border-radius:14px;
+      background:rgba(46,204,113,.12);
+      border:1px solid rgba(46,204,113,.25);
+      color:#a6f2c4;
+      font-weight:700;
+    }
+
+    .side-list{
+      display:grid;
+      gap:12px;
+      margin-top:16px;
+    }
+
+    .side-item{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+    }
+
+    .side-item .dot{
+      width:12px;
+      height:12px;
+      border-radius:50%;
+      background:var(--gold);
+      margin-top:6px;
+      flex-shrink:0;
+    }
+
+    .cta{
+      background:linear-gradient(135deg, rgba(214,169,79,.14), rgba(255,255,255,.04));
+      border:1px solid rgba(214,169,79,.22);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      padding:32px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+
+    .cta p{
+      color:var(--muted);
+      margin:8px 0 0;
+      max-width:60ch;
+    }
+
+    footer{
+      border-top:1px solid var(--line);
+      margin-top:34px;
+      padding:26px 0 40px;
+      color:var(--muted);
+    }
+
+    .footer-wrap{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    @media (max-width: 1080px){
+      .hero-wrap,
+      .form-wrap,
+      .categories,
+      .suppliers,
+      .how-it-works{
+        grid-template-columns:repeat(2,1fr);
+      }
+
+      .hero-wrap{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 760px){
+      .nav{
+        flex-direction:column;
+        align-items:flex-start;
+        padding:12px 0;
+      }
+
+      .nav-links{
+        width:100%;
+      }
+
+      .hero-card,
+      .info-card,
+      .panel,
+      .cta{
+        padding:20px;
+      }
+
+      .categories,
+      .suppliers,
+      .how-it-works,
+      .form-grid,
+      .stats,
+      .hero-points,
+      .form-wrap{
+        grid-template-columns:1fr;
+      }
+
+      .section-head{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+
+      .supplier-actions .btn{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="container nav">
+      <a href="index.html" class="brand">
+        <div class="brand-badge">MEI</div>
+        <div>MEI Estate</div>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="listings.html">Listings</a>
+        <a href="broker-network.html">Brokers</a>
+        <a href="materials.html" class="active">Materials</a>
+        <a href="services.html">Services</a>
+        <a href="legal.html">Legal</a>
+        <a href="loans.html">Loans</a>
+        <a href="dashboard.html">Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-wrap">
+        <div class="hero-card">
+          <div class="eyebrow">Construction Materials • Verified Supplier Network</div>
+          <h1>Build Smarter. Source Faster.</h1>
+          <p class="lead">
+            Find trusted suppliers for cement, steel, bricks, sand, tiles, plumbing,
+            electrical, paint, plywood and more. From house owners to contractors,
+            get faster quotes and better sourcing in one place.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#quote-form" class="btn btn-primary">Get Quote</a>
+            <a href="#suppliers" class="btn btn-secondary">View Suppliers</a>
+          </div>
+
+          <div class="hero-points">
+            <div class="mini">
+              <strong>Verified Suppliers</strong>
+              <span>Trust-first listing with location and category visibility.</span>
+            </div>
+            <div class="mini">
+              <strong>Quick Enquiry Flow</strong>
+              <span>Submit requirement and receive supplier callbacks faster.</span>
+            </div>
+            <div class="mini">
+              <strong>Local Market Focus</strong>
+              <span>Perfect for Bangalore, Chennai and tier-2 city expansion.</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="info-card">
+          <div class="quote-box">
+            <h3>Need materials for your site?</h3>
+            <p>
+              Get connected with suppliers for bulk and retail requirements.
+              Best for house construction, renovations, interiors and commercial projects.
+            </p>
+            <a href="#quote-form" class="btn btn-primary" style="width:100%;">Request Quote Now</a>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="num">12+</div>
+              <div class="label">Material Categories</div>
+            </div>
+            <div class="stat">
+              <div class="num">24/7</div>
+              <div class="label">Enquiry Capture</div>
+            </div>
+            <div class="stat">
+              <div class="num">Fast</div>
+              <div class="label">WhatsApp Conversion</div>
+            </div>
+            <div class="stat">
+              <div class="num">Local</div>
+              <div class="label">Supplier Matching</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Material Categories</h2>
+            <p>Choose the category you need and move quickly from search to quote.</p>
+          </div>
+        </div>
+
+        <div class="grid categories">
+          <article class="category-card">
+            <div class="icon">🏗️</div>
+            <h3>Cement</h3>
+            <p>OPC, PPC, premium brands and bulk site supply.</p>
+            <div class="card-links">
+              <span class="link-chip">Bulk Orders</span>
+              <span class="link-chip">Site Delivery</span>
+            </div>
+          </article>
+
+          <article class="category-card">
+            <div class="icon">🔩</div>
+            <h3>Steel / TMT Bars</h3>
+            <p>Structural steel, TMT bars and reinforcement materials.</p>
+            <div class="card-links">
+              <span class="link-chip">TMT</span>
+              <span class="link-chip">Structural</span>
+            </div>
+          </article>
+
+          <article class="category-card">
+            <div class="icon">🧱</div>
+            <h3>Bricks & Blocks</h3>
+            <p>Red bricks, fly ash blocks, hollow blocks and AAC blocks.</p>
+            <div class="card-links">
+              <span class="link-chip">Red Brick</span>
+              <span class="link-chip">AAC</span>
+            </div>
+          </article>
+
+          <article class="category-card">
+            <div class="icon">🏖️</div>
+            <h3>Sand & Jalli</h3>
+            <p>M-sand, P-sand, river sand, blue metal and jalli supply.</p>
+            <div class="card-links">
+              <span class="link-chip">M-Sand</span>
+              <span class="link-chip">Blue Metal</span>
+            </div>
+          </article>
+
+          <article class="category-card">
+            <div class="icon">🧩</div>
+            <h3>Tiles</h3>
+            <p>Floor tiles, wall tiles, vitrified and designer finishes.</p>
+            <div class="card-links">
+              <span class="link-chip">Floor</span>
+              <span class="link-chip">Wall</span>
+            </div>
+          </article>
+
+          <article class="category-card">
+            <div class="icon">🎨</div>
+            <h3>Paint</h3>
+            <p>Interior, exterior, waterproof and premium texture paint.</p>
+            <div class="card-links">
+              <span class="link-chip">Interior</span>
+              <span class="link-chip">Exterior</span>
+            </div>
+          </article>
+
+          <article class="category-card">
+            <div class="icon">🚿</div>
+            <h3>Plumbing</h3>
+            <p>Pipes, fittings, sanitaryware and bathroom accessories.</p>
+            <div class="card-links">
+              <span class="link-chip">Pipes</span>
+              <span class="link-chip">Sanitary</span>
+            </div>
+          </article>
+
+          <article class="category-card">
+            <div class="icon">💡</div>
+            <h3>Electrical</h3>
+            <p>Wires, switches, MCBs, lights and electrical fittings.</p>
+            <div class="card-links">
+              <span class="link-chip">Wires</span>
+              <span class="link-chip">Lighting</span>
+            </div>
+          </article>
+
+          <article class="category-card">
+            <div class="icon">🪵</div>
+            <h3>Plywood / Wood</h3>
+            <p>Plywood sheets, laminates, doors, frames and wood supply.</p>
+            <div class="card-links">
+              <span class="link-chip">Plywood</span>
+              <span class="link-chip">Doors</span>
+            </div>
+          </article>
+
+          <article class="category-card">
+            <div class="icon">🪟</div>
+            <h3>UPVC / Aluminium</h3>
+            <p>Windows, doors, partitions and frame systems.</p>
+            <div class="card-links">
+              <span class="link-chip">UPVC</span>
+              <span class="link-chip">Frames</span>
+            </div>
+          </article>
+
+          <article class="category-card">
+            <div class="icon">🚚</div>
+            <h3>Ready Mix Concrete</h3>
+            <p>RMC for structural casting and site delivery support.</p>
+            <div class="card-links">
+              <span class="link-chip">RMC</span>
+              <span class="link-chip">Bulk Supply</span>
+            </div>
+          </article>
+
+          <article class="category-card">
+            <div class="icon">🛠️</div>
+            <h3>Hardware & Others</h3>
+            <p>Fasteners, tools, adhesives and general construction items.</p>
+            <div class="card-links">
+              <span class="link-chip">Tools</span>
+              <span class="link-chip">Accessories</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="suppliers">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Featured Suppliers</h2>
+            <p>Starter supplier cards for your marketplace demo. Later you can load these from localStorage or API.</p>
+          </div>
+        </div>
+
+        <div class="grid suppliers">
+          <article class="supplier-card">
+            <div class="supplier-top">
+              <div>
+                <h3>Sri Balaji Steels</h3>
+                <div style="color:var(--muted)">Steel / TMT Bars</div>
+              </div>
+              <span class="badge">Verified</span>
+            </div>
+            <div class="supplier-body">
+              <div class="supplier-meta">
+                <div>📍 Whitefield, Bangalore</div>
+                <div>🚚 Delivery: Whitefield, Sarjapur, KR Puram</div>
+                <div>📦 Min Order: 500 Kg</div>
+                <div>💰 Price Range: ₹₹₹</div>
+              </div>
+              Trusted local steel supplier for residential and commercial projects.
+            </div>
+            <div class="supplier-actions">
+              <a class="btn btn-secondary" href="tel:+919999999991">Call Now</a>
+              <a class="btn btn-primary" href="https://wa.me/919999999991" target="_blank">WhatsApp</a>
+            </div>
+          </article>
+
+          <article class="supplier-card">
+            <div class="supplier-top">
+              <div>
+                <h3>Classic Cement Depot</h3>
+                <div style="color:var(--muted)">Cement Supply</div>
+              </div>
+              <span class="badge">Verified</span>
+            </div>
+            <div class="supplier-body">
+              <div class="supplier-meta">
+                <div>📍 Hoskote, Bangalore</div>
+                <div>🚚 Delivery: East Bangalore & Nearby</div>
+                <div>📦 Min Order: 50 Bags</div>
+                <div>💰 Price Range: ₹₹</div>
+              </div>
+              Bulk cement support for independent house, apartment and site work.
+            </div>
+            <div class="supplier-actions">
+              <a class="btn btn-secondary" href="tel:+919999999992">Call Now</a>
+              <a class="btn btn-primary" href="https://wa.me/919999999992" target="_blank">WhatsApp</a>
+            </div>
+          </article>
+
+          <article class="supplier-card">
+            <div class="supplier-top">
+              <div>
+                <h3>Urban Tiles Gallery</h3>
+                <div style="color:var(--muted)">Tiles & Bath Fittings</div>
+              </div>
+              <span class="badge">Verified</span>
+            </div>
+            <div class="supplier-body">
+              <div class="supplier-meta">
+                <div>📍 Sarjapur Road, Bangalore</div>
+                <div>🚚 Delivery: Bangalore Urban</div>
+                <div>📦 Min Order: 200 Sq.ft</div>
+                <div>💰 Price Range: ₹₹₹</div>
+              </div>
+              Premium and budget tile options for homes, offices and interiors.
+            </div>
+            <div class="supplier-actions">
+              <a class="btn btn-secondary" href="tel:+919999999993">Call Now</a>
+              <a class="btn btn-primary" href="https://wa.me/919999999993" target="_blank">WhatsApp</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>How It Works</h2>
+            <p>A simple lead marketplace flow that fits your current project perfectly.</p>
+          </div>
+        </div>
+
+        <div class="grid how-it-works">
+          <div class="step">
+            <div class="step-num">1</div>
+            <h3>Submit Requirement</h3>
+            <p>Select material type, quantity, location and delivery date through the quote form.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <h3>Lead Gets Stored</h3>
+            <p>The enquiry is saved to localStorage and can later be shown in your dashboard.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <h3>Supplier Connects</h3>
+            <p>Admin can assign the lead to a supplier and convert it through call or WhatsApp.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="quote-form">
+      <div class="container form-wrap">
+        <div class="panel">
+          <h2>Request a Material Quote</h2>
+          <p>Fill in the requirement. This demo saves enquiries in <strong>localStorage</strong> using the key <strong>mei_material_leads_v1</strong>.</p>
+
+          <form id="materialQuoteForm">
+            <div class="form-grid">
+              <label>
+                Full Name
+                <input type="text" id="name" placeholder="Enter full name" required />
+              </label>
+
+              <label>
+                Mobile Number
+                <input type="tel" id="phone" placeholder="Enter mobile number" required />
+              </label>
+
+              <label>
+                Material Type
+                <select id="materialType" required>
+                  <option value="">Select material</option>
+                  <option>Cement</option>
+                  <option>Steel / TMT Bars</option>
+                  <option>Bricks & Blocks</option>
+                  <option>Sand & Jalli</option>
+                  <option>Tiles</option>
+                  <option>Paint</option>
+                  <option>Plumbing</option>
+                  <option>Electrical</option>
+                  <option>Plywood / Wood</option>
+                  <option>UPVC / Aluminium</option>
+                  <option>Ready Mix Concrete</option>
+                  <option>Hardware & Others</option>
+                </select>
+              </label>
+
+              <label>
+                Quantity Required
+                <input type="text" id="quantity" placeholder="e.g. 100 bags / 2 tons / 500 sq.ft" required />
+              </label>
+
+              <label>
+                Unit
+                <select id="unit">
+                  <option value="">Select unit</option>
+                  <option>Bags</option>
+                  <option>Tons</option>
+                  <option>Kg</option>
+                  <option>Pieces</option>
+                  <option>Loads</option>
+                  <option>Sq.ft</option>
+                  <option>Cubic Feet</option>
+                  <option>Nos</option>
+                </select>
+              </label>
+
+              <label>
+                Delivery Location
+                <input type="text" id="location" placeholder="Project / delivery location" required />
+              </label>
+
+              <label>
+                Required Date
+                <input type="date" id="requiredDate" />
+              </label>
+
+              <label>
+                Budget Range
+                <input type="text" id="budget" placeholder="e.g. 50,000 - 1,00,000" />
+              </label>
+
+              <label>
+                Customer Type
+                <select id="customerType">
+                  <option value="">Select type</option>
+                  <option>House Owner</option>
+                  <option>Contractor</option>
+                  <option>Builder</option>
+                  <option>Interior Designer</option>
+                  <option>Engineer</option>
+                </select>
+              </label>
+
+              <label>
+                Need Transport?
+                <select id="transport">
+                  <option value="">Select option</option>
+                  <option>Yes</option>
+                  <option>No</option>
+                </select>
+              </label>
+
+              <label class="full">
+                Requirement Details
+                <textarea id="notes" placeholder="Mention brand preference, urgent need, delivery notes, size, quality or any custom requirement..."></textarea>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit Quote Request</button>
+            <div class="success-box" id="successBox">Quote request saved successfully.</div>
+          </form>
+        </div>
+
+        <aside class="panel">
+          <h2>Why this section matters</h2>
+          <p>
+            This is not just a page. This can become a recurring revenue vertical for your platform.
+            Property leads may come once. Material demand can come again and again.
+          </p>
+
+          <div class="side-list">
+            <div class="side-item">
+              <div class="dot"></div>
+              <div>
+                <strong>Repeat Demand</strong><br />
+                Cement, steel, tiles, plumbing and electrical move continuously in construction projects.
+              </div>
+            </div>
+
+            <div class="side-item">
+              <div class="dot"></div>
+              <div>
+                <strong>Easy Monetization</strong><br />
+                Use lead fee, supplier subscription, featured listing and deal commission.
+              </div>
+            </div>
+
+            <div class="side-item">
+              <div class="dot"></div>
+              <div>
+                <strong>WhatsApp Friendly</strong><br />
+                India market conversion usually happens faster through call and WhatsApp.
+              </div>
+            </div>
+
+            <div class="side-item">
+              <div class="dot"></div>
+              <div>
+                <strong>Perfect for Dashboard</strong><br />
+                Later you can show all material leads inside <code>dashboard.html</code>.
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="cta">
+          <div>
+            <h2>Are you a supplier?</h2>
+            <p>Join the network, get visibility, receive quote enquiries and grow with local construction demand.</p>
+          </div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <a href="#" class="btn btn-primary">Become a Supplier</a>
+            <a href="dashboard.html" class="btn btn-secondary">Go to Dashboard</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-wrap">
+      <div>© 2026 MEI Estate • Construction Materials Network</div>
+      <div>Build • Source • Connect</div>
+    </div>
+  </footer>
+
+  <script>
+    const STORAGE_KEY = "mei_material_leads_v1";
+
+    function getStoredLeads() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch (err) {
+        console.error("Error reading material leads:", err);
+        return [];
+      }
+    }
+
+    function saveStoredLeads(leads) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(leads));
+    }
+
+    document.getElementById("materialQuoteForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const lead = {
+        id: "MAT-" + Date.now(),
+        createdAt: new Date().toISOString(),
+        name: document.getElementById("name").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        materialType: document.getElementById("materialType").value,
+        quantity: document.getElementById("quantity").value.trim(),
+        unit: document.getElementById("unit").value,
+        location: document.getElementById("location").value.trim(),
+        requiredDate: document.getElementById("requiredDate").value,
+        budget: document.getElementById("budget").value.trim(),
+        customerType: document.getElementById("customerType").value,
+        transport: document.getElementById("transport").value,
+        notes: document.getElementById("notes").value.trim(),
+        status: "New"
+      };
+
+      const leads = getStoredLeads();
+      leads.unshift(lead);
+      saveStoredLeads(leads);
+
+      const successBox = document.getElementById("successBox");
+      successBox.style.display = "block";
+      successBox.textContent = "Quote request saved successfully. Lead ID: " + lead.id;
+
+      this.reset();
+
+      setTimeout(() => {
+        successBox.style.display = "none";
+      }, 3500);
+    });
+  </script>
+</body>
+</html>
