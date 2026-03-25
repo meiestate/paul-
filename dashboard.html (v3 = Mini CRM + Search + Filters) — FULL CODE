@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MEI Admin Dashboard</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#121b2f;
+      --line:rgba(255,255,255,.10);
+      --txt:#e8eefc;
+      --mut:rgba(232,238,252,.75);
+      --pill:rgba(255,255,255,.08);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,Arial;background:var(--bg);color:var(--txt)}
+    .wrap{max-width:1150px;margin:0 auto;padding:20px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .h1{font-size:26px;font-weight:900;letter-spacing:.2px}
+    .muted{opacity:.75}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    a.link{color:var(--txt);opacity:.9;text-decoration:none;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03)}
+    a.link:hover{opacity:1}
+    button{
+      padding:9px 12px;border-radius:12px;border:1px solid var(--line);
+      background:rgba(255,255,255,.06);color:var(--txt);cursor:pointer;font-weight:700
+    }
+    button:hover{background:rgba(255,255,255,.10)}
+    .danger{border-color:rgba(255,0,90,.25);background:rgba(255,0,90,.10)}
+    .danger:hover{background:rgba(255,0,90,.16)}
+    .ok{border-color:rgba(0,255,150,.25);background:rgba(0,255,150,.10)}
+    .ok:hover{background:rgba(0,255,150,.16)}
+    .warn{border-color:rgba(255,200,0,.25);background:rgba(255,200,0,.10)}
+    .warn:hover{background:rgba(255,200,0,.16)}
+    .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+    @media (max-width:900px){.grid2{grid-template-columns:1fr}}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;vertical-align:top}
+    thead th{opacity:.85;text-align:left;border-bottom:1px solid var(--line)}
+    tbody tr{border-top:1px solid rgba(255,255,255,.08)}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;background:var(--pill);border:1px solid var(--line);opacity:.95}
+    .mini{font-size:12px;opacity:.75}
+    .title{font-weight:900}
+    .nowrap{white-space:nowrap}
+    .toast{
+      display:none;margin-top:10px;padding:10px 12px;border-radius:12px;
+      border:1px solid rgba(0,255,150,.22);background:rgba(0,255,150,.10)
+    }
+
+    /* overdue glow */
+    .overdueRow{
+      background:linear-gradient(90deg, rgba(255,0,90,.10), transparent 45%);
+      outline:1px solid rgba(255,0,90,.18);
+      outline-offset:-1px;
+    }
+
+    /* modal */
+    .modalBack{
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,.55);
+      padding:20px;
+    }
+    .modalCard{
+      max-width:620px; margin:6vh auto;
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      padding:16px;
+    }
+    input, select, textarea{
+      width:100%;
+      padding:10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:#0b1220;
+      color:var(--txt);
+      outline:none;
+    }
+    textarea{resize:vertical}
+    .filterBar{
+      display:grid;
+      grid-template-columns: 1.2fr .6fr .6fr .6fr;
+      gap:10px;
+      margin-top:12px;
+    }
+    @media (max-width:1000px){
+      .filterBar{grid-template-columns:1fr 1fr; }
+    }
+    @media (max-width:560px){
+      .filterBar{grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div>
+          <div class="h1">MEI — Admin Dashboard</div>
+          <div class="muted">Approval gate + Leads Mini CRM (Search/Filter)</div>
+        </div>
+        <div class="row">
+          <a class="link" href="add-property.html">➕ Add Property</a>
+          <a class="link" href="buyer.html">👤 Buyer Portal</a>
+          <button onclick="refreshAll()">🔄 Refresh</button>
+          <button class="danger" onclick="resetDemo()">🧨 Reset (demo)</button>
+        </div>
+      </div>
+      <div id="toast" class="toast">✅ Updated</div>
+    </div>
+
+    <!-- APPROVAL + LISTINGS -->
+    <div class="grid2">
+      <div class="card">
+        <div class="top">
+          <div>
+            <div class="h1" style="font-size:18px;">Pending Approvals</div>
+            <div class="muted">Admin only: approve/reject</div>
+          </div>
+          <div class="row">
+            <span class="pill">Pending: <b id="pendingCount">0</b></span>
+          </div>
+        </div>
+
+        <div style="overflow:auto;margin-top:10px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Listing</th>
+                <th class="nowrap">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pendingBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="top">
+          <div>
+            <div class="h1" style="font-size:18px;">Approved Listings</div>
+            <div class="muted">Buyer portal shows ONLY these</div>
+          </div>
+          <div class="row">
+            <span class="pill">Approved: <b id="approvedCount">0</b></span>
+          </div>
+        </div>
+
+        <div style="overflow:auto;margin-top:10px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Listing</th>
+                <th class="nowrap">Manage</th>
+              </tr>
+            </thead>
+            <tbody id="approvedBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADS -->
+    <div class="card" style="margin-top:12px;">
+      <div class="top">
+        <div>
+          <div class="h1" style="font-size:18px;">Leads — Mini CRM</div>
+          <div class="muted">Search + Status filter + Overdue filter</div>
+        </div>
+        <div class="row">
+          <span class="pill">Total: <b id="leadCount">0</b></span>
+          <span class="pill">Overdue: <b id="overdueCount">0</b></span>
+          <button onclick="refreshLeads()">Refresh</button>
+          <button class="warn" onclick="clearClosedLeads()">Clear Closed/Archived</button>
+        </div>
+      </div>
+
+      <!-- Search + Filters -->
+      <div class="filterBar">
+        <input id="leadSearch" placeholder="Search listing / phone / buyer / notes..." oninput="refreshLeads()">
+        <select id="statusFilter" onchange="refreshLeads()">
+          <option value="ALL">All Status</option>
+          <option value="NEW">NEW</option>
+          <option value="CONTACTED">CONTACTED</option>
+          <option value="CLOSED">CLOSED</option>
+          <option value="ARCHIVED">ARCHIVED</option>
+        </select>
+        <select id="overdueFilter" onchange="refreshLeads()">
+          <option value="ALL">All</option>
+          <option value="OVERDUE">Overdue only</option>
+          <option value="NOT_OVERDUE">Not overdue</option>
+        </select>
+        <button onclick="clearLeadFilters()">Clear Filters</button>
+      </div>
+
+      <div style="overflow:auto;margin-top:12px;">
+        <table style="min-width:1180px;">
+          <thead>
+            <tr>
+              <th class="nowrap">Date</th>
+              <th>Listing</th>
+              <th>Buyer</th>
+              <th class="nowrap">Phone</th>
+              <th>Status</th>
+              <th class="nowrap">Follow-up</th>
+              <th>Notes</th>
+              <th class="nowrap">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="leadsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Lead Edit Modal -->
+  <div id="leadModalBack" class="modalBack">
+    <div class="modalCard">
+      <div class="top">
+        <div>
+          <div class="h1" style="font-size:18px;">Edit Lead</div>
+          <div id="mListing" class="muted"></div>
+        </div>
+        <div class="row">
+          <button onclick="closeLeadModal()">✕ Close</button>
+        </div>
+      </div>
+
+      <div style="display:grid; gap:10px; margin-top:12px;">
+        <div>
+          <label class="mini">Follow-up date</label>
+          <input id="mFollowUp" type="date">
+        </div>
+        <div>
+          <label class="mini">Notes</label>
+          <textarea id="mNotes" rows="5" placeholder="Call summary / site visit / budget / next step..."></textarea>
+        </div>
+
+        <div class="row">
+          <button class="ok" onclick="saveLeadModal()">✅ Save</button>
+          <button class="danger" onclick="closeLeadModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ====== Storage Keys ======
+  const PROPS_KEY = "mei_properties_v1";
+  const LEADS_KEY = "mei_leads_v1";
+  let MODAL_LEAD_ID = null;
+
+  // ====== Helpers ======
+  const $ = (id)=>document.getElementById(id);
+
+  function escapeHtml(str){
+    return String(str ?? "").replace(/[&<>"']/g, s => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[s]));
+  }
+
+  function toast(msg="✅ Updated"){
+    const el = $("toast");
+    el.textContent = msg;
+    el.style.display = "block";
+    setTimeout(()=> el.style.display="none", 900);
+  }
+
+  function fmtDate(iso){
+    try { return new Date(iso).toLocaleString(); }
+    catch(e){ return iso || ""; }
+  }
+
+  function todayYMD(){
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function isOverdue(lead){
+    const status = (lead.status || "").toUpperCase();
+    if(["CLOSED","ARCHIVED"].includes(status)) return false;
+    if(!lead.followUp) return false;
+    return lead.followUp < todayYMD();
+  }
+
+  function badge(status){
+    const s = (status || "NEW").toUpperCase();
+    const map = {
+      NEW: "background:rgba(0,153,255,.15); border:1px solid rgba(0,153,255,.25);",
+      CONTACTED: "background:rgba(255,200,0,.12); border:1px solid rgba(255,200,0,.22);",
+      CLOSED: "background:rgba(0,255,150,.12); border:1px solid rgba(0,255,150,.25);",
+      ARCHIVED: "background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12);"
+    };
+    return `<span class="pill" style="${map[s] || map.NEW}">${s}</span>`;
+  }
+
+  // ====== Properties ======
+  function getProps(){ return JSON.parse(localStorage.getItem(PROPS_KEY) || "[]"); }
+  function saveProps(props){ localStorage.setItem(PROPS_KEY, JSON.stringify(props)); }
+
+  function approveProp(id){
+    const props = getProps();
+    const i = props.findIndex(p => p.id === id);
+    if(i === -1) return;
+    props[i].status = "approved";
+    props[i].approvedAt = new Date().toISOString();
+    saveProps(props);
+    toast("✅ Approved");
+    refreshProps();
+  }
+
+  function rejectProp(id){
+    const props = getProps();
+    const i = props.findIndex(p => p.id === id);
+    if(i === -1) return;
+    props[i].status = "rejected";
+    props[i].rejectedAt = new Date().toISOString();
+    saveProps(props);
+    toast("🗑️ Rejected");
+    refreshProps();
+  }
+
+  function deleteProp(id){
+    const props = getProps().filter(p => p.id !== id);
+    saveProps(props);
+    toast("🧹 Deleted");
+    refreshProps();
+  }
+
+  function rowListing(p){
+    const title = escapeHtml(p.title || p.name || "Listing");
+    const meta = [
+      p.city ? escapeHtml(p.city) : null,
+      p.area ? escapeHtml(p.area) : null,
+      p.price ? ("₹" + escapeHtml(p.price)) : null
+    ].filter(Boolean).join(" • ");
+
+    return `
+      <div class="title">${title}</div>
+      <div class="mini">${meta || "—"}</div>
+      <div class="mini">ID: ${escapeHtml(p.id || "-")}</div>
+    `;
+  }
+
+  function refreshProps(){
+    const props = getProps();
+    const pending = props.filter(p => (p.status || "pending").toLowerCase() === "pending");
+    const approved = props.filter(p => (p.status || "").toLowerCase() === "approved");
+
+    $("pendingCount").textContent = pending.length;
+    $("approvedCount").textContent = approved.length;
+
+    const pb = $("pendingBody");
+    const ab = $("approvedBody");
+
+    pb.innerHTML = pending.length ? pending.map(p => `
+      <tr>
+        <td>${rowListing(p)}</td>
+        <td class="nowrap">
+          <div class="row">
+            <button class="ok" onclick="approveProp('${escapeHtml(p.id)}')">Approve</button>
+            <button class="danger" onclick="rejectProp('${escapeHtml(p.id)}')">Reject</button>
+          </div>
+        </td>
+      </tr>
+    `).join("") : `<tr><td colspan="2" style="opacity:.75;padding:14px;">No pending approvals.</td></tr>`;
+
+    ab.innerHTML = approved.length ? approved.map(p => `
+      <tr>
+        <td>${rowListing(p)}<div class="mini">Approved: ${escapeHtml(fmtDate(p.approvedAt || ""))}</div></td>
+        <td class="nowrap">
+          <div class="row">
+            <button class="warn" onclick="approveProp('${escapeHtml(p.id)}')">Re-Approve</button>
+            <button class="danger" onclick="deleteProp('${escapeHtml(p.id)}')">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join("") : `<tr><td colspan="2" style="opacity:.75;padding:14px;">No approved listings yet.</td></tr>`;
+  }
+
+  // ====== Leads (Mini CRM) ======
+  function getLeads(){ return JSON.parse(localStorage.getItem(LEADS_KEY) || "[]"); }
+  function saveLeads(leads){ localStorage.setItem(LEADS_KEY, JSON.stringify(leads)); }
+
+  function migrateLeadDefaults(lead){
+    if(lead.notes == null) lead.notes = "";
+    if(lead.followUp == null) lead.followUp = "";
+    if(lead.lastContactedAt == null) lead.lastContactedAt = "";
+    return lead;
+  }
+
+  function setLeadStatus(id, status){
+    const leads = getLeads().map(migrateLeadDefaults);
+    const idx = leads.findIndex(x => x.id === id);
+    if(idx === -1) return;
+
+    leads[idx].status = status;
+    leads[idx].updatedAt = new Date().toISOString();
+
+    if(String(status).toUpperCase() === "CONTACTED"){
+      leads[idx].lastContactedAt = new Date().toISOString();
+      if(!leads[idx].followUp){
+        const d = new Date(); d.setDate(d.getDate()+1);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,"0");
+        const dd = String(d.getDate()).padStart(2,"0");
+        leads[idx].followUp = `${yyyy}-${mm}-${dd}`;
+      }
+    }
+
+    saveLeads(leads);
+    toast("✅ Lead updated");
+    refreshLeads();
+  }
+
+  function archiveLead(id){ setLeadStatus(id, "ARCHIVED"); }
+
+  function clearClosedLeads(){
+    const leads = getLeads().map(migrateLeadDefaults);
+    const filtered = leads.filter(l => !["CLOSED","ARCHIVED"].includes((l.status||"").toUpperCase()));
+    saveLeads(filtered);
+    toast("🧹 Cleared closed/archived");
+    refreshLeads();
+  }
+
+  // Modal
+  function openLeadModal(id){
+    const leads = getLeads().map(migrateLeadDefaults);
+    const lead = leads.find(l => l.id === id);
+    if(!lead) return;
+
+    MODAL_LEAD_ID = id;
+    $("mListing").textContent = `${lead.listingTitle || "Listing"} • ${lead.buyerName || ""} • ${lead.buyerPhone || ""}`;
+    $("mFollowUp").value = lead.followUp || "";
+    $("mNotes").value = lead.notes || "";
+    $("leadModalBack").style.display = "block";
+  }
+
+  function closeLeadModal(){
+    $("leadModalBack").style.display = "none";
+    MODAL_LEAD_ID = null;
+  }
+
+  function saveLeadModal(){
+    if(!MODAL_LEAD_ID) return;
+
+    const leads = getLeads().map(migrateLeadDefaults);
+    const idx = leads.findIndex(l => l.id === MODAL_LEAD_ID);
+    if(idx === -1) return;
+
+    leads[idx].followUp = $("mFollowUp").value || "";
+    leads[idx].notes = $("mNotes").value.trim();
+    leads[idx].updatedAt = new Date().toISOString();
+
+    saveLeads(leads);
+    toast("✅ Saved notes/follow-up");
+    closeLeadModal();
+    refreshLeads();
+  }
+
+  // Search + Filters
+  function clearLeadFilters(){
+    $("leadSearch").value = "";
+    $("statusFilter").value = "ALL";
+    $("overdueFilter").value = "ALL";
+    refreshLeads();
+  }
+
+  function leadMatchesSearch(lead, q){
+    if(!q) return true;
+    const hay = [
+      lead.listingTitle, lead.listingId,
+      lead.buyerName, lead.buyerPhone,
+      lead.message, lead.notes
+    ].join(" ").toLowerCase();
+    return hay.includes(q);
+  }
+
+  function refreshLeads(){
+    const leadsRaw = getLeads().map(migrateLeadDefaults);
+    saveLeads(leadsRaw);
+
+    const overdue = leadsRaw.filter(isOverdue);
+    $("leadCount").textContent = leadsRaw.length;
+    $("overdueCount").textContent = overdue.length;
+
+    const q = ($("leadSearch").value || "").trim().toLowerCase();
+    const statusF = ($("statusFilter").value || "ALL").toUpperCase();
+    const odF = ($("overdueFilter").value || "ALL").toUpperCase();
+
+    let leads = leadsRaw
+      .filter(l => leadMatchesSearch(l, q))
+      .filter(l => {
+        if(statusF === "ALL") return true;
+        return (l.status || "NEW").toUpperCase() === statusF;
+      })
+      .filter(l => {
+        if(odF === "ALL") return true;
+        const od = isOverdue(l);
+        if(odF === "OVERDUE") return od;
+        if(odF === "NOT_OVERDUE") return !od;
+        return true;
+      });
+
+    const tbody = $("leadsBody");
+    if(leads.length === 0){
+      tbody.innerHTML = `<tr><td colspan="8" style="padding:14px; opacity:.75;">No leads match your filters.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = leads.map(l => {
+      const overdueClass = isOverdue(l) ? "overdueRow" : "";
+      const fu = l.followUp ? escapeHtml(l.followUp) : "—";
+      const notesShort = (l.notes || "").trim();
+      const notesShow = notesShort ? escapeHtml(notesShort) : "—";
+      const lastC = l.lastContactedAt ? ("Last: " + escapeHtml(fmtDate(l.lastContactedAt))) : "";
+
+      return `
+        <tr class="${overdueClass}">
+          <td class="nowrap">${escapeHtml(fmtDate(l.createdAt))}</td>
+          <td>
+            <div class="title">${escapeHtml(l.listingTitle || "Listing")}</div>
+            <div class="mini">ID: ${escapeHtml(l.listingId || "-")}</div>
+          </td>
+          <td>${escapeHtml(l.buyerName || "-")}</td>
+          <td class="nowrap">${escapeHtml(l.buyerPhone || "-")}</td>
+          <td>
+            ${badge(l.status)}
+            ${isOverdue(l) ? `<div class="mini" style="margin-top:6px; color:rgba(255,0,90,.95); font-weight:800;">⚠ OVERDUE</div>` : ""}
+          </td>
+          <td class="nowrap">
+            <div>${fu}</div>
+            <div class="mini">${lastC}</div>
+          </td>
+          <td style="max-width:360px;">
+            <div>${notesShow}</div>
+          </td>
+          <td class="nowrap">
+            <div class="row">
+              <a class="link" style="padding:6px 10px;" href="tel:${encodeURIComponent(l.buyerPhone || "")}">📞 Call</a>
+              <button onclick="openLeadModal('${escapeHtml(l.id)}')">✏️ Edit</button>
+              <button onclick="setLeadStatus('${escapeHtml(l.id)}','CONTACTED')">Contacted</button>
+              <button class="ok" onclick="setLeadStatus('${escapeHtml(l.id)}','CLOSED')">Close</button>
+              <button class="danger" onclick="archiveLead('${escapeHtml(l.id)}')">Archive</button>
+            </div>
+          </td>
+        </tr>
+
+        ${(l.message && l.message.trim()) ? `
+          <tr class="${overdueClass}">
+            <td></td>
+            <td colspan="7" style="opacity:.88; border-top:1px dashed rgba(255,255,255,.10);">
+              📝 ${escapeHtml(l.message)}
+            </td>
+          </tr>` : ""}
+      `;
+    }).join("");
+  }
+
+  function refreshAll(){
+    refreshProps();
+    refreshLeads();
+  }
+
+  function resetDemo(){
+    if(!confirm("Reset demo data?")) return;
+    localStorage.removeItem(PROPS_KEY);
+    localStorage.removeItem(LEADS_KEY);
+    toast("🧨 Reset done");
+    refreshAll();
+  }
+
+  document.addEventListener("DOMContentLoaded", refreshAll);
+</script>
+</body>
+</html>
