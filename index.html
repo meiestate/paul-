@@ -1,0 +1,1338 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0b0f17" />
+  <title>MEI Estate — Approved Listings • Buyer Leads • Seller Leads • Broker Network</title>
+  <meta name="description" content="MEI Estate — browse approved listings, post buyer and seller leads, list property for sale, and join as a broker." />
+
+  <style>
+    :root{
+      --bg:#0b0f17;
+      --card:#0f1624;
+      --text:#e7eefc;
+      --muted:#a8b3c7;
+      --line:#1f2a3d;
+      --accent:#6ee7ff;
+      --accent2:#a78bfa;
+      --focus: rgba(110,231,255,.92);
+      --okBorder: rgba(52,211,153,.35);
+      --okBg: rgba(52,211,153,.12);
+      --badBorder: rgba(251,113,133,.38);
+      --badBg: rgba(251,113,133,.12);
+      --radius: 22px;
+      --shadow: 0 18px 60px rgba(0,0,0,.25);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(110,231,255,.18), transparent 50%),
+        radial-gradient(900px 500px at 70% 20%, rgba(167,139,250,.18), transparent 55%),
+        var(--bg);
+      color:var(--text);
+    }
+    a{color:inherit;text-decoration:none}
+    :focus-visible{outline:3px solid var(--focus); outline-offset:2px;}
+
+    .srOnly{
+      position:absolute;
+      width:1px;
+      height:1px;
+      padding:0;
+      margin:-1px;
+      overflow:hidden;
+      clip:rect(0,0,0,0);
+      border:0;
+      white-space:nowrap;
+    }
+
+    .skipLink{
+      position:absolute;
+      left:-9999px;
+      top:12px;
+      padding:10px 12px;
+      border:1px solid rgba(31,42,61,.9);
+      background:rgba(15,22,36,.95);
+      border-radius:14px;
+      z-index:9999;
+    }
+    .skipLink:focus{left:16px}
+
+    .wrap{max-width:1160px;margin:0 auto;padding:24px}
+
+    header{
+      position:sticky;
+      top:0;
+      background:rgba(11,15,23,.68);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(31,42,61,.6);
+      z-index:10;
+    }
+    header .wrap{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      padding-top:14px;
+      padding-bottom:14px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:1000;
+      letter-spacing:.3px;
+    }
+    .logo{
+      width:36px;height:36px;border-radius:12px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      box-shadow:0 10px 35px rgba(110,231,255,.18);
+      flex:0 0 auto;
+    }
+    .brand .sub{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      margin-top:2px;
+      line-height:1.2;
+    }
+
+    nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:14px;
+      border:1px solid rgba(31,42,61,.9);
+      background:rgba(15,22,36,.7);
+      cursor:pointer;
+      color:var(--text);
+      font-weight:900;
+      min-height:40px;
+    }
+    .btn:hover{background:rgba(15,22,36,.92)}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{
+      background:linear-gradient(135deg, rgba(110,231,255,.25), rgba(167,139,250,.25));
+      border-color:rgba(110,231,255,.35);
+    }
+    .btn.small{padding:8px 12px;border-radius:12px;font-size:14px;min-height:36px}
+    .btn.ok{border-color:var(--okBorder);background:var(--okBg)}
+    .btn.danger{border-color: var(--badBorder);background: var(--badBg)}
+    .btn[disabled]{opacity:.55;cursor:not-allowed;transform:none}
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(31,42,61,.85);
+      background:rgba(15,22,36,.55);
+      color:var(--muted);
+      font-size:12px;
+      font-weight:900;
+    }
+
+    main{padding-bottom:20px}
+    section{padding:18px 0; scroll-margin-top:100px}
+
+    .hero{padding:34px 0 10px}
+    .grid{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:18px;
+      align-items:start;
+    }
+    @media (max-width: 940px){.grid{grid-template-columns:1fr}}
+
+    .h1{font-size:44px;line-height:1.05;margin:0 0 10px;font-weight:1000}
+    .muted{color:var(--muted);line-height:1.65}
+
+    .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .chip{
+      font-size:13px;
+      color:var(--muted);
+      border:1px solid rgba(31,42,61,.85);
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(15,22,36,.55);
+      font-weight:800;
+    }
+
+    .card{
+      background:rgba(15,22,36,.55);
+      border:1px solid rgba(31,42,61,.85);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+    .card h2, .card h3{margin:0 0 10px}
+    .card h3{font-size:18px}
+
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:520px){.row2{grid-template-columns:1fr}}
+
+    .quickCards{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      gap:12px;
+      margin-top:18px;
+    }
+    @media (max-width:980px){.quickCards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:560px){.quickCards{grid-template-columns:1fr}}
+
+    .quickCard{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding:18px;
+      border-radius:20px;
+      border:1px solid rgba(31,42,61,.85);
+      background:rgba(15,22,36,.45);
+      box-shadow:var(--shadow);
+      min-height:180px;
+    }
+    .quickIcon{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      font-size:22px;
+      background:linear-gradient(135deg, rgba(110,231,255,.18), rgba(167,139,250,.18));
+      border:1px solid rgba(110,231,255,.18);
+    }
+    .quickCard .titleText{
+      font-size:18px;
+      font-weight:1000;
+      line-height:1.2;
+    }
+    .quickCard .desc{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
+      flex:1;
+    }
+
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;font-weight:800}
+    input,select,textarea{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(31,42,61,.95);
+      background:rgba(11,15,23,.55);
+      color:var(--text);
+      outline:none;
+      min-height:42px;
+    }
+    input::placeholder, textarea::placeholder{color: rgba(168,179,199,.78)}
+    textarea{min-height:92px;resize:vertical}
+
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.6;
+      margin-top:6px;
+    }
+    .err{
+      margin-top:8px;
+      color:rgba(251,113,133,.98);
+      font-weight:900;
+      font-size:12px;
+      line-height:1.35;
+    }
+    .err[hidden]{display:none}
+
+    .formActions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:12px;
+    }
+
+    .preview{
+      margin-top:12px;
+      padding:12px;
+      border-radius:16px;
+      border:1px solid rgba(31,42,61,.85);
+      background:rgba(11,15,23,.35);
+    }
+    .preview pre{
+      margin:0;
+      white-space:pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px;
+      color:rgba(232,238,252,.88);
+      line-height:1.5;
+    }
+
+    .listingsTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .filterBar{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr .8fr auto;
+      gap:10px;
+      margin-top:12px;
+      align-items:center;
+    }
+    @media (max-width: 980px){ .filterBar{ grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 560px){ .filterBar{ grid-template-columns: 1fr; } }
+
+    .gridListings{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    @media (max-width:950px){.gridListings{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:650px){.gridListings{grid-template-columns:1fr}}
+
+    .tile{
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height:260px;
+    }
+
+    .tileImg{
+      height:170px;
+      background:
+        linear-gradient(135deg, rgba(110,231,255,.18), rgba(167,139,250,.18)),
+        radial-gradient(300px 140px at 20% 20%, rgba(110,231,255,.20), transparent 55%),
+        radial-gradient(300px 140px at 70% 30%, rgba(167,139,250,.20), transparent 55%);
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+    }
+
+    .tileBody{
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      flex:1;
+    }
+
+    .title{font-weight:1000;font-size:16px;line-height:1.35}
+    .mini{font-size:12px;color:rgba(232,238,252,.72);margin-top:4px;line-height:1.35}
+    .price{margin-top:10px;font-weight:1000}
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:auto;
+      padding-top:12px;
+      align-items:center;
+    }
+
+    .features{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+    @media (max-width:900px){.features{grid-template-columns:1fr}}
+    .feat{
+      padding:16px;
+      border-radius:20px;
+      border:1px solid rgba(31,42,61,.85);
+      background:rgba(15,22,36,.45);
+    }
+    .feat b{display:block;margin-bottom:6px}
+
+    .empty{
+      padding:28px;
+      text-align:center;
+      color:var(--muted);
+      border:1px dashed rgba(31,42,61,.9);
+      border-radius:18px;
+      background:rgba(11,15,23,.25);
+      grid-column:1 / -1;
+    }
+
+    footer{
+      padding:22px 0;
+      color:var(--muted);
+      border-top:1px solid rgba(31,42,61,.6);
+      margin-top:22px;
+    }
+
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      max-width:440px;
+      background:rgba(15,22,36,.94);
+      border:1px solid rgba(31,42,61,.9);
+      padding:12px 14px;
+      border-radius:16px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      box-shadow:0 16px 50px rgba(0,0,0,.45);
+      z-index:9998;
+    }
+    .toast[hidden]{display:none}
+    .toast .msg{font-size:13px; line-height:1.4}
+    .toast .act{
+      margin-left:auto;
+      padding:8px 12px;
+      border-radius:12px;
+      border:1px solid rgba(31,42,61,.92);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      font-weight:1000;
+      cursor:pointer;
+      min-height:36px;
+    }
+    .toast .act[hidden]{display:none}
+  </style>
+</head>
+
+<body>
+  <a class="skipLink" href="#main">Skip to content</a>
+
+  <header>
+    <div class="wrap">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div>MEI Estate</div>
+          <div class="sub">Approved Listings • Buyer Leads • Seller Leads • Broker Network</div>
+        </div>
+      </div>
+
+      <nav aria-label="Primary navigation">
+        <a class="btn small" href="#features">Features</a>
+        <a class="btn small" href="#how">How it works</a>
+        <a class="btn small" href="#quick-actions">Explore</a>
+        <a class="btn small" href="#listings">Browse Listings</a>
+        <a class="btn primary small" href="#lead">Post Lead</a>
+        <a class="btn small" href="seller.html">🏷 Sell Property</a>
+        <a class="btn small" href="#broker">Join Broker</a>
+        <a class="btn small" href="dashboard.html">🛡️ Dashboard</a>
+        <a class="btn small" href="add-property.html">➕ Add Property</a>
+        <a class="btn small" href="listings.html">📋 All Listings</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap" id="main">
+    <section class="hero">
+      <div class="grid">
+        <div>
+          <h1 class="h1">Trust-first Real Estate.<br/>Approved listings. Serious leads.</h1>
+          <p class="muted">
+            Browse admin-approved listings, connect with verified brokers, post serious buyer or seller enquiries, and grow inventory through a clean real-estate pipeline.
+          </p>
+
+          <div class="chips" aria-label="Key benefits">
+            <span class="chip">✅ Approved listings only</span>
+            <span class="chip">📞 Buyer & seller lead capture</span>
+            <span class="chip">🤝 Broker network</span>
+            <span class="chip">🏷 Seller onboarding</span>
+            <span class="chip">🛡️ Admin approval flow</span>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+            <a class="btn primary" href="#listings">Browse Approved Listings</a>
+            <a class="btn" href="#lead">Post a Lead</a>
+            <a class="btn" href="seller.html">Sell Property</a>
+            <a class="btn" href="#broker">Join as Broker</a>
+          </div>
+        </div>
+
+        <div class="card" id="lead">
+          <h3>📩 Post a Buyer / Seller Lead</h3>
+          <p class="muted" style="margin-top:-4px">We’ll save this request into the CRM lead pipeline.</p>
+
+          <form id="landingLeadForm" novalidate>
+            <div class="row2">
+              <div>
+                <label for="leadName">Your Name *</label>
+                <input id="leadName" maxlength="60" placeholder="Name" required />
+              </div>
+              <div>
+                <label for="leadPhone">Phone *</label>
+                <input id="leadPhone" type="tel" inputmode="numeric" maxlength="16" placeholder="10-digit mobile or +91..." required />
+              </div>
+            </div>
+
+            <div class="row2" style="margin-top:10px">
+              <div>
+                <label for="leadType">Lead Type *</label>
+                <select id="leadType">
+                  <option value="BUYER">Buyer</option>
+                  <option value="SELLER">Seller</option>
+                </select>
+              </div>
+              <div>
+                <label for="leadLocality">Locality *</label>
+                <input id="leadLocality" maxlength="80" placeholder="Whitefield / ITPL / Hoodi…" required />
+              </div>
+            </div>
+
+            <div class="row2" style="margin-top:10px">
+              <div>
+                <label for="budgetMin">Budget Min (₹)</label>
+                <input id="budgetMin" type="number" min="0" inputmode="numeric" placeholder="e.g. 5000000" />
+              </div>
+              <div>
+                <label for="budgetMax">Budget Max (₹)</label>
+                <input id="budgetMax" type="number" min="0" inputmode="numeric" placeholder="e.g. 9000000" />
+              </div>
+            </div>
+
+            <div style="margin-top:10px">
+              <label for="leadNotes">Notes</label>
+              <textarea id="leadNotes" placeholder="Property type, timeline, preferences…"></textarea>
+            </div>
+
+            <div style="margin-top:10px;display:flex;gap:10px;align-items:flex-start">
+              <input id="leadConsent" type="checkbox" style="width:18px;height:18px;margin-top:2px" />
+              <div class="hint" style="margin-top:0">I agree to be contacted about this lead.</div>
+            </div>
+
+            <div id="landingLeadErr" class="err" hidden></div>
+
+            <div class="formActions">
+              <button class="btn primary" type="submit">Submit Lead</button>
+              <button class="btn" type="button" data-action="saveLandingDraft">💾 Save Draft</button>
+              <button class="btn" type="button" data-action="clearLandingForm">🧽 Clear</button>
+            </div>
+
+            <div class="preview">
+              <div class="hint" style="margin-top:0">Preview (safe text)</div>
+              <pre id="landingLeadPreview">—</pre>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="quick-actions">
+      <div class="card">
+        <div class="listingsTop">
+          <div>
+            <h2 style="margin:0 0 6px">Quick Actions</h2>
+            <div class="muted">Choose the path that matches your role in the property journey.</div>
+          </div>
+        </div>
+
+        <div class="quickCards">
+          <article class="quickCard">
+            <div class="quickIcon">🏠</div>
+            <div class="titleText">Browse Properties</div>
+            <div class="desc">See approved listings only and move into interest flow without noise.</div>
+            <a class="btn small primary" href="#listings">Browse Listings</a>
+          </article>
+
+          <article class="quickCard">
+            <div class="quickIcon">🏷</div>
+            <div class="titleText">Sell Property</div>
+            <div class="desc">Owners, builders and land sellers can submit property details and enter the seller pipeline.</div>
+            <a class="btn small primary" href="seller.html">Open Seller Page</a>
+          </article>
+
+          <article class="quickCard">
+            <div class="quickIcon">🤝</div>
+            <div class="titleText">Join Broker Network</div>
+            <div class="desc">Register for verification and become part of the broker-side opportunity flow.</div>
+            <a class="btn small primary" href="#broker">Join Broker</a>
+          </article>
+
+          <article class="quickCard">
+            <div class="quickIcon">🛡️</div>
+            <div class="titleText">Admin Dashboard</div>
+            <div class="desc">Manage approvals, buyer leads, seller leads, broker flow and follow-ups from one place.</div>
+            <a class="btn small primary" href="dashboard.html">Open Dashboard</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="listings">
+      <div class="card">
+        <div class="listingsTop">
+          <div>
+            <h2 style="margin:0 0 6px">Featured Approved Listings</h2>
+            <div class="muted">Homepage preview of approved public listings</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end">
+            <span class="pill">Approved: <span id="approvedCount">0</span></span>
+            <button class="btn small" type="button" data-action="refreshListings">🔄 Refresh</button>
+            <a class="btn small primary" href="listings.html">View All Listings</a>
+          </div>
+        </div>
+
+        <div class="filterBar" aria-label="Listing filters">
+          <div>
+            <label class="srOnly" for="q">Search listings</label>
+            <input id="q" placeholder="Search title / city / area / type..." />
+          </div>
+
+          <div>
+            <label class="srOnly" for="typeFilter">Type filter</label>
+            <select id="typeFilter">
+              <option value="">All Types</option>
+              <option value="Apartment">Apartment</option>
+              <option value="House">House</option>
+              <option value="Plot">Plot</option>
+              <option value="Commercial">Commercial</option>
+              <option value="Villa">Villa</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="srOnly" for="sortFilter">Sort filter</label>
+            <select id="sortFilter">
+              <option value="NEWEST">Sort: Newest</option>
+              <option value="PRICE_LOW">Sort: Price low → high</option>
+              <option value="PRICE_HIGH">Sort: Price high → low</option>
+              <option value="FEATURED">Sort: Featured first</option>
+            </select>
+          </div>
+
+          <button class="btn ok" type="button" data-action="clearFilters">↩ Reset Filters</button>
+        </div>
+
+        <div id="grid" class="gridListings" aria-label="Approved listings grid"></div>
+      </div>
+    </section>
+
+    <section id="features">
+      <h2 style="margin:0 0 12px">What makes this different</h2>
+      <div class="features">
+        <div class="feat">
+          <b>✅ Admin Approved Listings</b>
+          <div class="muted">Public pages show only approved properties. Pending listings stay private.</div>
+        </div>
+        <div class="feat">
+          <b>📞 Lead Tracking</b>
+          <div class="muted">Every enquiry can flow into the dashboard CRM for follow-up and broker assignment.</div>
+        </div>
+        <div class="feat">
+          <b>🏷 Seller Module</b>
+          <div class="muted">Owners and builders can enter the platform directly through a dedicated sell-property flow.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how">
+      <div class="card">
+        <h3>How it works (MVP)</h3>
+        <ol style="color:var(--muted);line-height:1.8;margin:10px 0 0">
+          <li>Broker or seller adds a property.</li>
+          <li>Admin reviews and approves it.</li>
+          <li>Approved listing appears publicly.</li>
+          <li>Buyer or seller submits enquiry from homepage or dedicated pages.</li>
+          <li>Lead shows up in dashboard CRM for follow-up.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="broker">
+      <div class="card">
+        <h3>🪪 Join as a Broker</h3>
+        <p class="muted" style="margin-top:-4px">Submit details — this request will be saved into the CRM for broker verification follow-up.</p>
+
+        <form id="brokerJoinForm" novalidate>
+          <div class="row2">
+            <div>
+              <label for="brokerName">Broker Name *</label>
+              <input id="brokerName" maxlength="60" placeholder="Full name" required />
+            </div>
+            <div>
+              <label for="brokerPhone">Phone *</label>
+              <input id="brokerPhone" type="tel" inputmode="numeric" maxlength="16" placeholder="10-digit mobile or +91..." required />
+            </div>
+          </div>
+
+          <div class="row2" style="margin-top:10px">
+            <div>
+              <label for="brokerArea">Primary Area *</label>
+              <input id="brokerArea" maxlength="80" placeholder="Whitefield / Bangalore East…" required />
+            </div>
+            <div>
+              <label for="brokerExp">Experience (years)</label>
+              <input id="brokerExp" type="number" min="0" inputmode="numeric" placeholder="e.g. 5" />
+            </div>
+          </div>
+
+          <div style="margin-top:10px">
+            <label for="brokerCompany">Office / Company (optional)</label>
+            <input id="brokerCompany" maxlength="80" placeholder="Company / office name" />
+          </div>
+
+          <div style="margin-top:10px;display:flex;gap:10px;align-items:flex-start">
+            <input id="brokerConsent" type="checkbox" style="width:18px;height:18px;margin-top:2px" />
+            <div class="hint" style="margin-top:0">I agree to be contacted about broker verification.</div>
+          </div>
+
+          <div id="brokerErr" class="err" hidden></div>
+
+          <div class="formActions">
+            <button class="btn primary" type="submit">Request Verification</button>
+            <button class="btn" type="button" data-action="saveBrokerDraft">💾 Save Draft</button>
+            <button class="btn" type="button" data-action="clearBrokerForm">🧽 Clear</button>
+          </div>
+
+          <div class="preview">
+            <div class="hint" style="margin-top:0">Preview (safe text)</div>
+            <pre id="brokerPreview">—</pre>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <footer>
+      <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap">
+        <div>© <span id="yr"></span> MEI Estate</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a href="#listings">Browse Listings</a>
+          <a href="#lead">Post Lead</a>
+          <a href="seller.html">Sell Property</a>
+          <a href="#broker">Join Broker</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+    <div class="msg" id="toastMsg">✅ Updated</div>
+    <button class="act" id="toastAct" type="button" hidden>Undo</button>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+  (() => {
+    const PROPS_KEY = (window.MEI_KEYS && window.MEI_KEYS.properties) || "mei_properties_v1";
+    const LEADS_KEY = (window.MEI_KEYS && window.MEI_KEYS.leads) || "mei_leads_v1";
+
+    const DRAFTS = {
+      landing: "mei_home_draft_landing_v1",
+      broker: "mei_home_draft_broker_v1",
+      filters: "mei_home_listing_filters_v1"
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    let TOAST_T = null;
+    let TOAST_FN = null;
+
+    function toast(msg, opts={}){
+      const { actionText="", actionFn=null, timeout=3200 } = opts;
+      $("toastMsg").textContent = String(msg || "✅ Updated");
+      TOAST_FN = (typeof actionFn === "function") ? actionFn : null;
+      const act = $("toastAct");
+
+      if(actionText && TOAST_FN){
+        act.textContent = actionText;
+        act.hidden = false;
+      }else{
+        act.hidden = true;
+      }
+
+      $("toast").hidden = false;
+
+      if(TOAST_T) clearTimeout(TOAST_T);
+      TOAST_T = setTimeout(() => {
+        $("toast").hidden = true;
+        act.hidden = true;
+        TOAST_FN = null;
+      }, timeout);
+    }
+
+    $("toastAct").addEventListener("click", () => {
+      if(typeof TOAST_FN === "function"){
+        const fn = TOAST_FN;
+        $("toast").hidden = true;
+        $("toastAct").hidden = true;
+        TOAST_FN = null;
+        try{ fn(); }catch(e){}
+      }
+    });
+
+    function readJSON(key, fallback){
+      try{
+        const v = localStorage.getItem(key);
+        return v ? JSON.parse(v) : fallback;
+      }catch(e){
+        return fallback;
+      }
+    }
+
+    function writeJSON(key, value){
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function cleanDigits(v){
+      return String(v || "").replace(/[^\d]/g,"");
+    }
+
+    function normalizePhone(v){
+      const raw = String(v || "").trim();
+      const digits = cleanDigits(raw);
+      if(digits.length === 10) return digits;
+      if(digits.length === 12 && digits.startsWith("91")) return digits;
+      return digits;
+    }
+
+    function isValidPhone(v){
+      const digits = cleanDigits(v);
+      return digits.length === 10 || (digits.length === 12 && digits.startsWith("91"));
+    }
+
+    function parsePriceToNumber(v){
+      if(typeof v === "number") return Number.isFinite(v) ? v : NaN;
+      const digits = cleanDigits(v);
+      return digits ? Number(digits) : NaN;
+    }
+
+    function formatINR(v){
+      const n = parsePriceToNumber(v);
+      if(!Number.isFinite(n)) return "Price on request";
+      return "₹" + n.toLocaleString("en-IN");
+    }
+
+    function normalizeType(type){
+      const t = String(type || "").trim().toLowerCase();
+      if(!t) return "";
+      if(t === "apartment") return "Apartment";
+      if(t === "house") return "House";
+      if(t === "plot") return "Plot";
+      if(t === "commercial") return "Commercial";
+      if(t === "villa") return "Villa";
+      return String(type || "").trim();
+    }
+
+    function normalizeProperty(p){
+      const out = Object.assign({}, p || {});
+      out.id = String(out.id || "");
+      out.title = String(out.title || out.name || "Untitled Listing").trim();
+      out.city = String(out.city || "").trim();
+      out.area = String(out.area || out.locality || "").trim();
+      out.type = normalizeType(out.type);
+      out.bhk = String(out.bhk || "").trim();
+      out.price = parsePriceToNumber(out.price);
+      out.sqft = parsePriceToNumber(out.sqft || out.areaSqft || out.area_size);
+      out.description = String(out.description || out.desc || out.note || "").trim();
+      out.image = String(out.image || "").trim();
+      out.status = String(out.status || "").trim().toLowerCase();
+      out.createdAt = out.createdAt || "";
+      out.featured = Boolean(out.featured);
+      return out;
+    }
+
+    function getAllProperties(){
+      try{
+        if(typeof window.getAllProperties === "function"){
+          return window.getAllProperties().map(normalizeProperty);
+        }
+      }catch(e){}
+      return readJSON(PROPS_KEY, []).map(normalizeProperty);
+    }
+
+    function getApprovedProperties(){
+      return getAllProperties().filter(x => x.status === "approved");
+    }
+
+    function getFallbackProperties(){
+      return [
+        {
+          id:"demo1",
+          title:"2 BHK Apartment in Whitefield",
+          city:"Bangalore",
+          area:"Whitefield",
+          type:"Apartment",
+          bhk:"2 BHK",
+          price:6500000,
+          sqft:1100,
+          description:"Near metro • Covered parking • Verified listing",
+          image:"",
+          status:"approved",
+          featured:true
+        },
+        {
+          id:"demo2",
+          title:"Commercial Property in Whitefield",
+          city:"Bangalore",
+          area:"Whitefield",
+          type:"Commercial",
+          bhk:"",
+          price:6000000,
+          sqft:1500,
+          description:"Road-facing commercial space",
+          image:"",
+          status:"approved",
+          featured:false
+        },
+        {
+          id:"demo3",
+          title:"Residential Plot in Bangalore East",
+          city:"Bangalore",
+          area:"Whitefield",
+          type:"Plot",
+          bhk:"",
+          price:2500000,
+          sqft:1500,
+          description:"Clear documents • Investment-ready plot",
+          image:"",
+          status:"approved",
+          featured:false
+        }
+      ].map(normalizeProperty);
+    }
+
+    function getHomepageListings(){
+      const live = getApprovedProperties();
+      return live.length ? live : getFallbackProperties();
+    }
+
+    function safeBgImage(url){
+      const v = String(url || "").trim();
+      if(!v) return "";
+      return `background-image:url("${v.replace(/"/g, "%22")}");`;
+    }
+
+    function createListingCard(item){
+      const tile = document.createElement("article");
+      tile.className = "tile";
+
+      const img = document.createElement("div");
+      img.className = "tileImg";
+      if(item.image){
+        img.style.cssText += safeBgImage(item.image);
+      }
+
+      const body = document.createElement("div");
+      body.className = "tileBody";
+
+      const title = document.createElement("div");
+      title.className = "title";
+      title.textContent = item.title;
+
+      const meta = document.createElement("div");
+      meta.className = "mini";
+      meta.textContent = `${item.area || "Area"}, ${item.city || "City"} • ${item.type || "Property"}${item.bhk ? " • " + item.bhk : ""}${Number.isFinite(item.sqft) ? " • " + item.sqft + " sqft" : ""}`;
+
+      const price = document.createElement("div");
+      price.className = "price";
+      price.textContent = formatINR(item.price);
+
+      const desc = document.createElement("div");
+      desc.className = "mini";
+      desc.style.marginTop = "8px";
+      desc.textContent = item.description || "Approved listing";
+
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const viewBtn = document.createElement("a");
+      viewBtn.className = "btn small";
+      viewBtn.href = `property.html?id=${encodeURIComponent(item.id)}`;
+      viewBtn.textContent = "View";
+
+      const interestBtn = document.createElement("a");
+      interestBtn.className = "btn primary small";
+      interestBtn.href = `property.html?id=${encodeURIComponent(item.id)}`;
+      interestBtn.textContent = "I'm Interested";
+
+      actions.appendChild(viewBtn);
+      actions.appendChild(interestBtn);
+
+      body.appendChild(title);
+      body.appendChild(meta);
+      body.appendChild(price);
+      body.appendChild(desc);
+      body.appendChild(actions);
+
+      tile.appendChild(img);
+      tile.appendChild(body);
+
+      return tile;
+    }
+
+    function saveFilters(){
+      writeJSON(DRAFTS.filters, {
+        q: $("q").value || "",
+        type: $("typeFilter").value || "",
+        sort: $("sortFilter").value || "NEWEST"
+      });
+    }
+
+    function loadFilters(){
+      const f = readJSON(DRAFTS.filters, null);
+      if(!f) return;
+      $("q").value = f.q || "";
+      $("typeFilter").value = f.type || "";
+      $("sortFilter").value = f.sort || "NEWEST";
+    }
+
+    function getFilteredHomepageListings(){
+      const source = getHomepageListings();
+
+      const q = ($("q").value || "").trim().toLowerCase();
+      const type = ($("typeFilter").value || "").trim();
+      const sort = ($("sortFilter").value || "NEWEST").trim();
+
+      let results = source.slice();
+
+      if(q){
+        results = results.filter(item => {
+          const hay = [
+            item.title,
+            item.city,
+            item.area,
+            item.type,
+            item.bhk,
+            item.description
+          ].join(" ").toLowerCase();
+          return hay.includes(q);
+        });
+      }
+
+      if(type){
+        results = results.filter(item => item.type === type);
+      }
+
+      if(sort === "PRICE_LOW"){
+        results.sort((a,b) => (Number.isFinite(a.price) ? a.price : Infinity) - (Number.isFinite(b.price) ? b.price : Infinity));
+      }else if(sort === "PRICE_HIGH"){
+        results.sort((a,b) => (Number.isFinite(b.price) ? b.price : -Infinity) - (Number.isFinite(a.price) ? a.price : -Infinity));
+      }else if(sort === "FEATURED"){
+        results.sort((a,b) => Number(b.featured) - Number(a.featured));
+      }else{
+        results.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+      }
+
+      return results.slice(0, 6);
+    }
+
+    function refreshListings(){
+      const results = getFilteredHomepageListings();
+      $("approvedCount").textContent = String(getHomepageListings().length);
+
+      const grid = $("grid");
+      grid.innerHTML = "";
+
+      if(!results.length){
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.innerHTML = `
+          <div style="font-weight:900;font-size:18px;">No listings found</div>
+          <div class="mini" style="margin-top:8px;">Try clearing search filters or open the full listings page.</div>
+        `;
+        grid.appendChild(empty);
+        return;
+      }
+
+      results.forEach(item => grid.appendChild(createListingCard(item)));
+    }
+
+    function resetListingFilters(){
+      $("q").value = "";
+      $("typeFilter").value = "";
+      $("sortFilter").value = "NEWEST";
+      saveFilters();
+      refreshListings();
+    }
+
+    function buildLandingPayload(){
+      return {
+        id: "LEAD_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
+        propertyId: "",
+        propertyTitle: "",
+        listingId: "",
+        listingTitle: "",
+        buyerName: $("leadName").value.trim(),
+        buyerPhone: normalizePhone($("leadPhone").value),
+        buyerCity: "Bangalore",
+        message: [
+          `LeadType: ${$("leadType").value}`,
+          `Locality: ${$("leadLocality").value.trim()}`,
+          ($("budgetMin").value || $("budgetMax").value) ? `Budget: ${$("budgetMin").value || "—"} to ${$("budgetMax").value || "—"}` : "",
+          $("leadNotes").value.trim()
+        ].filter(Boolean).join("\n"),
+        source: "website",
+        status: "NEW",
+        assignedBrokerId: "",
+        assignedBrokerName: "",
+        assignedTo: "",
+        followUp: "",
+        followUpDate: "",
+        notes: "",
+        createdAt: new Date().toISOString(),
+        updatedAt: ""
+      };
+    }
+
+    function renderLandingLeadPreview(){
+      $("landingLeadPreview").textContent = JSON.stringify(buildLandingPayload(), null, 2);
+    }
+
+    function saveLandingDraft(){
+      writeJSON(DRAFTS.landing, {
+        leadName: $("leadName").value,
+        leadPhone: $("leadPhone").value,
+        leadType: $("leadType").value,
+        leadLocality: $("leadLocality").value,
+        budgetMin: $("budgetMin").value,
+        budgetMax: $("budgetMax").value,
+        leadNotes: $("leadNotes").value,
+        leadConsent: $("leadConsent").checked
+      });
+      toast("💾 Landing draft saved");
+    }
+
+    function loadLandingDraft(){
+      const d = readJSON(DRAFTS.landing, null);
+      if(!d) return;
+      $("leadName").value = d.leadName || "";
+      $("leadPhone").value = d.leadPhone || "";
+      $("leadType").value = d.leadType || "BUYER";
+      $("leadLocality").value = d.leadLocality || "";
+      $("budgetMin").value = d.budgetMin || "";
+      $("budgetMax").value = d.budgetMax || "";
+      $("leadNotes").value = d.leadNotes || "";
+      $("leadConsent").checked = !!d.leadConsent;
+    }
+
+    function clearLandingForm(){
+      $("landingLeadForm").reset();
+      $("landingLeadErr").hidden = true;
+      $("landingLeadErr").textContent = "";
+      renderLandingLeadPreview();
+    }
+
+    function saveLead(lead){
+      if(typeof window.getAllLeads === "function" && typeof window.saveAllLeads === "function"){
+        const leads = window.getAllLeads();
+        leads.unshift(lead);
+        window.saveAllLeads(leads);
+        return;
+      }
+      const leads = readJSON(LEADS_KEY, []);
+      leads.unshift(lead);
+      writeJSON(LEADS_KEY, leads);
+    }
+
+    function submitLandingLead(e){
+      e.preventDefault();
+
+      const name = $("leadName").value.trim();
+      const phone = $("leadPhone").value.trim();
+      const locality = $("leadLocality").value.trim();
+      const consent = $("leadConsent").checked;
+
+      if(!name){
+        $("landingLeadErr").hidden = false;
+        $("landingLeadErr").textContent = "Name is required.";
+        $("leadName").focus();
+        return;
+      }
+      if(!isValidPhone(phone)){
+        $("landingLeadErr").hidden = false;
+        $("landingLeadErr").textContent = "Enter valid 10-digit phone or 91XXXXXXXXXX.";
+        $("leadPhone").focus();
+        return;
+      }
+      if(!locality){
+        $("landingLeadErr").hidden = false;
+        $("landingLeadErr").textContent = "Locality is required.";
+        $("leadLocality").focus();
+        return;
+      }
+      if(!consent){
+        $("landingLeadErr").hidden = false;
+        $("landingLeadErr").textContent = "Please confirm consent to be contacted.";
+        $("leadConsent").focus();
+        return;
+      }
+
+      $("landingLeadErr").hidden = true;
+      $("landingLeadErr").textContent = "";
+
+      const lead = buildLandingPayload();
+      saveLead(lead);
+
+      toast("Lead submitted ✅");
+      $("landingLeadForm").reset();
+      renderLandingLeadPreview();
+    }
+
+    function buildBrokerPayload(){
+      return {
+        id: "LEAD_" + Date.now() + "_" + Math.floor(Math.random() * 100000),
+        propertyId: "",
+        propertyTitle: "",
+        listingId: "BROKER-KYC",
+        listingTitle: "Broker Verification Request",
+        buyerName: $("brokerName").value.trim(),
+        buyerPhone: normalizePhone($("brokerPhone").value),
+        buyerCity: "Bangalore",
+        message: [
+          "BROKER VERIFICATION REQUEST",
+          `Primary Area: ${$("brokerArea").value.trim()}`,
+          $("brokerExp").value ? `Experience: ${$("brokerExp").value} years` : "",
+          $("brokerCompany").value.trim() ? `Company: ${$("brokerCompany").value.trim()}` : ""
+        ].filter(Boolean).join("\n"),
+        source: "website",
+        status: "NEW",
+        assignedBrokerId: "",
+        assignedBrokerName: "",
+        assignedTo: "",
+        followUp: "",
+        followUpDate: "",
+        notes: "",
+        createdAt: new Date().toISOString(),
+        updatedAt: ""
+      };
+    }
+
+    function renderBrokerPreview(){
+      $("brokerPreview").textContent = JSON.stringify(buildBrokerPayload(), null, 2);
+    }
+
+    function saveBrokerDraft(){
+      writeJSON(DRAFTS.broker, {
+        brokerName: $("brokerName").value,
+        brokerPhone: $("brokerPhone").value,
+        brokerArea: $("brokerArea").value,
+        brokerExp: $("brokerExp").value,
+        brokerCompany: $("brokerCompany").value,
+        brokerConsent: $("brokerConsent").checked
+      });
+      toast("💾 Broker draft saved");
+    }
+
+    function loadBrokerDraft(){
+      const d = readJSON(DRAFTS.broker, null);
+      if(!d) return;
+      $("brokerName").value = d.brokerName || "";
+      $("brokerPhone").value = d.brokerPhone || "";
+      $("brokerArea").value = d.brokerArea || "";
+      $("brokerExp").value = d.brokerExp || "";
+      $("brokerCompany").value = d.brokerCompany || "";
+      $("brokerConsent").checked = !!d.brokerConsent;
+    }
+
+    function clearBrokerForm(){
+      $("brokerJoinForm").reset();
+      $("brokerErr").hidden = true;
+      $("brokerErr").textContent = "";
+      renderBrokerPreview();
+    }
+
+    function submitBrokerJoin(e){
+      e.preventDefault();
+
+      const name = $("brokerName").value.trim();
+      const phone = $("brokerPhone").value.trim();
+      const area = $("brokerArea").value.trim();
+      const consent = $("brokerConsent").checked;
+
+      if(!name){
+        $("brokerErr").hidden = false;
+        $("brokerErr").textContent = "Broker name is required.";
+        $("brokerName").focus();
+        return;
+      }
+      if(!isValidPhone(phone)){
+        $("brokerErr").hidden = false;
+        $("brokerErr").textContent = "Enter valid 10-digit phone or 91XXXXXXXXXX.";
+        $("brokerPhone").focus();
+        return;
+      }
+      if(!area){
+        $("brokerErr").hidden = false;
+        $("brokerErr").textContent = "Primary area is required.";
+        $("brokerArea").focus();
+        return;
+      }
+      if(!consent){
+        $("brokerErr").hidden = false;
+        $("brokerErr").textContent = "Please confirm consent to be contacted.";
+        $("brokerConsent").focus();
+        return;
+      }
+
+      $("brokerErr").hidden = true;
+      $("brokerErr").textContent = "";
+
+      const lead = buildBrokerPayload();
+      saveLead(lead);
+
+      toast("Broker request submitted ✅");
+      $("brokerJoinForm").reset();
+      renderBrokerPreview();
+    }
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if(!btn) return;
+      const act = btn.getAttribute("data-action");
+
+      if(act === "saveLandingDraft") saveLandingDraft();
+      if(act === "clearLandingForm") clearLandingForm();
+      if(act === "saveBrokerDraft") saveBrokerDraft();
+      if(act === "clearBrokerForm") clearBrokerForm();
+      if(act === "refreshListings"){ refreshListings(); toast("Listings refreshed"); }
+      if(act === "clearFilters") resetListingFilters();
+    });
+
+    $("landingLeadForm").addEventListener("submit", submitLandingLead);
+    $("brokerJoinForm").addEventListener("submit", submitBrokerJoin);
+
+    ["leadName","leadPhone","leadType","leadLocality","budgetMin","budgetMax","leadNotes","leadConsent"].forEach(id => {
+      $(id).addEventListener("input", renderLandingLeadPreview);
+      $(id).addEventListener("change", renderLandingLeadPreview);
+    });
+
+    ["brokerName","brokerPhone","brokerArea","brokerExp","brokerCompany","brokerConsent"].forEach(id => {
+      $(id).addEventListener("input", renderBrokerPreview);
+      $(id).addEventListener("change", renderBrokerPreview);
+    });
+
+    ["q","typeFilter","sortFilter"].forEach(id => {
+      $(id).addEventListener("input", () => { saveFilters(); refreshListings(); });
+      $(id).addEventListener("change", () => { saveFilters(); refreshListings(); });
+    });
+
+    $("yr").textContent = new Date().getFullYear();
+
+    if(typeof window.seedData === "function"){
+      window.seedData();
+    }
+
+    loadLandingDraft();
+    loadBrokerDraft();
+    loadFilters();
+
+    renderLandingLeadPreview();
+    renderBrokerPreview();
+    refreshListings();
+  })();
+  </script>
+</body>
+</html>
