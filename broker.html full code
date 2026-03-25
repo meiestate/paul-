@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Broker Portal — Login & KYC</title>
+  <meta name="description" content="Broker OTP login and KYC upload for verification." />
+  <style>
+    :root{
+      --bg:#0b0f17; --card:#0f1624; --text:#e7eefc; --muted:#a8b3c7;
+      --line:#1f2a3d; --accent:#6ee7ff; --accent2:#a78bfa;
+      --ok:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:radial-gradient(1200px 600px at 20% 10%, rgba(110,231,255,.18), transparent 50%),
+      radial-gradient(900px 500px at 70% 20%, rgba(167,139,250,.18), transparent 55%), var(--bg);
+      color:var(--text)}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1050px;margin:0 auto;padding:22px}
+    header{position:sticky;top:0;background:rgba(11,15,23,.65);backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(31,42,61,.6);z-index:10}
+    header .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .logo{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+    nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:14px;
+      border:1px solid rgba(31,42,61,.9);background:rgba(15,22,36,.7);cursor:pointer}
+    .btn.primary{background:linear-gradient(135deg, rgba(110,231,255,.25), rgba(167,139,250,.25));
+      border-color:rgba(110,231,255,.35)}
+    .btn.small{padding:8px 12px;border-radius:12px;font-size:14px}
+    .card{background:rgba(15,22,36,.55);border:1px solid rgba(31,42,61,.85);border-radius:22px;padding:16px;
+      box-shadow:0 18px 60px rgba(0,0,0,.25)}
+    .layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+    @media (max-width: 980px){.layout{grid-template-columns:1fr}}
+    h1{margin:0;font-size:26px}
+    .sub{margin:8px 0 0;color:var(--muted);line-height:1.6}
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+    input,select{
+      width:100%; padding:11px 12px; border-radius:14px;
+      border:1px solid rgba(31,42,61,.95); background:rgba(11,15,23,.55); color:var(--text);
+      outline:none;
+    }
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width: 520px){.row2{grid-template-columns:1fr}}
+    .divider{height:1px;background:rgba(31,42,61,.85);margin:14px 0}
+    .badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;padding:6px 9px;border-radius:999px;
+      border:1px solid rgba(31,42,61,.85);background:rgba(11,15,23,.45);color:var(--muted)}
+    .badge.ok{border-color:rgba(52,211,153,.35);color:rgba(52,211,153,.95)}
+    .badge.warn{border-color:rgba(251,191,36,.35);color:rgba(251,191,36,.95)}
+    .badge.bad{border-color:rgba(251,113,133,.35);color:rgba(251,113,133,.95)}
+    .klist{display:grid;gap:10px;margin-top:10px}
+    .kitem{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border-radius:18px;
+      border:1px solid rgba(31,42,61,.85);background:rgba(11,15,23,.45)}
+    .kleft{display:flex;flex-direction:column;gap:4px}
+    .kname{font-weight:900}
+    .kmeta{font-size:12px;color:var(--muted)}
+    .toast{position:fixed;right:18px;bottom:18px;max-width:360px;background:rgba(15,22,36,.92);
+      border:1px solid rgba(31,42,61,.9);padding:12px 14px;border-radius:16px;display:none}
+    .hide{display:none}
+    .mini{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap row">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div>Broker Portal</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:600">OTP Login • KYC Verification</div>
+        </div>
+      </div>
+      <nav>
+        <a class="btn small" href="index.html">Home</a>
+        <a class="btn small" href="listings.html">Listings</a>
+        <a class="btn primary small" href="index.html#lead">Post Lead</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-top:14px">
+      <div>
+        <h1>Broker Login & KYC</h1>
+        <p class="sub">MVP demo UI. Backend connect ஆனதும் OTP + document upload live ஆகும்.</p>
+      </div>
+      <div id="sessionBadge" class="badge warn">● Not logged in</div>
+    </div>
+
+    <div class="layout">
+      <!-- LOGIN CARD -->
+      <section class="card" id="loginCard">
+        <h3 style="margin:0 0 8px">🔐 OTP Login</h3>
+        <p class="sub" style="margin-top:0">Phone number enter பண்ணி OTP request பண்ணுங்க.</p>
+
+        <form id="loginForm" style="margin-top:12px">
+          <div class="row2">
+            <div>
+              <label>Phone</label>
+              <input name="phone" placeholder="10-digit mobile" pattern="[0-9]{10}" required />
+            </div>
+            <div>
+              <label>City</label>
+              <select name="city">
+                <option value="Bangalore">Bangalore</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="row2">
+            <div>
+              <label>OTP</label>
+              <input name="otp" placeholder="Enter OTP (demo: 123456)" pattern="[0-9]{4,6}" />
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
+              <button class="btn" id="sendOtpBtn" type="button">Send OTP</button>
+              <button class="btn primary" type="submit">Verify</button>
+            </div>
+          </div>
+
+          <div class="mini">
+            ✅ Later API:
+            <b>POST /auth/send-otp</b> and <b>POST /auth/verify-otp</b><br/>
+            Demo mode: OTP = <b>123456</b>
+          </div>
+        </form>
+      </section>
+
+      <!-- KYC CARD -->
+      <section class="card" id="kycCard">
+        <h3 style="margin:0 0 8px">🪪 KYC Upload</h3>
+        <p class="sub" style="margin-top:0">Login பிறகு documents upload செய்யலாம்.</p>
+
+        <div id="kycLocked" class="badge warn" style="margin-top:10px">🔒 Login required</div>
+
+        <form id="kycForm" class="hide" style="margin-top:12px">
+          <div class="row2">
+            <div>
+              <label>Full Name</label>
+              <input name="full_name" placeholder="Broker full name" required />
+            </div>
+            <div>
+              <label>Experience (years)</label>
+              <input name="experience_years" type="number" min="0" placeholder="e.g. 5" />
+            </div>
+          </div>
+
+          <div class="row2" style="margin-top:10px">
+            <div>
+              <label>Primary Area</label>
+              <input name="primary_area" placeholder="Whitefield / Bangalore East" required />
+            </div>
+            <div>
+              <label>Company (optional)</label>
+              <input name="company_name" placeholder="Office / Company name" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div style="font-weight:900">Documents</div>
+          <div class="klist">
+            <div class="kitem">
+              <div class="kleft">
+                <div class="kname">Aadhaar</div>
+                <div class="kmeta">PDF / Image</div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <input type="file" id="aadhaar" accept=".pdf,image/*" />
+                <span class="badge" id="aadhaarStatus">Pending</span>
+              </div>
+            </div>
+
+            <div class="kitem">
+              <div class="kleft">
+                <div class="kname">PAN</div>
+                <div class="kmeta">PDF / Image</div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <input type="file" id="pan" accept=".pdf,image/*" />
+                <span class="badge" id="panStatus">Pending</span>
+              </div>
+            </div>
+
+            <div class="kitem">
+              <div class="kleft">
+                <div class="kname">Broker License</div>
+                <div class="kmeta">Optional for MVP</div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <input type="file" id="license" accept=".pdf,image/*" />
+                <span class="badge" id="licStatus">Pending</span>
+              </div>
+            </div>
+
+            <div class="kitem">
+              <div class="kleft">
+                <div class="kname">Selfie</div>
+                <div class="kmeta">Image</div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <input type="file" id="selfie" accept="image/*" />
+                <span class="badge" id="selfieStatus">Pending</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+            <button class="btn primary" type="submit">Submit for Verification</button>
+            <button class="btn" id="logoutBtn" type="button">Logout</button>
+            <button class="btn" id="apiBtn" type="button">Connect API (later)</button>
+          </div>
+
+          <div class="mini">
+            ✅ Later API mapping:<br/>
+            1) <b>POST /brokers/onboard</b> (profile create)<br/>
+            2) <b>POST /brokers/{brokerId}/documents</b> (each upload)<br/>
+            Admin approves in: <b>/admin/kyc/queue</b>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:14px">
+      <h3 style="margin:0 0 6px">What happens after KYC?</h3>
+      <ol style="margin:8px 0 0;color:var(--muted);line-height:1.9">
+        <li>Admin reviews documents + broker details.</li>
+        <li>Status becomes <b>VERIFIED</b>.</li>
+        <li>Broker can add listings & receive leads.</li>
+        <li>Every serious lead opens a Deal Room.</li>
+      </ol>
+    </section>
+
+    <footer style="padding:22px 0;color:var(--muted);border-top:1px solid rgba(31,42,61,.6);margin-top:18px">
+      © <span id="yr"></span> Broker Network • Whitefield
+    </footer>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    const toast = (msg) => {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.display = 'block';
+      clearTimeout(window.__t);
+      window.__t = setTimeout(() => el.style.display = 'none', 2600);
+    };
+
+    // TODO later: API base
+    const API_BASE = "https://api.yourplatform.in";
+
+    // Session (demo)
+    const state = {
+      loggedIn: false,
+      phone: null,
+      brokerId: "demo-broker-001"
+    };
+
+    function setLoggedIn(on){
+      state.loggedIn = on;
+      const badge = document.getElementById("sessionBadge");
+      const lock = document.getElementById("kycLocked");
+      const form = document.getElementById("kycForm");
+
+      if(on){
+        badge.className = "badge ok";
+        badge.textContent = "● Logged in (demo)";
+        lock.classList.add("hide");
+        form.classList.remove("hide");
+      }else{
+        badge.className = "badge warn";
+        badge.textContent = "● Not logged in";
+        lock.classList.remove("hide");
+        form.classList.add("hide");
+      }
+    }
+
+    // Demo: Send OTP
+    document.getElementById("sendOtpBtn").addEventListener("click", async ()=>{
+      // Later: POST /auth/send-otp
+      toast("OTP sent ✅ (demo OTP: 123456)");
+    });
+
+    // Verify OTP
+    document.getElementById("loginForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const phone = fd.get("phone");
+      const otp = (fd.get("otp") || "").toString().trim();
+
+      if(otp !== "123456"){
+        toast("Invalid OTP ❌ (demo: 123456)");
+        return;
+      }
+
+      state.phone = phone;
+      setLoggedIn(true);
+      toast("Login success ✅");
+    });
+
+    // File upload UI status (demo)
+    const setDocStatus = (id, ok)=>{
+      const el = document.getElementById(id);
+      el.className = ok ? "badge ok" : "badge warn";
+      el.textContent = ok ? "Uploaded" : "Pending";
+    };
+
+    ["aadhaar","pan","license","selfie"].forEach((key)=>{
+      const input = document.getElementById(key);
+      const map = { aadhaar:"aadhaarStatus", pan:"panStatus", license:"licStatus", selfie:"selfieStatus" };
+      input.addEventListener("change", ()=>{
+        setDocStatus(map[key], input.files && input.files.length > 0);
+      });
+    });
+
+    // Submit KYC (demo)
+    document.getElementById("kycForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      // Later:
+      // 1) POST /brokers/onboard (profile)
+      // 2) POST /brokers/{brokerId}/documents (upload docs)
+      toast("Submitted ✅ Admin verification pending.");
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", ()=>{
+      setLoggedIn(false);
+      toast("Logged out.");
+    });
+
+    document.getElementById("apiBtn").addEventListener("click", ()=>{
+      toast("API connect next: OTP + KYC upload endpoints ✅");
+    });
+
+    setLoggedIn(false);
+  </script>
+</body>
+</html>
