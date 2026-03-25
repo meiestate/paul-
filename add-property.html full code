@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Add Property — Broker</title>
+  <meta name="description" content="Broker add property form mapped to POST /properties." />
+  <style>
+    :root{
+      --bg:#0b0f17; --card:#0f1624; --text:#e7eefc; --muted:#a8b3c7;
+      --line:#1f2a3d; --accent:#6ee7ff; --accent2:#a78bfa;
+      --ok:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:radial-gradient(1200px 600px at 20% 10%, rgba(110,231,255,.18), transparent 50%),
+      radial-gradient(900px 500px at 70% 20%, rgba(167,139,250,.18), transparent 55%), var(--bg);
+      color:var(--text)}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:980px;margin:0 auto;padding:22px}
+    header{position:sticky;top:0;background:rgba(11,15,23,.65);backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(31,42,61,.6);z-index:10}
+    header .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
+    .logo{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+    nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:14px;
+      border:1px solid rgba(31,42,61,.9);background:rgba(15,22,36,.7);cursor:pointer}
+    .btn.primary{background:linear-gradient(135deg, rgba(110,231,255,.25), rgba(167,139,250,.25));
+      border-color:rgba(110,231,255,.35)}
+    .btn.small{padding:8px 12px;border-radius:12px;font-size:14px}
+    .card{background:rgba(15,22,36,.55);border:1px solid rgba(31,42,61,.85);border-radius:22px;padding:16px;
+      box-shadow:0 18px 60px rgba(0,0,0,.25)}
+    h1{margin:0;font-size:26px}
+    .sub{margin:8px 0 0;color:var(--muted);line-height:1.6}
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+    input,select,textarea{
+      width:100%; padding:11px 12px; border-radius:14px;
+      border:1px solid rgba(31,42,61,.95); background:rgba(11,15,23,.55); color:var(--text);
+      outline:none;
+    }
+    textarea{min-height:90px;resize:vertical}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    @media (max-width: 720px){.grid{grid-template-columns:1fr}}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    @media (max-width: 900px){.row3{grid-template-columns:1fr}}
+    .mini{font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px}
+    .pill{display:inline-flex;align-items:center;gap:8px;font-size:12px;padding:6px 9px;border-radius:999px;
+      border:1px solid rgba(31,42,61,.85);background:rgba(11,15,23,.45);color:var(--muted)}
+    .pill.ok{border-color:rgba(52,211,153,.35);color:rgba(52,211,153,.95)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .toast{position:fixed;right:18px;bottom:18px;max-width:360px;background:rgba(15,22,36,.92);
+      border:1px solid rgba(31,42,61,.9);padding:12px 14px;border-radius:16px;display:none}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap row">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div>Add Property</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:600">Broker • POST /properties</div>
+        </div>
+      </div>
+      <nav>
+        <a class="btn small" href="dashboard.html">⬅ Dashboard</a>
+        <a class="btn small" href="listings.html">Public Listings</a>
+        <a class="btn small" href="broker.html">KYC</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-top:14px">
+      <div>
+        <h1>Create a Listing</h1>
+        <p class="sub">Verified brokers only. Submit செய்ததும் listing <b>PENDING_APPROVAL</b> ஆகும்.</p>
+      </div>
+      <div class="pill ok">✅ MVP Form Ready</div>
+    </div>
+
+    <section class="card" style="margin-top:14px">
+      <form id="propForm">
+        <div class="grid">
+          <div>
+            <label>City</label>
+            <select name="city" required>
+              <option value="Bangalore">Bangalore</option>
+            </select>
+          </div>
+          <div>
+            <label>Locality</label>
+            <input name="locality" placeholder="Whitefield / ITPL / Hoodi…" required />
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label>Property Type</label>
+            <select name="property_type" required>
+              <option value="APARTMENT">Apartment</option>
+              <option value="VILLA">Villa</option>
+              <option value="PLOT">Plot</option>
+              <option value="COMMERCIAL">Commercial</option>
+              <option value="RENTAL">Rental</option>
+            </select>
+          </div>
+          <div>
+            <label>Purpose</label>
+            <select name="purpose" required>
+              <option value="SELL">Sell</option>
+              <option value="RENT">Rent</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row3">
+          <div>
+            <label>Price (₹)</label>
+            <input name="price" type="number" min="0" placeholder="e.g. 8200000" required />
+          </div>
+          <div>
+            <label>Area (sqft)</label>
+            <input name="area_sqft" type="number" min="0" placeholder="e.g. 1180" required />
+          </div>
+          <div>
+            <label>BHK (optional)</label>
+            <input name="bhk" type="number" min="0" placeholder="e.g. 2" />
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label>Ownership Proof</label>
+            <select name="ownership_proof_status" required>
+              <option value="NOT_AVAILABLE">Not available</option>
+              <option value="AVAILABLE">Available</option>
+              <option value="VERIFIED">Verified</option>
+            </select>
+          </div>
+          <div>
+            <label>Address (optional)</label>
+            <input name="address_line" placeholder="Keep partial for privacy (MVP)" />
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <label>Internal Notes (optional)</label>
+          <textarea name="notes_internal" placeholder="Facing, age, floor, urgent sale, owner constraints…"></textarea>
+        </div>
+
+        <div style="margin-top:12px">
+          <label>Upload Images (optional for MVP)</label>
+          <input id="images" type="file" accept="image/*" multiple />
+          <div class="mini">
+            Later mapping:
+            <b>POST /properties</b> → returns propertyId  
+            then <b>POST /properties/{id}/media</b> for each image.
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" type="submit">Submit Listing</button>
+          <button class="btn" id="saveDraftBtn" type="button">Save Draft (demo)</button>
+          <button class="btn" id="apiBtn" type="button">Connect API (later)</button>
+        </div>
+
+        <div class="mini">
+          ✅ Backend contract (MVP):<br/>
+          <b>POST /properties</b> body example:
+          <code style="display:block;white-space:pre-wrap;margin-top:6px;color:var(--muted)">
+{
+  "city":"Bangalore",
+  "locality":"Whitefield",
+  "property_type":"APARTMENT",
+  "purpose":"SELL",
+  "price":8200000,
+  "area_sqft":1180,
+  "bhk":2,
+  "ownership_proof_status":"AVAILABLE",
+  "address_line":"(optional)",
+  "notes_internal":"(optional)"
+}
+          </code>
+        </div>
+      </form>
+    </section>
+
+    <footer style="padding:22px 0;color:var(--muted);border-top:1px solid rgba(31,42,61,.6);margin-top:18px">
+      © <span id="yr"></span> Broker Network • Whitefield
+    </footer>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    const toast = (msg) => {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.display = 'block';
+      clearTimeout(window.__t);
+      window.__t = setTimeout(() => el.style.display = 'none', 2600);
+    };
+
+    // TODO: set your real API base
+    const API_BASE = "https://api.yourplatform.in";
+
+    async function safePost(path, payload){
+      try{
+        const res = await fetch(API_BASE + path, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify(payload)
+        });
+        if(!res.ok) throw new Error("API error");
+        return await res.json();
+      }catch(e){
+        // Offline demo fallback
+        return { ok:true, offline:true, id:"demo-"+Math.floor(Math.random()*10000) };
+      }
+    }
+
+    document.getElementById("saveDraftBtn").addEventListener("click", ()=>{
+      toast("Draft saved ✅ (demo). Later: PATCH /properties/{id} with DRAFT status.");
+    });
+
+    document.getElementById("apiBtn").addEventListener("click", ()=>{
+      toast("API connect next: POST /properties then POST /properties/{id}/media ✅");
+    });
+
+    document.getElementById("propForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = Object.fromEntries(fd.entries());
+
+      // numeric conversions
+      payload.price = Number(payload.price || 0);
+      payload.area_sqft = Number(payload.area_sqft || 0);
+      payload.bhk = payload.bhk ? Number(payload.bhk) : null;
+
+      // Submit property
+      const created = await safePost("/properties", payload);
+
+      // Images upload demo
+      const files = document.getElementById("images").files;
+      if(files && files.length > 0){
+        // In real version:
+        // for each file → upload via /properties/{id}/media (multipart/form-data)
+        toast(`Listing submitted ✅ Images selected: ${files.length} (upload later)`);
+      }else{
+        toast("Listing submitted ✅ Pending admin approval.");
+      }
+
+      // Optional redirect
+      setTimeout(()=> window.location.href="dashboard.html", 1200);
+    });
+  </script>
+</body>
+</html>
