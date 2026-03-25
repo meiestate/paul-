@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MEI Buyer Portal</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#121b2f;
+      --line:rgba(255,255,255,.10);
+      --txt:#e8eefc;
+      --mut:rgba(232,238,252,.75);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,Arial;background:var(--bg);color:var(--txt)}
+    .wrap{max-width:1100px;margin:0 auto;padding:20px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .h1{font-size:26px;font-weight:900}
+    .muted{opacity:.75}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    a.link{color:var(--txt);opacity:.9;text-decoration:none;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03)}
+    a.link:hover{opacity:1}
+    input,select{
+      padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+      background:#0b1220;color:var(--txt);min-width:200px
+    }
+    button{
+      padding:9px 12px;border-radius:12px;border:1px solid var(--line);
+      background:rgba(255,255,255,.06);color:var(--txt);cursor:pointer;font-weight:800
+    }
+    button:hover{background:rgba(255,255,255,.10)}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+    @media (max-width:950px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:650px){.grid{grid-template-columns:1fr}}
+    .tile{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:14px}
+    .title{font-weight:950;font-size:16px}
+    .mini{font-size:12px;opacity:.75;margin-top:4px}
+    .price{margin-top:10px;font-weight:900}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;background:rgba(255,255,255,.08);border:1px solid var(--line);opacity:.95}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div>
+          <div class="h1">Buyer Portal</div>
+          <div class="muted">Approved listings only ✅ (spam-free model)</div>
+        </div>
+        <div class="row">
+          <a class="link" href="dashboard.html">🛡️ Admin Dashboard</a>
+          <a class="link" href="add-property.html">➕ Add Property</a>
+          <button onclick="refreshApproved()">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <input id="q" placeholder="Search (area/city/title)" oninput="refreshApproved()">
+        <select id="typeFilter" onchange="refreshApproved()">
+          <option value="">All Types</option>
+          <option value="plot">Plot</option>
+          <option value="house">House</option>
+          <option value="apartment">Apartment</option>
+          <option value="commercial">Commercial</option>
+        </select>
+        <span class="pill">Approved: <b id="count">0</b></span>
+      </div>
+    </div>
+
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <!-- Lead Modal -->
+  <div id="leadModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55);">
+    <div style="max-width:520px; margin:8vh auto; background:#121b2f; border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div>
+          <div style="font-weight:900; font-size:18px;">Buyer Request</div>
+          <div id="leadListingTitle" style="opacity:.8; font-size:13px;"></div>
+        </div>
+        <button onclick="closeLeadModal()" style="background:transparent; border:0; color:#e8eefc; font-size:20px; cursor:pointer;">✕</button>
+      </div>
+
+      <div style="display:grid; gap:10px; margin-top:12px;">
+        <input id="buyerName" placeholder="Your Name">
+        <input id="buyerPhone" placeholder="Phone Number">
+        <textarea id="buyerMsg" placeholder="Message (optional)" rows="3"
+          style="padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:#0b1220; color:#e8eefc;"></textarea>
+
+        <button onclick="submitLead()">Submit Request</button>
+
+        <div id="leadToast" style="display:none; padding:10px; border-radius:12px; background:rgba(0,255,150,.12); border:1px solid rgba(0,255,150,.25);">
+          ✅ Request sent. Broker/Admin will contact you.
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ====== Storage Keys ======
+  const PROPS_KEY = "mei_properties_v1";
+  const LEADS_KEY = "mei_leads_v1";
+
+  // ====== Helpers ======
+  const $ = (id)=>document.getElementById(id);
+
+  function escapeHtml(str){
+    return String(str ?? "").replace(/[&<>"']/g, s => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[s]));
+  }
+
+  function getProps(){
+    return JSON.parse(localStorage.getItem(PROPS_KEY) || "[]");
+  }
+
+  function openLeadModal(listingId, listingTitle){
+    window._leadListingId = listingId;
+    window._leadListingTitle = listingTitle;
+
+    $("leadListingTitle").textContent = listingTitle || "Listing";
+    $("buyerName").value = "";
+    $("buyerPhone").value = "";
+    $("buyerMsg").value = "";
+    $("leadToast").style.display = "none";
+    $("leadModal").style.display = "block";
+  }
+
+  function closeLeadModal(){
+    $("leadModal").style.display = "none";
+  }
+
+  function submitLead(){
+    const name = $("buyerName").value.trim();
+    const phone = $("buyerPhone").value.trim();
+    const msg = $("buyerMsg").value.trim();
+
+    if(!name || !phone){
+      alert("Name + Phone required");
+      return;
+    }
+
+    const lead = {
+      id: "L" + Date.now(),
+      listingId: window._leadListingId,
+      listingTitle: window._leadListingTitle,
+      buyerName: name,
+      buyerPhone: phone,
+      message: msg,
+      status: "NEW",
+      createdAt: new Date().toISOString()
+    };
+
+    const leads = JSON.parse(localStorage.getItem(LEADS_KEY) || "[]");
+    leads.unshift(lead);
+    localStorage.setItem(LEADS_KEY, JSON.stringify(leads));
+
+    $("leadToast").style.display = "block";
+    setTimeout(closeLeadModal, 900);
+  }
+
+  function renderCard(p){
+    const title = escapeHtml(p.title || p.name || "Listing");
+    const city = p.city ? escapeHtml(p.city) : "";
+    const area = p.area ? escapeHtml(p.area) : "";
+    const type = escapeHtml(p.type || "");
+    const price = p.price ? ("₹" + escapeHtml(p.price)) : "Price on request";
+
+    const meta = [type, city, area].filter(Boolean).join(" • ");
+
+    return `
+      <div class="tile">
+        <div class="title">${title}</div>
+        <div class="mini">${meta || "—"}</div>
+        <div class="price">${price}</div>
+
+        <div class="mini" style="margin-top:8px;">
+          ID: ${escapeHtml(p.id || "-")}
+        </div>
+
+        <div class="actions">
+          <button onclick="openLeadModal('${escapeHtml(p.id)}','${escapeHtml(title)}')">
+            Request / Contact
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function refreshApproved(){
+    const q = ($("q").value || "").trim().toLowerCase();
+    const tf = ($("typeFilter").value || "").trim().toLowerCase();
+
+    const approved = getProps()
+      .filter(p => (p.status || "").toLowerCase() === "approved")
+      .filter(p => {
+        if(!tf) return true;
+        return String(p.type || "").toLowerCase() === tf;
+      })
+      .filter(p => {
+        if(!q) return true;
+        const hay = [
+          p.title, p.name, p.city, p.area, p.type, p.price
+        ].join(" ").toLowerCase();
+        return hay.includes(q);
+      });
+
+    $("count").textContent = approved.length;
+
+    const grid = $("grid");
+    if(approved.length === 0){
+      grid.innerHTML = `
+        <div class="card" style="grid-column:1/-1;">
+          <div class="muted">No approved listings yet. Admin approval needed ✅</div>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = approved.map(renderCard).join("");
+  }
+
+  document.addEventListener("DOMContentLoaded", refreshApproved);
+</script>
+</body>
+</html>
