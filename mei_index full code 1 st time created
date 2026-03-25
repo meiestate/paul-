@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Real Estate Broker Network — Whitefield</title>
+  <meta name="description" content="Verified Broker Network + Deal Room. Whitefield launch. Post a lead or join as a broker." />
+  <style>
+    :root{
+      --bg:#0b0f17; --card:#0f1624; --text:#e7eefc; --muted:#a8b3c7;
+      --line:#1f2a3d; --accent:#6ee7ff; --accent2:#a78bfa;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; background:radial-gradient(1200px 600px at 20% 10%, rgba(110,231,255,.18), transparent 50%),
+    radial-gradient(900px 500px at 70% 20%, rgba(167,139,250,.18), transparent 55%), var(--bg); color:var(--text)}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;background:rgba(11,15,23,.6);backdrop-filter:blur(10px);border-bottom:1px solid rgba(31,42,61,.6);z-index:10}
+    header .wrap{display:flex;align-items:center;justify-content:space-between;width:100%}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.3px}
+    .logo{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 10px 35px rgba(110,231,255,.18)}
+    nav{display:flex;gap:14px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:14px;border:1px solid rgba(31,42,61,.9);background:rgba(15,22,36,.7);cursor:pointer}
+    .btn.primary{background:linear-gradient(135deg, rgba(110,231,255,.25), rgba(167,139,250,.25));border-color:rgba(110,231,255,.35)}
+    .btn.small{padding:8px 12px;border-radius:12px;font-size:14px}
+    .hero{padding:44px 0 18px}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:22px}
+    @media (max-width: 900px){.grid{grid-template-columns:1fr}}
+    .h1{font-size:44px;line-height:1.05;margin:0 0 10px}
+    .sub{color:var(--muted);font-size:16px;line-height:1.6;margin:0 0 18px}
+    .pill{display:inline-flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .chip{font-size:13px;color:var(--muted);border:1px solid rgba(31,42,61,.85);padding:8px 10px;border-radius:999px;background:rgba(15,22,36,.55)}
+    .card{background:rgba(15,22,36,.55);border:1px solid rgba(31,42,61,.85);border-radius:22px;padding:18px;box-shadow:0 18px 60px rgba(0,0,0,.25)}
+    .card h3{margin:0 0 10px;font-size:18px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width: 520px){.row{grid-template-columns:1fr}}
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+    input,select,textarea{
+      width:100%; padding:12px 12px; border-radius:14px;
+      border:1px solid rgba(31,42,61,.95); background:rgba(11,15,23,.55); color:var(--text);
+      outline:none;
+    }
+    textarea{min-height:92px;resize:vertical}
+    .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+    @media (max-width: 650px){.kpis{grid-template-columns:1fr}}
+    .kpi{padding:14px;border-radius:18px;border:1px solid rgba(31,42,61,.85);background:rgba(11,15,23,.45)}
+    .kpi .n{font-size:20px;font-weight:800}
+    .kpi .t{font-size:12px;color:var(--muted);margin-top:4px}
+    section{padding:18px 0}
+    .features{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media (max-width: 900px){.features{grid-template-columns:1fr}}
+    .feat{padding:16px;border-radius:20px;border:1px solid rgba(31,42,61,.85);background:rgba(15,22,36,.45)}
+    .feat b{display:block;margin-bottom:6px}
+    footer{padding:24px 0;color:var(--muted);border-top:1px solid rgba(31,42,61,.6);margin-top:22px}
+    .toast{position:fixed;right:18px;bottom:18px;max-width:360px;background:rgba(15,22,36,.92);
+      border:1px solid rgba(31,42,61,.9);padding:12px 14px;border-radius:16px;display:none}
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wrap">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div>Broker Network</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:600">Whitefield • Verified • Deal Room</div>
+        </div>
+      </div>
+      <nav>
+        <a class="btn small" href="#features">Features</a>
+        <a class="btn small" href="#how">How it works</a>
+        <a class="btn small" href="#lead">Post Lead</a>
+        <a class="btn primary small" href="#broker">Join as Broker</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="grid">
+        <div>
+          <h1 class="h1">Trust-first Real Estate.<br/>Deal Room ready.</h1>
+          <p class="sub">
+            Whitefield launch: Verified brokers only. Clean listings. Serious leads.
+            Every deal gets a step-by-step Deal Room — no chaos, no fake promises.
+          </p>
+          <div class="pill">
+            <span class="chip">✅ KYC Verified Brokers</span>
+            <span class="chip">🔁 Lead ↔ Match System</span>
+            <span class="chip">🤝 Deal Room Timeline</span>
+            <span class="chip">⚖️ Dispute Control</span>
+          </div>
+
+          <div class="kpis">
+            <div class="kpi">
+              <div class="n">MVP</div>
+              <div class="t">Launch-ready in weeks</div>
+            </div>
+            <div class="kpi">
+              <div class="n">Whitefield</div>
+              <div class="t">Local dominance first</div>
+            </div>
+            <div class="kpi">
+              <div class="n">Trust</div>
+              <div class="t">Verification + audit trail</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+            <a class="btn primary" href="#lead">Post a Lead</a>
+            <a class="btn" href="#broker">Become a Verified Broker</a>
+          </div>
+        </div>
+
+        <div class="card" id="lead">
+          <h3>📩 Post a Lead (Buyer / Seller)</h3>
+          <p class="sub" style="margin-top:-4px">We’ll connect you to a verified broker.</p>
+
+          <form id="leadForm">
+            <div class="row">
+              <div>
+                <label>Your Name</label>
+                <input name="name" placeholder="Name" required />
+              </div>
+              <div>
+                <label>Phone</label>
+                <input name="phone" placeholder="10-digit mobile" pattern="[0-9]{10}" required />
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:10px">
+              <div>
+                <label>Lead Type</label>
+                <select name="leadType" required>
+                  <option value="BUYER">Buyer</option>
+                  <option value="SELLER">Seller</option>
+                </select>
+              </div>
+              <div>
+                <label>Locality</label>
+                <input name="locality" placeholder="Whitefield / ITPL / Hoodi…" required />
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:10px">
+              <div>
+                <label>Budget Min (₹)</label>
+                <input name="budgetMin" type="number" min="0" placeholder="e.g. 5000000" />
+              </div>
+              <div>
+                <label>Budget Max (₹)</label>
+                <input name="budgetMax" type="number" min="0" placeholder="e.g. 9000000" />
+              </div>
+            </div>
+
+            <div style="margin-top:10px">
+              <label>Notes</label>
+              <textarea name="notes" placeholder="Property type, timeline, preferences…"></textarea>
+            </div>
+
+            <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
+              <button class="btn primary" type="submit">Submit Lead</button>
+              <span style="font-size:12px;color:var(--muted)">No spam. Verified brokers only.</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <h2 style="margin:0 0 12px">What makes this different</h2>
+      <div class="features">
+        <div class="feat">
+          <b>✅ Broker Verification</b>
+          <div style="color:var(--muted);line-height:1.6">KYC-based onboarding. Bad actors get suspended fast.</div>
+        </div>
+        <div class="feat">
+          <b>🔁 Lead ↔ Property Matching</b>
+          <div style="color:var(--muted);line-height:1.6">Simple matching now, smarter scoring later. Clean pipeline.</div>
+        </div>
+        <div class="feat">
+          <b>🤝 Deal Room Timeline</b>
+          <div style="color:var(--muted);line-height:1.6">Visit → Token → Agreement → Registration. Track every step.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how">
+      <div class="card">
+        <h3>How it works (MVP)</h3>
+        <ol style="color:var(--muted);line-height:1.8;margin:10px 0 0">
+          <li>Buyer/Seller posts a lead.</li>
+          <li>Admin assigns a verified broker.</li>
+          <li>Broker shares matching options + schedules visit.</li>
+          <li>Deal Room opens for serious clients.</li>
+          <li>Disputes handled via platform audit trail.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="broker">
+      <div class="card">
+        <h3>🪪 Join as a Verified Broker</h3>
+        <p class="sub" style="margin-top:-4px">Submit details — we’ll call you for KYC verification.</p>
+
+        <form id="brokerForm">
+          <div class="row">
+            <div>
+              <label>Broker Name</label>
+              <input name="brokerName" placeholder="Full name" required />
+            </div>
+            <div>
+              <label>Phone</label>
+              <input name="phone" placeholder="10-digit mobile" pattern="[0-9]{10}" required />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label>Primary Area</label>
+              <input name="area" placeholder="Whitefield / Bangalore East…" required />
+            </div>
+            <div>
+              <label>Experience (years)</label>
+              <input name="exp" type="number" min="0" placeholder="e.g. 5" />
+            </div>
+          </div>
+
+          <div style="margin-top:10px">
+            <label>Office / Company (optional)</label>
+            <input name="company" placeholder="Company / office name" />
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
+            <button class="btn primary" type="submit">Request Verification</button>
+            <span style="font-size:12px;color:var(--muted)">KYC + approval required before posting listings.</span>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <footer>
+      <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap">
+        <div>© <span id="yr"></span> Broker Network • Whitefield</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a href="#lead">Post Lead</a>
+          <a href="#broker">Join Broker</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    const toast = (msg) => {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.display = 'block';
+      clearTimeout(window.__t);
+      window.__t = setTimeout(() => el.style.display = 'none', 2600);
+    };
+
+    // TODO: replace with your API base
+    const API_BASE = "https://api.yourplatform.in";
+
+    // For MVP demo: if API not ready, we just show success.
+    async function safePost(path, payload){
+      try{
+        const res = await fetch(API_BASE + path, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify(payload)
+        });
+        if(!res.ok) throw new Error("API error");
+        return await res.json();
+      }catch(e){
+        return { ok:true, offline:true };
+      }
+    }
+
+    document.getElementById('leadForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = Object.fromEntries(fd.entries());
+      payload.city = "Bangalore";
+      payload.source = "WEB";
+      await safePost("/leads", payload);
+      e.target.reset();
+      toast("Lead submitted ✅ We’ll connect you soon.");
+    });
+
+    document.getElementById('brokerForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = Object.fromEntries(fd.entries());
+      payload.city = "Bangalore";
+      payload.source = "WEB";
+      // You can map this to /brokers/onboard later
+      await safePost("/brokers/onboard", payload);
+      e.target.reset();
+      toast("Request received ✅ Verification team will call you.");
+    });
+  </script>
+</body>
+</html>
