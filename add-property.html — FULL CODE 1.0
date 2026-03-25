@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Add Property</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#121b2f;
+      --line:rgba(255,255,255,.10);
+      --txt:#e8eefc;
+      --mut:rgba(232,238,252,.75);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,Arial;background:var(--bg);color:var(--txt)}
+    .wrap{max-width:980px;margin:0 auto;padding:20px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .h1{font-size:26px;font-weight:900}
+    .muted{opacity:.75}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    a.link{color:var(--txt);opacity:.9;text-decoration:none;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03)}
+    a.link:hover{opacity:1}
+
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+
+    label{font-size:12px;opacity:.85;display:block;margin:0 0 6px 2px}
+    input,select,textarea{
+      width:100%;
+      padding:10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:#0b1220;
+      color:var(--txt);
+      outline:none;
+    }
+    textarea{resize:vertical}
+
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    button{
+      padding:10px 14px;border-radius:12px;border:1px solid var(--line);
+      background:rgba(255,255,255,.06);color:var(--txt);cursor:pointer;font-weight:800
+    }
+    button:hover{background:rgba(255,255,255,.10)}
+    .ok{border-color:rgba(0,255,150,.25);background:rgba(0,255,150,.10)}
+    .ok:hover{background:rgba(0,255,150,.16)}
+    .danger{border-color:rgba(255,0,90,.25);background:rgba(255,0,90,.10)}
+    .danger:hover{background:rgba(255,0,90,.16)}
+
+    .note{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,200,0,.20);
+      background:rgba(255,200,0,.08);
+      opacity:.95;
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .toast{
+      display:none;margin-top:10px;padding:10px 12px;border-radius:12px;
+      border:1px solid rgba(0,255,150,.22);background:rgba(0,255,150,.10)
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div>
+          <div class="h1">Add Property</div>
+          <div class="muted">Submit → goes to Admin approval (Pending)</div>
+        </div>
+        <div class="row">
+          <a class="link" href="dashboard.html">🛡️ Admin Dashboard</a>
+          <a class="link" href="buyer.html">👤 Buyer Portal</a>
+        </div>
+      </div>
+
+      <div class="note">
+        ✅ இந்த model-ல Buyer portal-க்கு listing போகாது. <b>Admin approve</b> பண்ணினா மட்டுமே buyer.html-ல தெரியும்.
+      </div>
+
+      <form id="propForm" class="grid" autocomplete="off">
+        <div>
+          <label>Listing Title</label>
+          <input id="title" placeholder="Eg: 2BHK Apartment - Whitefield" required />
+        </div>
+
+        <div>
+          <label>Type</label>
+          <select id="type" required>
+            <option value="">Select</option>
+            <option value="apartment">Apartment</option>
+            <option value="house">House</option>
+            <option value="plot">Plot</option>
+            <option value="commercial">Commercial</option>
+          </select>
+        </div>
+
+        <div>
+          <label>City</label>
+          <input id="city" placeholder="Eg: Bangalore" required />
+        </div>
+
+        <div>
+          <label>Area / Locality</label>
+          <input id="area" placeholder="Eg: Whitefield" required />
+        </div>
+
+        <div>
+          <label>Price (₹)</label>
+          <input id="price" placeholder="Eg: 6500000" inputmode="numeric" />
+        </div>
+
+        <div>
+          <label>Contact Name (Broker/Seller)</label>
+          <input id="contactName" placeholder="Eg: Raj" />
+        </div>
+
+        <div>
+          <label>Phone</label>
+          <input id="phone" placeholder="Eg: 9876543210" />
+        </div>
+
+        <div>
+          <label>Bedrooms (optional)</label>
+          <input id="beds" placeholder="Eg: 2" inputmode="numeric" />
+        </div>
+
+        <div style="grid-column:1/-1;">
+          <label>Description</label>
+          <textarea id="desc" rows="4" placeholder="Short details, facing, sqft, amenities..."></textarea>
+        </div>
+
+        <div style="grid-column:1/-1;" class="actions">
+          <button class="ok" type="submit">✅ Submit for Approval</button>
+          <button type="button" onclick="fillSample()">✨ Fill Sample</button>
+          <button class="danger" type="button" onclick="clearForm()">🧽 Clear</button>
+        </div>
+
+        <div id="toast" class="toast">✅ Submitted. Now admin must approve.</div>
+      </form>
+    </div>
+  </div>
+
+<script>
+  // ====== MUST MATCH dashboard.html & buyer.html ======
+  const PROPS_KEY = "mei_properties_v1";
+
+  const $ = (id)=>document.getElementById(id);
+
+  function getProps(){
+    return JSON.parse(localStorage.getItem(PROPS_KEY) || "[]");
+  }
+
+  function saveProps(props){
+    localStorage.setItem(PROPS_KEY, JSON.stringify(props));
+  }
+
+  function toast(msg){
+    const el = $("toast");
+    el.textContent = msg || "✅ Submitted. Now admin must approve.";
+    el.style.display = "block";
+    setTimeout(()=> el.style.display="none", 1200);
+  }
+
+  function normalizeNumber(val){
+    const s = String(val || "").replace(/[^\d]/g, "");
+    return s ? s : "";
+  }
+
+  function clearForm(){
+    $("propForm").reset();
+    $("toast").style.display = "none";
+  }
+
+  function fillSample(){
+    $("title").value = "2BHK Apartment - Whitefield";
+    $("type").value = "apartment";
+    $("city").value = "Bangalore";
+    $("area").value = "Whitefield";
+    $("price").value = "6500000";
+    $("contactName").value = "MEI Broker";
+    $("phone").value = "9876543210";
+    $("beds").value = "2";
+    $("desc").value = "East facing • 1100 sqft • Near metro • Covered parking";
+  }
+
+  $("propForm").addEventListener("submit", (e)=>{
+    e.preventDefault();
+
+    const prop = {
+      id: "P" + Date.now(),
+      title: $("title").value.trim(),
+      type: $("type").value.trim(),
+      city: $("city").value.trim(),
+      area: $("area").value.trim(),
+      price: normalizeNumber($("price").value),
+      contactName: $("contactName").value.trim(),
+      phone: $("phone").value.trim(),
+      beds: normalizeNumber($("beds").value),
+      desc: $("desc").value.trim(),
+
+      // IMPORTANT: approval gate
+      status: "pending",
+      createdAt: new Date().toISOString()
+    };
+
+    // basic guard
+    if(!prop.title || !prop.type || !prop.city || !prop.area){
+      alert("Title, Type, City, Area required");
+      return;
+    }
+
+    const props = getProps();
+    props.unshift(prop);
+    saveProps(props);
+
+    toast("✅ Submitted. Listing is PENDING until Admin approves.");
+    // optional: redirect to dashboard
+    // location.href = "dashboard.html";
+    clearForm();
+  });
+</script>
+</body>
+</html>
