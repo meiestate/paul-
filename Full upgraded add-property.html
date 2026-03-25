@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>MEI Estate — Add Property</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#121b2f;
+      --line:rgba(255,255,255,.14);
+      --txt:#e8eefc;
+      --mut:rgba(232,238,252,.78);
+      --radius:16px;
+      --focus: rgba(140,170,255,.95);
+      --okBorder: rgba(0,255,150,.30);
+      --okBg: rgba(0,255,150,.12);
+      --warnBorder: rgba(255,200,0,.30);
+      --warnBg: rgba(255,200,0,.10);
+      --badBorder: rgba(255,0,90,.34);
+      --badBg: rgba(255,0,90,.12);
+    }
+
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,Arial;background:var(--bg);color:var(--txt)}
+    .wrap{max-width:1080px;margin:0 auto;padding:20px}
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px
+    }
+
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .h1{font-size:26px;font-weight:1000}
+    .muted{color:var(--mut);opacity:.95}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+    a.link{
+      color:var(--txt);
+      text-decoration:none;
+      padding:8px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:rgba(255,255,255,.04);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      min-height:36px;
+    }
+    a.link:hover{background:rgba(255,255,255,.07)}
+    a.link:active{transform:translateY(1px)}
+
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+
+    label{font-size:12px;color:var(--mut);display:block;margin:0 0 6px 2px;font-weight:800}
+    input,select,textarea{
+      width:100%;
+      padding:10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.18);
+      background:#0b1220;
+      color:var(--txt);
+      outline:none;
+      min-height:40px;
+    }
+    input::placeholder, textarea::placeholder{color:rgba(232,238,252,.65)}
+    textarea{resize:vertical; min-height:120px}
+
+    :focus-visible{
+      outline:3px solid var(--focus);
+      outline-offset:2px;
+    }
+
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    button{
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.07);
+      color:var(--txt);
+      cursor:pointer;
+      font-weight:900;
+      min-height:40px;
+    }
+    button:hover{background:rgba(255,255,255,.10)}
+    button:active{transform:translateY(1px)}
+    button[disabled]{opacity:.55; cursor:not-allowed; transform:none}
+
+    .ok{border-color:var(--okBorder);background:var(--okBg)}
+    .ok:hover{background:rgba(0,255,150,.18)}
+
+    .danger{border-color:var(--badBorder);background:var(--badBg)}
+    .danger:hover{background:rgba(255,0,90,.18)}
+
+    .note{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--warnBorder);
+      background:var(--warnBg);
+      font-size:13px;
+      line-height:1.45;
+      color:rgba(232,238,252,.90);
+    }
+
+    .hint{
+      margin-top:8px;
+      color:rgba(232,238,252,.70);
+      font-size:12px;
+      line-height:1.45;
+    }
+
+    .err{
+      margin-top:6px;
+      color:rgba(255,120,170,.98);
+      font-size:12px;
+      font-weight:900;
+    }
+    .err[hidden]{display:none}
+
+    .summary{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,0,90,.22);
+      background:rgba(255,0,90,.08);
+      color:rgba(232,238,252,.92);
+    }
+    .summary[hidden]{display:none}
+
+    .toast{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--okBorder);
+      background:var(--okBg);
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .toast[hidden]{display:none}
+    .toast .msg{font-size:13px; line-height:1.4}
+    .toast .act{
+      margin-left:auto;
+      padding:8px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      font-weight:1000;
+      cursor:pointer;
+      min-height:36px;
+    }
+    .toast .act:hover{background:rgba(255,255,255,.10)}
+    .toast .act[hidden]{display:none}
+
+    .preview{
+      margin-top:12px;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.03);
+    }
+    .preview pre{
+      margin:0;
+      white-space:pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px;
+      color:rgba(232,238,252,.86);
+      line-height:1.5;
+    }
+
+    .topTools{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .srOnly{
+      position:absolute;
+      width:1px;height:1px;
+      padding:0;margin:-1px;
+      overflow:hidden;
+      clip:rect(0,0,0,0);
+      white-space:nowrap;border:0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div>
+          <div class="h1">Add Property</div>
+          <div class="muted">Submit → Pending approval → Admin approves → Public listing appears</div>
+        </div>
+
+        <div class="topTools">
+          <a class="link" href="index.html">🏠 Home</a>
+          <a class="link" href="dashboard.html">🛡️ Admin Dashboard</a>
+          <a class="link" href="listings.html">📋 Listings</a>
+          <button type="button" class="danger" data-action="clearDraftOnly" title="Clears only this page draft.">
+            🧽 Clear Draft
+          </button>
+        </div>
+      </div>
+
+      <div class="note">
+        ✅ Buyer/public pages should show only <b>approved</b> properties.
+        This form always saves new properties as <b>pending</b>.
+        <div class="hint">
+          Demo note: Data is stored in this browser using localStorage. In production, move this to a backend with authentication and audit logs.
+        </div>
+      </div>
+
+      <div id="errorSummary" class="summary" role="alert" hidden></div>
+
+      <form id="propForm" class="grid" autocomplete="off" novalidate>
+        <div>
+          <label for="title">Listing Title *</label>
+          <input id="title" name="title" placeholder="Eg: 2BHK Apartment - Whitefield" required maxlength="120" />
+          <div id="titleErr" class="err" hidden></div>
+        </div>
+
+        <div>
+          <label for="type">Type *</label>
+          <select id="type" name="type" required>
+            <option value="">Select</option>
+            <option value="Apartment">Apartment</option>
+            <option value="House">House</option>
+            <option value="Plot">Plot</option>
+            <option value="Commercial">Commercial</option>
+          </select>
+          <div id="typeErr" class="err" hidden></div>
+        </div>
+
+        <div>
+          <label for="city">City *</label>
+          <input id="city" name="city" placeholder="Eg: Bangalore" required maxlength="60" />
+          <div id="cityErr" class="err" hidden></div>
+        </div>
+
+        <div>
+          <label for="area">Area / Locality *</label>
+          <input id="area" name="area" placeholder="Eg: Whitefield" required maxlength="60" />
+          <div id="areaErr" class="err" hidden></div>
+        </div>
+
+        <div>
+          <label for="price">Price (₹)</label>
+          <input id="price" name="price" placeholder="Eg: 6500000" inputmode="numeric" autocomplete="off" />
+          <div class="hint">Numbers only. Commas/spaces will be cleaned.</div>
+          <div id="priceErr" class="err" hidden></div>
+        </div>
+
+        <div>
+          <label for="sqft">Sqft (optional)</label>
+          <input id="sqft" name="sqft" placeholder="Eg: 1100" inputmode="numeric" autocomplete="off" />
+          <div id="sqftErr" class="err" hidden></div>
+        </div>
+
+        <div>
+          <label for="bhk">BHK / Bedrooms (optional)</label>
+          <input id="bhk" name="bhk" placeholder="Eg: 2 BHK" maxlength="20" />
+          <div id="bhkErr" class="err" hidden></div>
+        </div>
+
+        <div>
+          <label for="brokerName">Broker Name (optional)</label>
+          <select id="brokerName" name="brokerName">
+            <option value="">Select / Unassigned</option>
+          </select>
+          <div class="hint">Broker list comes from Broker Master in dashboard.</div>
+          <div id="brokerNameErr" class="err" hidden></div>
+        </div>
+
+        <div>
+          <label for="sellerName">Seller / Contact Name</label>
+          <input id="sellerName" name="sellerName" placeholder="Eg: Raj" maxlength="60" />
+          <div id="sellerNameErr" class="err" hidden></div>
+        </div>
+
+        <div>
+          <label for="sellerPhone">Phone</label>
+          <input id="sellerPhone" name="sellerPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="Eg: 9876543210" maxlength="16" />
+          <div class="hint">If India: enter 10 digits. +91 also allowed.</div>
+          <div id="sellerPhoneErr" class="err" hidden></div>
+        </div>
+
+        <div>
+          <label for="image">Primary Image URL (optional)</label>
+          <input id="image" name="image" placeholder="Eg: https://example.com/property.jpg" maxlength="500" />
+          <div class="hint">You can leave this empty for demo mode.</div>
+          <div id="imageErr" class="err" hidden></div>
+        </div>
+
+        <div style="grid-column:1/-1;">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="4" maxlength="1000" placeholder="Short details, facing, sqft, amenities..."></textarea>
+          <div class="hint">Tip: mention 3–5 key highlights only.</div>
+        </div>
+
+        <div style="grid-column:1/-1;" class="actions">
+          <button id="submitBtn" class="ok" type="submit" data-action="submit">✅ Submit for Approval</button>
+          <button type="button" data-action="fillSample">✨ Fill Sample</button>
+          <button class="danger" type="button" data-action="clearForm">🧽 Clear Form</button>
+          <button type="button" data-action="saveDraft">💾 Save Draft</button>
+        </div>
+      </form>
+
+      <div class="preview" aria-label="Saved preview">
+        <div style="font-weight:1000;margin-bottom:6px;">Preview (safe text)</div>
+        <pre id="previewText">—</pre>
+        <div class="hint">
+          Safety check: if you type HTML/JS in fields, it renders as plain text here.
+        </div>
+      </div>
+
+      <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <div class="msg" id="toastMsg">✅ Submitted.</div>
+        <button class="act" id="toastAction" type="button" hidden>Undo</button>
+      </div>
+
+      <div class="hint" style="margin-top:10px">
+        Property schema aligns with `dashboard.html` and `app.js`: title, city, area, price, type, bhk, sqft, sellerName, sellerPhone, brokerName, image, description, status.
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+  (() => {
+    const PROPS_KEY = (window.MEI_KEYS && window.MEI_KEYS.properties) || "mei_properties_v1";
+    const BROKERS_KEY = (window.MEI_KEYS && window.MEI_KEYS.brokers) || "mei_brokers_v1";
+    const DRAFT_KEY = "mei_add_property_draft_v2";
+
+    const $ = (id) => document.getElementById(id);
+
+    let TOAST_TIMER = null;
+    let TOAST_ACTION_FN = null;
+    let isSubmitting = false;
+
+    function toast(msg, opts = {}){
+      const { actionText = "", actionFn = null, timeout = 4500 } = opts;
+
+      $("toastMsg").textContent = msg || "✅ Done";
+      TOAST_ACTION_FN = (typeof actionFn === "function") ? actionFn : null;
+
+      if(actionText && TOAST_ACTION_FN){
+        $("toastAction").textContent = actionText;
+        $("toastAction").hidden = false;
+      }else{
+        $("toastAction").hidden = true;
+      }
+
+      $("toast").hidden = false;
+
+      if(TOAST_TIMER) clearTimeout(TOAST_TIMER);
+      TOAST_TIMER = setTimeout(() => {
+        $("toast").hidden = true;
+        $("toastAction").hidden = true;
+        TOAST_ACTION_FN = null;
+      }, timeout);
+    }
+
+    $("toastAction").addEventListener("click", () => {
+      if(typeof TOAST_ACTION_FN === "function"){
+        const fn = TOAST_ACTION_FN;
+        $("toast").hidden = true;
+        $("toastAction").hidden = true;
+        TOAST_ACTION_FN = null;
+        try{ fn(); }catch(e){}
+      }
+    });
+
+    function getDataSafe(key, fallback){
+      try{
+        const raw = localStorage.getItem(key);
+        if(!raw) return fallback;
+        const parsed = JSON.parse(raw);
+        return parsed ?? fallback;
+      }catch(e){
+        return fallback;
+      }
+    }
+
+    function setDataSafe(key, value){
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function readProps(){
+      if(typeof window.getAllProperties === "function"){
+        return window.getAllProperties();
+      }
+      return getDataSafe(PROPS_KEY, []);
+    }
+
+    function writeProps(props){
+      if(typeof window.saveAllProperties === "function"){
+        window.saveAllProperties(props);
+        return;
+      }
+      setDataSafe(PROPS_KEY, props || []);
+    }
+
+    function uid(prefix = "PROP"){
+      try{
+        if(window.makeId) return window.makeId(prefix);
+        if(window.crypto && crypto.randomUUID) return prefix + "_" + crypto.randomUUID();
+      }catch(e){}
+      return prefix + "_" + Date.now().toString(16) + "_" + Math.random().toString(16).slice(2);
+    }
+
+    function normalizeDigits(val){
+      const s = String(val || "").replace(/[^\d]/g, "");
+      return s || "";
+    }
+
+    function cleanMoney(val){
+      return normalizeDigits(val);
+    }
+
+    function cleanPhone(val){
+      const raw = String(val || "").trim();
+      if(!raw) return "";
+      const digitsOnly = raw.replace(/[^\d]/g, "");
+      if(digitsOnly.length === 10) return digitsOnly;
+      if(digitsOnly.length === 12 && digitsOnly.startsWith("91")) return digitsOnly;
+      return digitsOnly;
+    }
+
+    function isValidPhone(raw){
+      if(!raw) return true;
+      const digits = String(raw).replace(/[^\d]/g, "");
+      return digits.length === 10 || (digits.length === 12 && digits.startsWith("91"));
+    }
+
+    function normalizeBrokerName(item){
+      if(!item) return "";
+      if(typeof item === "string") return item.trim();
+      if(typeof item === "object") return String(item.name || "").trim();
+      return "";
+    }
+
+    function getBrokers(){
+      if(typeof window.getAllBrokers === "function"){
+        const items = window.getAllBrokers();
+        return items.map(normalizeBrokerName).filter(Boolean);
+      }
+      const raw = getDataSafe(BROKERS_KEY, []);
+      return raw.map(normalizeBrokerName).filter(Boolean);
+    }
+
+    function fillBrokerDropdown(){
+      const brokers = Array.from(new Set(getBrokers()));
+      const select = $("brokerName");
+      const current = select.value || "";
+      select.innerHTML = "";
+      select.appendChild(new Option("Select / Unassigned", ""));
+      brokers.forEach(name => {
+        select.appendChild(new Option(name, name));
+      });
+      if(Array.from(select.options).some(o => o.value === current)) select.value = current;
+    }
+
+    function setFieldError(id, msg){
+      const err = $(id + "Err");
+      const input = $(id);
+      if(!err || !input) return;
+
+      if(!msg){
+        err.hidden = true;
+        err.textContent = "";
+        input.removeAttribute("aria-invalid");
+        return;
+      }
+
+      err.hidden = false;
+      err.textContent = msg;
+      input.setAttribute("aria-invalid", "true");
+    }
+
+    function validateAll(showSummary = true){
+      let ok = true;
+      const problems = [];
+
+      const title = $("title").value.trim();
+      const type = $("type").value.trim();
+      const city = $("city").value.trim();
+      const area = $("area").value.trim();
+      const priceRaw = $("price").value.trim();
+      const sqftRaw = $("sqft").value.trim();
+      const phoneRaw = $("sellerPhone").value.trim();
+      const imageRaw = $("image").value.trim();
+
+      if(!title){
+        ok = false;
+        setFieldError("title","Title is required.");
+        problems.push("Title is required.");
+      }else setFieldError("title","");
+
+      if(!type){
+        ok = false;
+        setFieldError("type","Type is required.");
+        problems.push("Type is required.");
+      }else setFieldError("type","");
+
+      if(!city){
+        ok = false;
+        setFieldError("city","City is required.");
+        problems.push("City is required.");
+      }else setFieldError("city","");
+
+      if(!area){
+        ok = false;
+        setFieldError("area","Area/Locality is required.");
+        problems.push("Area is required.");
+      }else setFieldError("area","");
+
+      if(priceRaw){
+        const p = cleanMoney(priceRaw);
+        if(!p){
+          ok = false;
+          setFieldError("price","Enter a valid numeric price.");
+          problems.push("Price must be numeric.");
+        }else{
+          setFieldError("price","");
+        }
+      }else setFieldError("price","");
+
+      if(sqftRaw){
+        const s = normalizeDigits(sqftRaw);
+        if(!s){
+          ok = false;
+          setFieldError("sqft","Sqft must be numeric.");
+          problems.push("Sqft must be numeric.");
+        }else setFieldError("sqft","");
+      }else setFieldError("sqft","");
+
+      if(phoneRaw && !isValidPhone(phoneRaw)){
+        ok = false;
+        setFieldError("sellerPhone","Enter 10 digits or 91XXXXXXXXXX.");
+        problems.push("Phone format is invalid.");
+      }else setFieldError("sellerPhone","");
+
+      if(imageRaw){
+        const looksLikeUrl = /^(https?:\/\/|\.\/|\/|[A-Za-z0-9_\-]+\.(jpg|jpeg|png|webp|gif))/i.test(imageRaw);
+        if(!looksLikeUrl){
+          ok = false;
+          setFieldError("image","Use an image URL/path or leave empty.");
+          problems.push("Image field looks invalid.");
+        }else setFieldError("image","");
+      }else setFieldError("image","");
+
+      const sum = $("errorSummary");
+      if(showSummary && !ok){
+        sum.hidden = false;
+        sum.textContent = "Please fix: " + problems.join(" ");
+      }else{
+        sum.hidden = true;
+        sum.textContent = "";
+      }
+
+      return ok;
+    }
+
+    function getFormObject(){
+      const price = cleanMoney($("price").value);
+      const sqft = normalizeDigits($("sqft").value);
+      const brokerName = $("brokerName").value.trim();
+
+      return {
+        title: $("title").value.trim(),
+        type: $("type").value.trim(),
+        city: $("city").value.trim(),
+        area: $("area").value.trim(),
+        price: price ? Number(price) : 0,
+        sqft: sqft ? Number(sqft) : 0,
+        bhk: $("bhk").value.trim(),
+        brokerName,
+        sellerName: $("sellerName").value.trim(),
+        sellerPhone: cleanPhone($("sellerPhone").value),
+        image: $("image").value.trim(),
+        description: $("description").value.trim()
+      };
+    }
+
+    function renderPreview(){
+      $("previewText").textContent = JSON.stringify(getFormObject(), null, 2);
+    }
+
+    function saveDraft(){
+      const draft = {
+        title: $("title").value,
+        type: $("type").value,
+        city: $("city").value,
+        area: $("area").value,
+        price: $("price").value,
+        sqft: $("sqft").value,
+        bhk: $("bhk").value,
+        brokerName: $("brokerName").value,
+        sellerName: $("sellerName").value,
+        sellerPhone: $("sellerPhone").value,
+        image: $("image").value,
+        description: $("description").value
+      };
+      setDataSafe(DRAFT_KEY, draft);
+      toast("💾 Draft saved");
+    }
+
+    function loadDraft(){
+      const d = getDataSafe(DRAFT_KEY, null);
+      if(!d) return;
+
+      $("title").value = d.title || "";
+      $("type").value = d.type || "";
+      $("city").value = d.city || "";
+      $("area").value = d.area || "";
+      $("price").value = d.price || "";
+      $("sqft").value = d.sqft || "";
+      $("bhk").value = d.bhk || "";
+      $("sellerName").value = d.sellerName || "";
+      $("sellerPhone").value = d.sellerPhone || "";
+      $("image").value = d.image || "";
+      $("description").value = d.description || "";
+      fillBrokerDropdown();
+      $("brokerName").value = d.brokerName || "";
+    }
+
+    function clearFieldErrors(){
+      [
+        "title","type","city","area","price","sqft","bhk","brokerName","sellerName","sellerPhone","image"
+      ].forEach(id => setFieldError(id, ""));
+    }
+
+    function clearForm(){
+      $("propForm").reset();
+      clearFieldErrors();
+      $("errorSummary").hidden = true;
+      $("errorSummary").textContent = "";
+      fillBrokerDropdown();
+      renderPreview();
+    }
+
+    function clearDraftOnly(){
+      localStorage.removeItem(DRAFT_KEY);
+      toast("🧽 Draft cleared");
+    }
+
+    function fillSample(){
+      fillBrokerDropdown();
+      $("title").value = "2 BHK Apartment in Whitefield";
+      $("type").value = "Apartment";
+      $("city").value = "Bangalore";
+      $("area").value = "Whitefield";
+      $("price").value = "6500000";
+      $("sqft").value = "1100";
+      $("bhk").value = "2 BHK";
+      $("sellerName").value = "MEI Broker";
+      $("sellerPhone").value = "9876543210";
+      if($("brokerName").options.length > 1) $("brokerName").selectedIndex = 1;
+      $("image").value = "bangalore.jpg";
+      $("description").value = "East facing • 1100 sqft • Near metro • Covered parking";
+      renderPreview();
+      toast("✨ Sample filled");
+    }
+
+    function buildPropertyRecord(){
+      const form = getFormObject();
+
+      return {
+        id: uid("PROP"),
+        title: form.title,
+        price: Number(form.price || 0),
+        city: form.city,
+        area: form.area,
+        type: form.type,
+        bhk: form.bhk,
+        sqft: Number(form.sqft || 0),
+        description: form.description,
+        image: form.image,
+        gallery: form.image ? [form.image] : [],
+        sellerName: form.sellerName,
+        sellerPhone: form.sellerPhone,
+        brokerId: "",
+        brokerName: form.brokerName,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        approvedAt: "",
+        approvedBy: "",
+        featured: false
+      };
+    }
+
+    function looksDuplicate(newProp, allProps){
+      return allProps.some(p => {
+        const a = String(p.title || "").trim().toLowerCase();
+        const b = String(p.city || "").trim().toLowerCase();
+        const c = String(p.area || "").trim().toLowerCase();
+        return a === newProp.title.toLowerCase() &&
+               b === newProp.city.toLowerCase() &&
+               c === newProp.area.toLowerCase() &&
+               String(p.status || "").toLowerCase() !== "archived";
+      });
+    }
+
+    function submitForm(){
+      if(isSubmitting) return;
+
+      const ok = validateAll(true);
+      renderPreview();
+
+      if(!ok){
+        toast("❌ Fix errors and submit again.");
+        const firstInvalid = document.querySelector("[aria-invalid='true']");
+        if(firstInvalid) firstInvalid.focus();
+        return;
+      }
+
+      isSubmitting = true;
+      $("submitBtn").disabled = true;
+
+      try{
+        const prop = buildPropertyRecord();
+        const props = readProps();
+
+        if(looksDuplicate(prop, props)){
+          const go = confirm("A similar listing title/city/area already exists. Submit anyway?");
+          if(!go){
+            isSubmitting = false;
+            $("submitBtn").disabled = false;
+            toast("Duplicate submit cancelled", { timeout: 2200 });
+            return;
+          }
+        }
+
+        props.unshift(prop);
+        writeProps(props);
+
+        localStorage.removeItem(DRAFT_KEY);
+
+        toast("✅ Submitted. Listing is PENDING until Admin approves.", {
+          actionText: "Undo",
+          actionFn: () => {
+            const cur = readProps();
+            const next = cur.filter(p => p.id !== prop.id);
+            writeProps(next);
+            toast("↩ Undone. Listing removed.", { timeout: 2200 });
+          },
+          timeout: 6500
+        });
+
+        clearForm();
+      } finally {
+        isSubmitting = false;
+        $("submitBtn").disabled = false;
+      }
+    }
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if(!btn) return;
+      const action = btn.getAttribute("data-action");
+      if(action === "fillSample") fillSample();
+      if(action === "clearForm") clearForm();
+      if(action === "saveDraft") saveDraft();
+      if(action === "clearDraftOnly") clearDraftOnly();
+    });
+
+    $("propForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      submitForm();
+    });
+
+    [
+      "title","type","city","area","price","sqft","bhk","brokerName","sellerName","sellerPhone","image","description"
+    ].forEach(id => {
+      $(id).addEventListener("input", () => {
+        validateAll(false);
+        renderPreview();
+      });
+      $(id).addEventListener("change", () => {
+        validateAll(false);
+        renderPreview();
+      });
+    });
+
+    function init(){
+      if(typeof window.seedData === "function"){
+        window.seedData();
+      }
+      fillBrokerDropdown();
+      loadDraft();
+      renderPreview();
+    }
+
+    init();
+  })();
+  </script>
+</body>
+</html>
