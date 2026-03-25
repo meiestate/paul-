@@ -1,0 +1,1307 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Insurance Broker Network | Join & Grow</title>
+  <meta name="description" content="Build an insurance broker network on your website. Recruit advisors, manage leads, show commissions, and grow your distribution engine." />
+  <style>
+    :root{
+      --bg:#09111f;
+      --bg2:#0d1729;
+      --card:#101c31;
+      --card2:#12213a;
+      --line:#223555;
+      --text:#ecf3ff;
+      --muted:#a8b7d4;
+      --primary:#4fd1c5;
+      --primary2:#60a5fa;
+      --accent:#8b5cf6;
+      --success:#22c55e;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+      --shadow:0 20px 50px rgba(0,0,0,.35);
+      --radius:20px;
+      --radius-sm:14px;
+      --max:1200px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(96,165,250,.16), transparent 25%),
+        radial-gradient(circle at top left, rgba(139,92,246,.14), transparent 22%),
+        linear-gradient(180deg, var(--bg), #08101c 100%);
+      color:var(--text);
+      line-height:1.55;
+    }
+
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%}
+    button,input,select,textarea{font:inherit}
+
+    .container{
+      width:min(100% - 32px, var(--max));
+      margin-inline:auto;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:50;
+      backdrop-filter:blur(14px);
+      background:rgba(8,16,28,.75);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      padding:14px 0;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    .brand-badge{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      color:#06111d;
+      font-weight:900;
+      box-shadow:var(--shadow);
+    }
+
+    .nav-links{
+      display:flex;
+      gap:18px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .nav-links a:hover{color:var(--text)}
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      border:none;
+      cursor:pointer;
+      padding:12px 18px;
+      border-radius:999px;
+      font-weight:700;
+      transition:.25s ease;
+    }
+
+    .btn-primary{
+      color:#06111d;
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      box-shadow:0 12px 30px rgba(79,209,197,.28);
+    }
+
+    .btn-primary:hover{transform:translateY(-2px)}
+
+    .btn-secondary{
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .btn-secondary:hover{
+      background:rgba(255,255,255,.08);
+      transform:translateY(-2px);
+    }
+
+    .hero{
+      padding:72px 0 36px;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:28px;
+      align-items:center;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 14px;
+      border-radius:999px;
+      background:rgba(79,209,197,.12);
+      color:#baf7ef;
+      border:1px solid rgba(79,209,197,.25);
+      font-size:13px;
+      font-weight:700;
+    }
+
+    h1{
+      font-size:clamp(34px, 5vw, 62px);
+      line-height:1.05;
+      margin:18px 0 16px;
+      letter-spacing:-1.4px;
+    }
+
+    .hero p{
+      color:var(--muted);
+      font-size:18px;
+      max-width:700px;
+      margin:0 0 24px;
+    }
+
+    .hero-actions{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:22px;
+    }
+
+    .hero-stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      margin-top:20px;
+    }
+
+    .stat{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:18px;
+      padding:16px;
+    }
+
+    .stat h3{
+      margin:0;
+      font-size:24px;
+      color:var(--text);
+    }
+
+    .stat p{
+      margin:6px 0 0;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .hero-card{
+      position:relative;
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:28px;
+      padding:20px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .glow{
+      position:absolute;
+      inset:auto -60px -60px auto;
+      width:180px;
+      height:180px;
+      background:radial-gradient(circle, rgba(79,209,197,.35), transparent 62%);
+      pointer-events:none;
+    }
+
+    .dashboard{
+      display:grid;
+      gap:14px;
+    }
+
+    .dash-row{
+      display:grid;
+      gap:14px;
+      grid-template-columns:1fr 1fr;
+    }
+
+    .panel{
+      background:linear-gradient(180deg, var(--card), var(--card2));
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:16px;
+    }
+
+    .panel h4{
+      margin:0 0 8px;
+      font-size:15px;
+      color:#d9e7ff;
+    }
+
+    .mini-line{
+      height:10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      overflow:hidden;
+      margin-top:10px;
+    }
+
+    .mini-line span{
+      display:block;
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg, var(--primary), var(--primary2));
+    }
+
+    .chip-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:8px;
+    }
+
+    .chip{
+      font-size:12px;
+      border-radius:999px;
+      padding:7px 10px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.06);
+      color:#dbe8ff;
+    }
+
+    .section{
+      padding:42px 0;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:18px;
+      margin-bottom:22px;
+      flex-wrap:wrap;
+    }
+
+    .section-head h2{
+      margin:0;
+      font-size:clamp(28px, 4vw, 42px);
+      line-height:1.1;
+      letter-spacing:-1px;
+    }
+
+    .section-head p{
+      margin:8px 0 0;
+      color:var(--muted);
+      max-width:780px;
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+
+    .grid-4{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:18px;
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .icon{
+      width:48px;
+      height:48px;
+      display:grid;
+      place-items:center;
+      border-radius:16px;
+      background:linear-gradient(135deg, rgba(79,209,197,.18), rgba(96,165,250,.18));
+      border:1px solid rgba(255,255,255,.09);
+      font-size:22px;
+      margin-bottom:14px;
+    }
+
+    .card h3{
+      margin:0 0 8px;
+      font-size:19px;
+    }
+
+    .card p{
+      margin:0;
+      color:var(--muted);
+      font-size:15px;
+    }
+
+    .flow{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:18px;
+      counter-reset:step;
+    }
+
+    .step{
+      position:relative;
+      padding:22px;
+      border-radius:24px;
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+      border:1px solid rgba(255,255,255,.08);
+      min-height:180px;
+    }
+
+    .step::before{
+      counter-increment:step;
+      content:counter(step);
+      width:40px;
+      height:40px;
+      display:grid;
+      place-items:center;
+      border-radius:12px;
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      color:#06111d;
+      font-weight:900;
+      margin-bottom:16px;
+    }
+
+    .step h3{
+      margin:0 0 8px;
+      font-size:18px;
+    }
+
+    .step p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .calculator{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:22px;
+    }
+
+    .calc-box{
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:24px;
+      padding:22px;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+      margin-bottom:16px;
+    }
+
+    .field label{
+      font-size:14px;
+      color:#dce8ff;
+      font-weight:600;
+    }
+
+    .field input, .field select, .field textarea{
+      width:100%;
+      border:none;
+      outline:none;
+      padding:14px 14px;
+      border-radius:14px;
+      color:var(--text);
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .field input:focus, .field select:focus, .field textarea:focus{
+      border-color:rgba(79,209,197,.55);
+      box-shadow:0 0 0 4px rgba(79,209,197,.12);
+    }
+
+    .result-box{
+      display:grid;
+      gap:14px;
+    }
+
+    .result{
+      padding:16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.07);
+    }
+
+    .result .label{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .result .value{
+      font-size:28px;
+      font-weight:800;
+      letter-spacing:-.4px;
+    }
+
+    .highlight{
+      padding:18px;
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(34,197,94,.12), rgba(79,209,197,.08));
+      border:1px solid rgba(34,197,94,.25);
+      color:#dffcef;
+      font-size:14px;
+    }
+
+    .feature-list{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
+    }
+
+    .feature{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:18px;
+      padding:16px;
+    }
+
+    .tick{
+      flex:0 0 34px;
+      width:34px;
+      height:34px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      background:rgba(34,197,94,.13);
+      color:#8bffbf;
+      border:1px solid rgba(34,197,94,.2);
+      font-weight:900;
+    }
+
+    .faq{
+      display:grid;
+      gap:12px;
+    }
+
+    .faq-item{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      overflow:hidden;
+      background:rgba(255,255,255,.03);
+    }
+
+    .faq-q{
+      width:100%;
+      background:none;
+      border:none;
+      color:var(--text);
+      text-align:left;
+      padding:18px 18px;
+      font-weight:700;
+      cursor:pointer;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .faq-a{
+      display:none;
+      padding:0 18px 18px;
+      color:var(--muted);
+    }
+
+    .faq-item.active .faq-a{
+      display:block;
+    }
+
+    .cta{
+      margin:20px 0 60px;
+      padding:28px;
+      border-radius:28px;
+      background:
+        radial-gradient(circle at top left, rgba(79,209,197,.12), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.035));
+      border:1px solid rgba(255,255,255,.08);
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:20px;
+      align-items:center;
+    }
+
+    .cta h2{
+      margin:0 0 10px;
+      font-size:clamp(26px, 4vw, 42px);
+      line-height:1.08;
+    }
+
+    .cta p{
+      margin:0;
+      color:var(--muted);
+      max-width:720px;
+    }
+
+    .cta-box{
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      padding:20px;
+      border-radius:22px;
+    }
+
+    .cta-box ul{
+      margin:0;
+      padding-left:18px;
+      color:#d8e6ff;
+    }
+
+    footer{
+      border-top:1px solid rgba(255,255,255,.06);
+      padding:26px 0 38px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(3,7,15,.65);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:100;
+    }
+
+    .modal.active{display:flex}
+
+    .modal-card{
+      width:min(100%, 680px);
+      background:linear-gradient(180deg, #0e182c, #0b1525);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:26px;
+      padding:24px;
+      box-shadow:var(--shadow);
+      position:relative;
+    }
+
+    .close-btn{
+      position:absolute;
+      top:14px;
+      right:14px;
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      cursor:pointer;
+      font-size:20px;
+    }
+
+    .modal-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .full{grid-column:1/-1}
+
+    .success-msg{
+      display:none;
+      margin-top:14px;
+      padding:14px 16px;
+      border-radius:14px;
+      background:rgba(34,197,94,.12);
+      border:1px solid rgba(34,197,94,.25);
+      color:#dffcef;
+      font-weight:600;
+    }
+
+    .note{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:8px;
+    }
+
+    @media (max-width: 980px){
+      .hero-grid,
+      .calculator,
+      .cta{
+        grid-template-columns:1fr;
+      }
+      .grid-3{grid-template-columns:1fr 1fr}
+      .grid-4{grid-template-columns:1fr 1fr}
+      .flow{grid-template-columns:1fr 1fr}
+      .feature-list{grid-template-columns:1fr}
+      .hero-stats{grid-template-columns:1fr}
+      .modal-grid{grid-template-columns:1fr}
+    }
+
+    @media (max-width: 640px){
+      .nav{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+      .nav-links{
+        gap:12px;
+      }
+      .grid-3,
+      .grid-4,
+      .flow{
+        grid-template-columns:1fr;
+      }
+      .section{
+        padding:34px 0;
+      }
+      .hero{
+        padding:52px 0 24px;
+      }
+      .hero p{
+        font-size:16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="container nav">
+      <a href="#" class="brand">
+        <div class="brand-badge">IB</div>
+        <div>
+          <div>Insurance Broker Network</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:600;">Grow Through Advisors & Brokers</div>
+        </div>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#benefits">Benefits</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#calculator">Income</a>
+        <a href="#features">Features</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <button class="btn btn-primary" id="openJoinTop">Join Network</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="pill">⚡ Build your advisor distribution engine</div>
+          <h1>Insurance products-ஐ brokers network மூலம் scale பண்ணும் premium web page</h1>
+          <p>
+            Insurance company மாதிரி உங்கள் website-ல் broker recruitment, onboarding, lead flow,
+            commission visibility, training pipeline, and growth engine — இதையெல்லாம் ஒரே page-ல் professional
+            ஆக காட்ட முடியும்.
+          </p>
+
+          <div class="hero-actions">
+            <button class="btn btn-primary" id="openJoinHero">Become a Broker</button>
+            <a href="#how-it-works" class="btn btn-secondary">See How It Works</a>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat">
+              <h3>1,200+</h3>
+              <p>Active advisors in network</p>
+            </div>
+            <div class="stat">
+              <h3>₹4.8Cr</h3>
+              <p>Monthly premium influenced</p>
+            </div>
+            <div class="stat">
+              <h3>24 hrs</h3>
+              <p>Fast-track onboarding workflow</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="glow"></div>
+          <div class="dashboard">
+            <div class="panel">
+              <h4>Broker Performance Dashboard</h4>
+              <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+                <div>
+                  <div style="font-size:13px;color:var(--muted);">Monthly Premium</div>
+                  <div style="font-size:30px;font-weight:800;">₹8,40,000</div>
+                </div>
+                <div>
+                  <div style="font-size:13px;color:var(--muted);">Estimated Commission</div>
+                  <div style="font-size:30px;font-weight:800;color:#b8fff0;">₹1,26,000</div>
+                </div>
+              </div>
+              <div class="mini-line"><span style="width:72%"></span></div>
+            </div>
+
+            <div class="dash-row">
+              <div class="panel">
+                <h4>Lead Funnel</h4>
+                <div class="chip-row">
+                  <div class="chip">Leads: 240</div>
+                  <div class="chip">Qualified: 120</div>
+                  <div class="chip">Converted: 48</div>
+                </div>
+                <div class="mini-line"><span style="width:58%"></span></div>
+              </div>
+
+              <div class="panel">
+                <h4>Products Sold</h4>
+                <div class="chip-row">
+                  <div class="chip">Health</div>
+                  <div class="chip">Motor</div>
+                  <div class="chip">Term</div>
+                  <div class="chip">SME</div>
+                </div>
+                <div class="mini-line"><span style="width:81%"></span></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h4>Advisor Actions</h4>
+              <div class="chip-row">
+                <div class="chip">Upload KYC</div>
+                <div class="chip">Generate Quote</div>
+                <div class="chip">Track Renewal</div>
+                <div class="chip">Book Training</div>
+                <div class="chip">Request Payout</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="benefits">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Why this model works</h2>
+            <p>
+              Insurance company-கள் direct sales மட்டும் நம்ப மாட்டாங்க. அவர்கள் broker network create பண்ணி market reach-ஐ
+              multiply பண்ணுவாங்க. அதே playbook-ஐ உங்கள் web page-ல் கொண்டு வர இதுதான் structure.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="card">
+            <div class="icon">🤝</div>
+            <h3>Broker Recruitment</h3>
+            <p>Agents, advisors, field sellers, and referral partners-ஐ ஒரு structured funnel-ல் recruit பண்ணலாம்.</p>
+          </div>
+
+          <div class="card">
+            <div class="icon">💰</div>
+            <h3>Commission Motivation</h3>
+            <p>Network grow ஆக வேண்டுமானால் income visibility clear ஆக இருக்கணும். Calculator + payout display trust build பண்ணும்.</p>
+          </div>
+
+          <div class="card">
+            <div class="icon">📈</div>
+            <h3>Repeat Growth Engine</h3>
+            <p>Leads, renewals, training, activation, referrals — இவை ஒரே system-ல் வந்தா business snowball ஆகும்.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="how-it-works">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>How it works</h2>
+            <p>
+              Broker network page-ன் core story simple: join → verify → train → sell → earn.
+              அந்த journey-யை visually strong ஆக காட்டணும்.
+            </p>
+          </div>
+        </div>
+
+        <div class="flow">
+          <div class="step">
+            <h3>Apply Online</h3>
+            <p>Website form மூலம் broker / advisor application collect பண்ணலாம். Name, city, experience, interest, product line capture செய்யலாம்.</p>
+          </div>
+
+          <div class="step">
+            <h3>Verify & Approve</h3>
+            <p>KYC, identity, phone verification, and manual approval workflow add பண்ணலாம். இது fake applicants-ஐ குறைக்கும்.</p>
+          </div>
+
+          <div class="step">
+            <h3>Train & Activate</h3>
+            <p>PDFs, videos, product modules, scripts, and FAQ training library மூலம் brokers-ஐ active sellers ஆக மாற்றலாம்.</p>
+          </div>
+
+          <div class="step">
+            <h3>Track Sales & Earnings</h3>
+            <p>Lead tracking, quote requests, policy conversions, and commission payout transparency network retention-ஐ increase பண்ணும்.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="calculator">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Commission calculator</h2>
+            <p>
+              Broker-க்கு “என்ன earn ஆகும்?” என்பதுதான் முதல் கேள்வி. அதற்காக இந்த calculator page-ல் live value காட்டும்.
+            </p>
+          </div>
+        </div>
+
+        <div class="calculator">
+          <div class="calc-box">
+            <div class="field">
+              <label for="premium">Monthly Total Premium (₹)</label>
+              <input type="number" id="premium" value="500000" min="0" step="1000" />
+            </div>
+
+            <div class="field">
+              <label for="rate">Commission Rate (%)</label>
+              <input type="number" id="rate" value="15" min="0" max="100" step="1" />
+            </div>
+
+            <div class="field">
+              <label for="renewal">Renewal Rate (%)</label>
+              <input type="number" id="renewal" value="5" min="0" max="100" step="1" />
+            </div>
+
+            <div class="field">
+              <label for="policies">Policies Sold Per Month</label>
+              <input type="number" id="policies" value="25" min="0" step="1" />
+            </div>
+
+            <button class="btn btn-primary" id="calcBtn" style="width:100%;">Calculate Earnings</button>
+            <div class="note">இந்த values demo purpose. உங்கள் actual commission structure-க்கு change பண்ணலாம்.</div>
+          </div>
+
+          <div class="calc-box result-box">
+            <div class="result">
+              <div class="label">Estimated First-Year Commission</div>
+              <div class="value" id="outCommission">₹75,000</div>
+            </div>
+
+            <div class="result">
+              <div class="label">Estimated Renewal Income</div>
+              <div class="value" id="outRenewal">₹25,000</div>
+            </div>
+
+            <div class="result">
+              <div class="label">Avg. Commission Per Policy</div>
+              <div class="value" id="outPerPolicy">₹3,000</div>
+            </div>
+
+            <div class="highlight" id="calcSummary">
+              With this setup, a motivated broker can build a steady monthly income and future renewal stream.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Features your broker page should show</h2>
+            <p>
+              ஒரு plain landing page போதாது. Network join பண்ணுறவங்க “இந்த platform serious-ஆ இருக்கா?”ன்னு பார்க்குறாங்க.
+              அதனால இந்த feature blocks trust create பண்ணும்.
+            </p>
+          </div>
+        </div>
+
+        <div class="feature-list">
+          <div class="feature">
+            <div class="tick">✓</div>
+            <div>
+              <h3 style="margin:0 0 6px;">Lead Management</h3>
+              <div style="color:var(--muted);">Broker-க்கு assigned leads, status tracking, follow-up reminders.</div>
+            </div>
+          </div>
+
+          <div class="feature">
+            <div class="tick">✓</div>
+            <div>
+              <h3 style="margin:0 0 6px;">Quote Generator</h3>
+              <div style="color:var(--muted);">Insurance product quote generate பண்ணும் fast workflow.</div>
+            </div>
+          </div>
+
+          <div class="feature">
+            <div class="tick">✓</div>
+            <div>
+              <h3 style="margin:0 0 6px;">Training Center</h3>
+              <div style="color:var(--muted);">Videos, brochures, pitch scripts, objection handling material.</div>
+            </div>
+          </div>
+
+          <div class="feature">
+            <div class="tick">✓</div>
+            <div>
+              <h3 style="margin:0 0 6px;">Commission Dashboard</h3>
+              <div style="color:var(--muted);">Expected payout, paid commissions, pending amounts visibility.</div>
+            </div>
+          </div>
+
+          <div class="feature">
+            <div class="tick">✓</div>
+            <div>
+              <h3 style="margin:0 0 6px;">KYC Upload</h3>
+              <div style="color:var(--muted);">PAN, Aadhaar, bank details, and verification status tracking.</div>
+            </div>
+          </div>
+
+          <div class="feature">
+            <div class="tick">✓</div>
+            <div>
+              <h3 style="margin:0 0 6px;">Renewal Tracking</h3>
+              <div style="color:var(--muted);">Existing policy customers-க்கு renewal alerts and retention support.</div>
+            </div>
+          </div>
+
+          <div class="feature">
+            <div class="tick">✓</div>
+            <div>
+              <h3 style="margin:0 0 6px;">Referral Layer</h3>
+              <div style="color:var(--muted);">Existing broker மற்ற broker-ஐ bring பண்ணும் referral engine.</div>
+            </div>
+          </div>
+
+          <div class="feature">
+            <div class="tick">✓</div>
+            <div>
+              <h3 style="margin:0 0 6px;">CRM Integration</h3>
+              <div style="color:var(--muted);">Sales, customer data, lead stages, follow-up systems integrate பண்ணலாம்.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Network growth blocks</h2>
+            <p>
+              Broker network page-ல் மட்டும் அழகு இருந்தா போதாது. Scale செய்ய backend blocks-ம் plan பண்ணணும்.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid-4">
+          <div class="card">
+            <div class="icon">🎯</div>
+            <h3>Recruitment Funnel</h3>
+            <p>Ads, referrals, WhatsApp campaigns, seminars மூலம் broker applications collect செய்யுங்கள்.</p>
+          </div>
+
+          <div class="card">
+            <div class="icon">🧠</div>
+            <h3>Training Engine</h3>
+            <p>Beginner to advanced modules வைத்து inactive joiners-ஐ active earners ஆக மாற்றுங்கள்.</p>
+          </div>
+
+          <div class="card">
+            <div class="icon">🧾</div>
+            <h3>Compliance Layer</h3>
+            <p>Verification, agreement, onboarding consent, documentation proof எல்லாம் structured ஆக சேமிக்க வேண்டும்.</p>
+          </div>
+
+          <div class="card">
+            <div class="icon">🚀</div>
+            <h3>Retention Model</h3>
+            <p>Payout visibility, recognition, leaderboard, renewal support இருந்தா network நீண்ட காலம் நிலைக்கும்.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>FAQ</h2>
+            <p>இந்த section trust build பண்ணும். Brokers மற்றும் advisors-க்கு common doubts-ஐ clear பண்ணும்.</p>
+          </div>
+        </div>
+
+        <div class="faq">
+          <div class="faq-item active">
+            <button class="faq-q">
+              <span>Who can join this broker network?</span>
+              <span>+</span>
+            </button>
+            <div class="faq-a">
+              Sales background உள்ளவர்கள், insurance advisors, financial consultants, field agents, and referral partners join பண்ணலாம்.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q">
+              <span>Is training provided after joining?</span>
+              <span>+</span>
+            </button>
+            <div class="faq-a">
+              ஆம். Product knowledge, sales process, lead handling, client conversion, and renewal guidance போன்ற modules கொடுக்கலாம்.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q">
+              <span>How do brokers earn income?</span>
+              <span>+</span>
+            </button>
+            <div class="faq-a">
+              First-year commission, renewal income, incentives, and special performance bonuses மாதிரி multiple earning layers இருக்கலாம்.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q">
+              <span>Can this page be connected to backend CRM?</span>
+              <span>+</span>
+            </button>
+            <div class="faq-a">
+              கண்டிப்பாக. Form submissions, lead capture, KYC workflow, and dashboard data எல்லாம் backend API மூலம் connect பண்ணலாம்.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container cta">
+        <div>
+          <h2>Build a broker-powered insurance growth engine</h2>
+          <p>
+            One company alone can only sell so much. But one company with a trained broker network —
+            அது ஒரு distribution storm. உங்கள் website-ல் இந்த model-ஐ bring பண்ணினா, simple page இல்ல,
+            அது ஒரு business machine ஆக மாறும்.
+          </p>
+        </div>
+
+        <div class="cta-box">
+          <ul>
+            <li>Broker recruitment page</li>
+            <li>Advisor onboarding form</li>
+            <li>Commission calculator</li>
+            <li>Training + FAQ sections</li>
+            <li>Backend-ready frontend structure</li>
+          </ul>
+          <div style="margin-top:16px;">
+            <button class="btn btn-primary" id="openJoinBottom" style="width:100%;">Start Broker Onboarding</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      © 2026 Insurance Broker Network. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- Join Modal -->
+  <div class="modal" id="joinModal">
+    <div class="modal-card">
+      <button class="close-btn" id="closeModal">×</button>
+      <h2 style="margin:0 0 8px;">Join the Broker Network</h2>
+      <p style="margin:0 0 18px;color:var(--muted);">
+        Fill this form to apply as a broker / advisor. You can later connect this form to your backend API.
+      </p>
+
+      <form id="joinForm">
+        <div class="modal-grid">
+          <div class="field">
+            <label for="name">Full Name</label>
+            <input id="name" name="name" type="text" required />
+          </div>
+
+          <div class="field">
+            <label for="phone">Mobile Number</label>
+            <input id="phone" name="phone" type="tel" required />
+          </div>
+
+          <div class="field">
+            <label for="email">Email Address</label>
+            <input id="email" name="email" type="email" required />
+          </div>
+
+          <div class="field">
+            <label for="city">City</label>
+            <input id="city" name="city" type="text" required />
+          </div>
+
+          <div class="field">
+            <label for="experience">Experience Level</label>
+            <select id="experience" name="experience" required>
+              <option value="">Select</option>
+              <option>Fresher</option>
+              <option>0-1 Years</option>
+              <option>1-3 Years</option>
+              <option>3-5 Years</option>
+              <option>5+ Years</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="product">Preferred Product</label>
+            <select id="product" name="product" required>
+              <option value="">Select</option>
+              <option>Health Insurance</option>
+              <option>Motor Insurance</option>
+              <option>Life Insurance</option>
+              <option>SME / Business Insurance</option>
+              <option>All Products</option>
+            </select>
+          </div>
+
+          <div class="field full">
+            <label for="message">Why do you want to join?</label>
+            <textarea id="message" name="message" rows="5" placeholder="Tell us about your background, sales interest, and goals..."></textarea>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" type="submit" style="width:100%;margin-top:8px;">
+          Submit Application
+        </button>
+
+        <div class="success-msg" id="successMsg">
+          Application submitted successfully. Connect this form to your backend to save real broker leads.
+        </div>
+
+        <div class="note">
+          Production note: replace the demo submit logic with a POST request to your backend endpoint.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Modal controls
+    const joinModal = document.getElementById("joinModal");
+    const openBtns = [
+      document.getElementById("openJoinTop"),
+      document.getElementById("openJoinHero"),
+      document.getElementById("openJoinBottom")
+    ];
+    const closeModal = document.getElementById("closeModal");
+    const joinForm = document.getElementById("joinForm");
+    const successMsg = document.getElementById("successMsg");
+
+    openBtns.forEach(btn => {
+      if(btn){
+        btn.addEventListener("click", () => {
+          joinModal.classList.add("active");
+          document.body.style.overflow = "hidden";
+        });
+      }
+    });
+
+    closeModal.addEventListener("click", () => {
+      joinModal.classList.remove("active");
+      document.body.style.overflow = "";
+    });
+
+    joinModal.addEventListener("click", (e) => {
+      if(e.target === joinModal){
+        joinModal.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape"){
+        joinModal.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+    });
+
+    // Demo form submit
+    joinForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(joinForm);
+      const payload = Object.fromEntries(formData.entries());
+      console.log("Demo broker application payload:", payload);
+
+      successMsg.style.display = "block";
+      joinForm.reset();
+
+      setTimeout(() => {
+        successMsg.style.display = "none";
+      }, 3500);
+    });
+
+    // FAQ toggle
+    document.querySelectorAll(".faq-q").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const item = btn.parentElement;
+        item.classList.toggle("active");
+      });
+    });
+
+    // Calculator
+    const premium = document.getElementById("premium");
+    const rate = document.getElementById("rate");
+    const renewal = document.getElementById("renewal");
+    const policies = document.getElementById("policies");
+    const calcBtn = document.getElementById("calcBtn");
+
+    const outCommission = document.getElementById("outCommission");
+    const outRenewal = document.getElementById("outRenewal");
+    const outPerPolicy = document.getElementById("outPerPolicy");
+    const calcSummary = document.getElementById("calcSummary");
+
+    function formatINR(value){
+      return new Intl.NumberFormat("en-IN", {
+        style:"currency",
+        currency:"INR",
+        maximumFractionDigits:0
+      }).format(value);
+    }
+
+    function calculateEarnings(){
+      const premiumVal = Number(premium.value || 0);
+      const rateVal = Number(rate.value || 0);
+      const renewalVal = Number(renewal.value || 0);
+      const policiesVal = Number(policies.value || 0);
+
+      const commission = premiumVal * (rateVal / 100);
+      const renewalIncome = premiumVal * (renewalVal / 100);
+      const perPolicy = policiesVal > 0 ? commission / policiesVal : 0;
+
+      outCommission.textContent = formatINR(commission);
+      outRenewal.textContent = formatINR(renewalIncome);
+      outPerPolicy.textContent = formatINR(perPolicy);
+
+      calcSummary.textContent =
+        `If a broker influences ${formatINR(premiumVal)} in monthly premium at ${rateVal}% commission,
+        the estimated first-year earning is ${formatINR(commission)} and renewal stream can be around ${formatINR(renewalIncome)}.`;
+    }
+
+    calcBtn.addEventListener("click", calculateEarnings);
+    [premium, rate, renewal, policies].forEach(el => {
+      el.addEventListener("input", calculateEarnings);
+    });
+
+    calculateEarnings();
+  </script>
+</body>
+</html>
