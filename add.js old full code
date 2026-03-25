@@ -1,0 +1,422 @@
+const MEI_KEYS = {
+  properties: "mei_properties_v1",
+  leads: "mei_leads_v1",
+  brokers: "mei_brokers_v1",
+  settings: "mei_settings_v1"
+};
+
+function getData(key, fallback = []) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return parsed ?? fallback;
+  } catch (error) {
+    console.error("getData error:", error);
+    return fallback;
+  }
+}
+
+function setData(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    console.error("setData error:", error);
+    return false;
+  }
+}
+
+function makeId(prefix = "ID") {
+  const random = Math.floor(Math.random() * 100000);
+  return `${prefix}_${Date.now()}_${random}`;
+}
+
+function formatPrice(value) {
+  const num = Number(value || 0);
+  return "₹" + num.toLocaleString("en-IN");
+}
+
+function formatDate(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return value;
+  return date.toLocaleString("en-IN");
+}
+
+function getUrlParam(name) {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(name);
+}
+
+function sanitizeText(value) {
+  return String(value || "").trim();
+}
+
+function normalizePhone(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function seedData() {
+  const hasProperties = localStorage.getItem(MEI_KEYS.properties);
+  const hasBrokers = localStorage.getItem(MEI_KEYS.brokers);
+  const hasLeads = localStorage.getItem(MEI_KEYS.leads);
+  const hasSettings = localStorage.getItem(MEI_KEYS.settings);
+
+  if (!hasBrokers) {
+    const brokers = [
+      {
+        id: "BRK_101",
+        name: "Suresh",
+        phone: "9000000001",
+        city: "Bangalore",
+        area: "Whitefield",
+        company: "MEI Associate",
+        status: "active",
+        joinedAt: new Date().toISOString()
+      },
+      {
+        id: "BRK_102",
+        name: "Karthik",
+        phone: "9000000002",
+        city: "Chennai",
+        area: "OMR",
+        company: "MEI Associate",
+        status: "active",
+        joinedAt: new Date().toISOString()
+      }
+    ];
+    setData(MEI_KEYS.brokers, brokers);
+  }
+
+  if (!hasProperties) {
+    const properties = [
+      {
+        id: "PROP_1001",
+        title: "2 BHK Apartment in Whitefield",
+        price: 7500000,
+        city: "Bangalore",
+        area: "Whitefield",
+        type: "Apartment",
+        bhk: "2 BHK",
+        sqft: 1200,
+        description: "Spacious apartment near IT parks, schools, and shopping areas.",
+        image: "bangalore.jpg",
+        gallery: ["bangalore.jpg", "bangalure image.jpg"],
+        sellerName: "Ravi",
+        sellerPhone: "9876543210",
+        brokerId: "BRK_101",
+        brokerName: "Suresh",
+        status: "approved",
+        createdAt: new Date().toISOString(),
+        approvedAt: new Date().toISOString(),
+        approvedBy: "admin",
+        featured: true
+      },
+      {
+        id: "PROP_1002",
+        title: "Residential Plot in Bangalore North",
+        price: 5200000,
+        city: "Bangalore",
+        area: "Yelahanka",
+        type: "Plot",
+        bhk: "",
+        sqft: 2400,
+        description: "Good investment plot with fast-growing surrounding development.",
+        image: "individual house image.jpg",
+        gallery: ["individual house image.jpg"],
+        sellerName: "Mohan",
+        sellerPhone: "9876501234",
+        brokerId: "BRK_101",
+        brokerName: "Suresh",
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        approvedAt: "",
+        approvedBy: "",
+        featured: false
+      }
+    ];
+    setData(MEI_KEYS.properties, properties);
+  }
+
+  if (!hasLeads) {
+    setData(MEI_KEYS.leads, []);
+  }
+
+  if (!hasSettings) {
+    setData(MEI_KEYS.settings, {
+      siteName: "MEI Estate",
+      whatsappNumber: "919876543210",
+      leadMessageTemplate: "Hello {{buyer}}, thanks for your interest in {{listing}}.",
+      defaultCity: "Bangalore"
+    });
+  }
+}
+
+/* ---------------- PROPERTIES ---------------- */
+
+function getAllProperties() {
+  return getData(MEI_KEYS.properties, []);
+}
+
+function saveAllProperties(properties) {
+  return setData(MEI_KEYS.properties, properties);
+}
+
+function getApprovedProperties() {
+  return getAllProperties().filter(item => item.status === "approved");
+}
+
+function getPendingProperties() {
+  return getAllProperties().filter(item => item.status === "pending");
+}
+
+function getRejectedProperties() {
+  return getAllProperties().filter(item => item.status === "rejected");
+}
+
+function getPropertyById(propertyId) {
+  return getAllProperties().find(item => item.id === propertyId) || null;
+}
+
+function addProperty(data) {
+  const properties = getAllProperties();
+
+  const newProperty = {
+    id: makeId("PROP"),
+    title: sanitizeText(data.title),
+    price: Number(data.price || 0),
+    city: sanitizeText(data.city),
+    area: sanitizeText(data.area),
+    type: sanitizeText(data.type),
+    bhk: sanitizeText(data.bhk),
+    sqft: Number(data.sqft || 0),
+    description: sanitizeText(data.description),
+    image: sanitizeText(data.image),
+    gallery: Array.isArray(data.gallery) && data.gallery.length
+      ? data.gallery.map(item => sanitizeText(item)).filter(Boolean)
+      : [sanitizeText(data.image)].filter(Boolean),
+    sellerName: sanitizeText(data.sellerName),
+    sellerPhone: normalizePhone(data.sellerPhone),
+    brokerId: sanitizeText(data.brokerId),
+    brokerName: sanitizeText(data.brokerName),
+    status: "pending",
+    createdAt: new Date().toISOString(),
+    approvedAt: "",
+    approvedBy: "",
+    featured: false
+  };
+
+  properties.unshift(newProperty);
+  saveAllProperties(properties);
+  return newProperty;
+}
+
+function updatePropertyStatus(propertyId, newStatus, approvedBy = "admin") {
+  const properties = getAllProperties();
+  const updated = properties.map(item => {
+    if (item.id === propertyId) {
+      return {
+        ...item,
+        status: newStatus,
+        approvedAt: newStatus === "approved" ? new Date().toISOString() : item.approvedAt,
+        approvedBy: newStatus === "approved" ? approvedBy : item.approvedBy
+      };
+    }
+    return item;
+  });
+  saveAllProperties(updated);
+}
+
+function approveProperty(propertyId, approvedBy = "admin") {
+  updatePropertyStatus(propertyId, "approved", approvedBy);
+}
+
+function rejectProperty(propertyId) {
+  updatePropertyStatus(propertyId, "rejected");
+}
+
+function archiveProperty(propertyId) {
+  updatePropertyStatus(propertyId, "archived");
+}
+
+function deleteProperty(propertyId) {
+  const properties = getAllProperties().filter(item => item.id !== propertyId);
+  saveAllProperties(properties);
+}
+
+/* ---------------- LEADS ---------------- */
+
+function getAllLeads() {
+  return getData(MEI_KEYS.leads, []);
+}
+
+function saveAllLeads(leads) {
+  return setData(MEI_KEYS.leads, leads);
+}
+
+function getLeadById(leadId) {
+  return getAllLeads().find(item => item.id === leadId) || null;
+}
+
+function addLead(data) {
+  const leads = getAllLeads();
+
+  const newLead = {
+    id: makeId("LEAD"),
+    propertyId: sanitizeText(data.propertyId),
+    propertyTitle: sanitizeText(data.propertyTitle),
+    buyerName: sanitizeText(data.buyerName),
+    buyerPhone: normalizePhone(data.buyerPhone),
+    buyerCity: sanitizeText(data.buyerCity),
+    message: sanitizeText(data.message),
+    source: sanitizeText(data.source || "website"),
+    status: sanitizeText(data.status || "new"),
+    assignedBrokerId: sanitizeText(data.assignedBrokerId),
+    assignedBrokerName: sanitizeText(data.assignedBrokerName),
+    followUpDate: sanitizeText(data.followUpDate),
+    notes: sanitizeText(data.notes),
+    createdAt: new Date().toISOString()
+  };
+
+  leads.unshift(newLead);
+  saveAllLeads(leads);
+  return newLead;
+}
+
+function updateLeadStatus(leadId, newStatus) {
+  const leads = getAllLeads();
+  const updated = leads.map(item =>
+    item.id === leadId ? { ...item, status: newStatus } : item
+  );
+  saveAllLeads(updated);
+}
+
+function updateLeadFollowUp(leadId, followUpDate) {
+  const leads = getAllLeads();
+  const updated = leads.map(item =>
+    item.id === leadId ? { ...item, followUpDate: followUpDate } : item
+  );
+  saveAllLeads(updated);
+}
+
+function updateLeadNotes(leadId, notes) {
+  const leads = getAllLeads();
+  const updated = leads.map(item =>
+    item.id === leadId ? { ...item, notes: sanitizeText(notes) } : item
+  );
+  saveAllLeads(updated);
+}
+
+function deleteLead(leadId) {
+  const leads = getAllLeads().filter(item => item.id !== leadId);
+  saveAllLeads(leads);
+}
+
+/* ---------------- BROKERS ---------------- */
+
+function getAllBrokers() {
+  return getData(MEI_KEYS.brokers, []);
+}
+
+function saveAllBrokers(brokers) {
+  return setData(MEI_KEYS.brokers, brokers);
+}
+
+function getBrokerById(brokerId) {
+  return getAllBrokers().find(item => item.id === brokerId) || null;
+}
+
+function addBroker(data) {
+  const brokers = getAllBrokers();
+
+  const newBroker = {
+    id: makeId("BRK"),
+    name: sanitizeText(data.name),
+    phone: normalizePhone(data.phone),
+    city: sanitizeText(data.city),
+    area: sanitizeText(data.area),
+    company: sanitizeText(data.company || "MEI Associate"),
+    status: sanitizeText(data.status || "active"),
+    joinedAt: new Date().toISOString()
+  };
+
+  brokers.unshift(newBroker);
+  saveAllBrokers(brokers);
+  return newBroker;
+}
+
+function updateBrokerStatus(brokerId, status) {
+  const brokers = getAllBrokers();
+  const updated = brokers.map(item =>
+    item.id === brokerId ? { ...item, status } : item
+  );
+  saveAllBrokers(updated);
+}
+
+/* ---------------- SETTINGS ---------------- */
+
+function getSettings() {
+  return getData(MEI_KEYS.settings, {});
+}
+
+function saveSettings(settings) {
+  return setData(MEI_KEYS.settings, settings);
+}
+
+/* ---------------- RENDER HELPERS ---------------- */
+
+function createPropertyCard(property) {
+  return `
+    <div class="property-card" data-id="${property.id}">
+      <img src="${property.image || ""}" alt="${property.title}" style="width:100%;height:220px;object-fit:cover;border-radius:12px;" />
+      <h3>${property.title}</h3>
+      <p><strong>${formatPrice(property.price)}</strong></p>
+      <p>${property.area}, ${property.city}</p>
+      <p>${property.type}${property.bhk ? " • " + property.bhk : ""}${property.sqft ? " • " + property.sqft + " sqft" : ""}</p>
+      <a href="property.html?id=${property.id}">View Details</a>
+    </div>
+  `;
+}
+
+function createLeadRow(lead) {
+  return `
+    <tr>
+      <td>${lead.buyerName || "-"}</td>
+      <td>${lead.buyerPhone || "-"}</td>
+      <td>${lead.propertyTitle || "-"}</td>
+      <td>${lead.assignedBrokerName || "-"}</td>
+      <td>${lead.status || "-"}</td>
+      <td>${lead.followUpDate || "-"}</td>
+      <td>${formatDate(lead.createdAt)}</td>
+    </tr>
+  `;
+}
+
+function createPropertyRow(property) {
+  return `
+    <tr>
+      <td>${property.title}</td>
+      <td>${property.city}</td>
+      <td>${property.area}</td>
+      <td>${formatPrice(property.price)}</td>
+      <td>${property.status}</td>
+      <td>${formatDate(property.createdAt)}</td>
+    </tr>
+  `;
+}
+
+/* ---------------- DEMO RESET ---------------- */
+
+function clearAllMeiData() {
+  localStorage.removeItem(MEI_KEYS.properties);
+  localStorage.removeItem(MEI_KEYS.leads);
+  localStorage.removeItem(MEI_KEYS.brokers);
+  localStorage.removeItem(MEI_KEYS.settings);
+  seedData();
+}
+
+/* ---------------- INIT ---------------- */
+
+seedData();
+console.log("MEI Estate app.js loaded successfully");
