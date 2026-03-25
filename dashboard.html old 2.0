@@ -1,0 +1,1598 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MEI Admin Dashboard</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#121b2f;
+      --card2:rgba(255,255,255,.03);
+      --line:rgba(255,255,255,.14);
+      --txt:#e8eefc;
+      --mut:rgba(232,238,252,.82);
+      --mut2:rgba(232,238,252,.68);
+      --pill:rgba(255,255,255,.08);
+      --radius:16px;
+      --focus:rgba(140,170,255,.95);
+      --okBorder:rgba(0,255,150,.30);
+      --okBg:rgba(0,255,150,.12);
+      --warnBorder:rgba(255,200,0,.30);
+      --warnBg:rgba(255,200,0,.12);
+      --dangerBorder:rgba(255,0,90,.34);
+      --dangerBg:rgba(255,0,90,.14);
+      --shadow:0 18px 40px rgba(0,0,0,.35);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--txt);
+    }
+
+    .wrap{max-width:1280px;margin:0 auto;padding:20px}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .h1{font-size:26px;font-weight:900;letter-spacing:.2px}
+    .h2{font-size:18px;font-weight:900}
+    .muted{opacity:.88;color:var(--mut)}
+    .mini{font-size:12px;color:var(--mut2)}
+    .title{font-weight:900}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .nowrap{white-space:nowrap}
+    .sectionSpacer{margin-top:12px}
+
+    a.link, button{
+      color:var(--txt);
+      text-decoration:none;
+      padding:9px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:rgba(255,255,255,.05);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      min-height:36px;
+      cursor:pointer;
+      font-weight:800;
+    }
+    a.link:hover, button:hover{background:rgba(255,255,255,.09)}
+    a.link:active, button:active{transform:translateY(1px)}
+    button[disabled]{opacity:.55;cursor:not-allowed}
+
+    .btnSmall{padding:6px 10px;min-height:32px;font-weight:800}
+    .iconBtn{padding:6px;min-height:32px;min-width:32px;display:inline-flex;align-items:center;justify-content:center}
+
+    .danger{border-color:var(--dangerBorder);background:var(--dangerBg)}
+    .danger:hover{background:rgba(255,0,90,.20)}
+    .ok{border-color:var(--okBorder);background:var(--okBg)}
+    .ok:hover{background:rgba(0,255,150,.18)}
+    .warn{border-color:var(--warnBorder);background:var(--warnBg)}
+    .warn:hover{background:rgba(255,200,0,.18)}
+
+    a.link:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+      outline:3px solid var(--focus);
+      outline-offset:2px;
+    }
+
+    .statsGrid{
+      display:grid;
+      grid-template-columns:repeat(6,minmax(0,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    @media (max-width:1180px){ .statsGrid{grid-template-columns:repeat(3,1fr)} }
+    @media (max-width:700px){ .statsGrid{grid-template-columns:repeat(2,1fr)} }
+
+    .stat{
+      padding:16px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:var(--card2);
+    }
+    .stat .num{
+      font-size:24px;
+      font-weight:900;
+      color:#fff;
+      margin-bottom:4px;
+    }
+
+    .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+    @media (max-width:980px){.grid2{grid-template-columns:1fr}}
+
+    .tableWrap{overflow:auto;margin-top:10px;border-radius:12px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;vertical-align:top}
+    thead th{
+      opacity:.92;
+      text-align:left;
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      background:var(--card);
+      z-index:2;
+    }
+    tbody tr{border-top:1px solid rgba(255,255,255,.10)}
+
+    .pill{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      background:var(--pill);
+      border:1px solid var(--line);
+    }
+
+    .toast{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--okBorder);
+      background:var(--okBg);
+    }
+    .toast[hidden]{display:none}
+    .toast.warn{border-color:var(--warnBorder);background:var(--warnBg)}
+    .toast.danger{border-color:var(--dangerBorder);background:var(--dangerBg)}
+
+    .tabs{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:14px;
+    }
+    .tabBtn{
+      border-radius:999px;
+      padding:9px 14px;
+      font-weight:900;
+    }
+    .tabBtn.active{
+      background:rgba(140,170,255,.18);
+      border-color:rgba(140,170,255,.32);
+      color:#fff;
+    }
+
+    .tabPanel{display:none;margin-top:12px}
+    .tabPanel.active{display:block}
+
+    .filterBar{
+      display:grid;
+      grid-template-columns:1.2fr .8fr .8fr .8fr auto;
+      gap:10px;
+      margin-top:12px;
+    }
+    @media (max-width:1100px){ .filterBar{grid-template-columns:1fr 1fr} }
+    @media (max-width:600px){ .filterBar{grid-template-columns:1fr} }
+
+    .brokerGrid,.templateGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+    @media (max-width:900px){
+      .brokerGrid,.templateGrid{grid-template-columns:1fr}
+    }
+
+    input,select,textarea{
+      width:100%;
+      padding:10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.18);
+      background:#0b1220;
+      color:var(--txt);
+      outline:none;
+      min-height:38px;
+    }
+    textarea{resize:vertical;min-height:120px}
+
+    .chip{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      margin:4px 6px 0 0;
+    }
+
+    .chipBtn{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+      font-weight:900;
+      cursor:pointer;
+      min-height:32px;
+    }
+
+    .statusBadge{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid transparent;
+      font-weight:800;
+    }
+    .status-NEW{background:rgba(0,153,255,.16);border-color:rgba(0,153,255,.26)}
+    .status-CONTACTED{background:rgba(255,200,0,.14);border-color:rgba(255,200,0,.26)}
+    .status-VISIT_SCHEDULED{background:rgba(160,120,255,.14);border-color:rgba(160,120,255,.26)}
+    .status-CLOSED{background:rgba(0,255,150,.14);border-color:rgba(0,255,150,.26)}
+    .status-ARCHIVED{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16)}
+    .status-DOCUMENT_PENDING{background:rgba(255,160,0,.14);border-color:rgba(255,160,0,.26)}
+    .status-PROPERTY_RECEIVED{background:rgba(0,220,200,.14);border-color:rgba(0,220,200,.26)}
+    .status-APPROVED{background:rgba(0,255,150,.14);border-color:rgba(0,255,150,.26)}
+
+    .overdueRow{
+      background:linear-gradient(90deg, rgba(255,0,90,.12), transparent 50%);
+      outline:1px solid rgba(255,0,90,.18);
+      outline-offset:-1px;
+    }
+
+    .modalBack{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.58);
+      padding:20px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      overflow:auto;
+      z-index:9998;
+    }
+    .modalBack[hidden]{display:none}
+    .modalCard{
+      width:min(700px,100%);
+      margin:5vh auto;
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:0 12px 40px rgba(0,0,0,.55);
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="card">
+      <div class="top">
+        <div>
+          <div class="h1">MEI — Admin Dashboard</div>
+          <div class="muted">Properties + Brokers + Buyer Leads + Seller Leads + Materials + Services</div>
+        </div>
+
+        <div class="row">
+          <a class="link" href="index.html">🏠 Home</a>
+          <a class="link" href="listings.html">📋 Listings</a>
+          <a class="link" href="seller.html">🏷 Seller</a>
+          <a class="link" href="materials.html">🏗 Materials</a>
+          <a class="link" href="services.html">🛠 Services</a>
+          <a class="link" href="add-property.html">➕ Add Property</a>
+          <button type="button" data-action="refreshAll">🔄 Refresh</button>
+          <button type="button" class="danger" data-action="resetDemo">🧨 Reset Demo</button>
+        </div>
+      </div>
+
+      <div id="toast" class="toast" hidden>
+        <span id="toastMsg">Updated</span>
+      </div>
+
+      <div class="statsGrid">
+        <div class="stat"><div class="num" id="statPendingProps">0</div><div class="mini">Pending Properties</div></div>
+        <div class="stat"><div class="num" id="statApprovedProps">0</div><div class="mini">Approved Properties</div></div>
+        <div class="stat"><div class="num" id="statBuyerLeads">0</div><div class="mini">Buyer Leads</div></div>
+        <div class="stat"><div class="num" id="statSellerLeads">0</div><div class="mini">Seller Leads</div></div>
+        <div class="stat"><div class="num" id="statMaterialLeads">0</div><div class="mini">Materials Leads</div></div>
+        <div class="stat"><div class="num" id="statServiceLeads">0</div><div class="mini">Service Leads</div></div>
+      </div>
+    </div>
+
+    <div class="card sectionSpacer">
+      <div class="top">
+        <div>
+          <div class="h2">Broker Master</div>
+          <div class="muted">Add brokers → assign them inside buyer leads</div>
+        </div>
+        <div class="row">
+          <button type="button" class="ok" data-action="addBroker">➕ Add Broker</button>
+          <button type="button" data-action="seedBrokers">✨ Seed Demo Brokers</button>
+        </div>
+      </div>
+
+      <div class="brokerGrid">
+        <div>
+          <label for="brokerName" class="mini" style="display:block;margin-bottom:6px;">Add broker name</label>
+          <input id="brokerName" placeholder="Eg: Raj / Karthik / Priya" />
+        </div>
+        <div>
+          <div class="mini" style="margin-bottom:6px;">Current brokers</div>
+          <div id="brokerChips"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card sectionSpacer">
+      <div class="top">
+        <div>
+          <div class="h2">WhatsApp Template</div>
+          <div class="muted">Buyer lead WhatsApp template</div>
+          <div class="row" style="margin-top:8px;">
+            <button type="button" class="chipBtn" data-insert="{buyer}">{buyer}</button>
+            <button type="button" class="chipBtn" data-insert="{listing}">{listing}</button>
+            <button type="button" class="chipBtn" data-insert="{phone}">{phone}</button>
+            <button type="button" class="chipBtn" data-insert="{date}">{date}</button>
+          </div>
+        </div>
+        <div class="row">
+          <button type="button" class="ok" data-action="saveWATemplate">💾 Save</button>
+          <button type="button" data-action="resetWATemplate">↩ Reset</button>
+        </div>
+      </div>
+
+      <div class="templateGrid">
+        <div>
+          <label for="waTemplate" class="mini" style="display:block;margin-bottom:6px;">Template</label>
+          <textarea id="waTemplate"></textarea>
+        </div>
+        <div>
+          <div class="mini" style="margin-bottom:6px;">Preview</div>
+          <div class="card" style="background:var(--card2);">
+            <div class="mini">Sample Buyer: Arun • Listing: 2BHK Whitefield • Phone: 9876543210</div>
+            <div id="waPreview" style="white-space:pre-wrap;margin-top:10px;line-height:1.4;"></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button type="button" data-action="updatePreview">🔍 Update Preview</button>
+            <button type="button" class="ok" data-action="copyPreview">📋 Copy Preview</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card sectionSpacer">
+        <div class="top">
+          <div>
+            <div class="h2">Pending Approvals</div>
+            <div class="muted">Approve / reject / archive property listings</div>
+          </div>
+          <div class="row">
+            <span class="pill">Pending: <b id="pendingCount">0</b></span>
+          </div>
+        </div>
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr><th>Listing</th><th class="nowrap">Actions</th></tr>
+            </thead>
+            <tbody id="pendingBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card sectionSpacer">
+        <div class="top">
+          <div>
+            <div class="h2">Approved Listings</div>
+            <div class="muted">Only approved properties should appear publicly</div>
+          </div>
+          <div class="row">
+            <span class="pill">Approved: <b id="approvedCount">0</b></span>
+          </div>
+        </div>
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr><th>Listing</th><th class="nowrap">Manage</th></tr>
+            </thead>
+            <tbody id="approvedBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card sectionSpacer">
+      <div class="top">
+        <div>
+          <div class="h2">Lead Manager</div>
+          <div class="muted">All lead types in one admin center</div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button type="button" class="tabBtn active" data-tab="buyer">👤 Buyer Leads</button>
+        <button type="button" class="tabBtn" data-tab="seller">🏷 Seller Leads</button>
+        <button type="button" class="tabBtn" data-tab="materials">🏗 Materials Leads</button>
+        <button type="button" class="tabBtn" data-tab="services">🛠 Service Leads</button>
+      </div>
+
+      <section id="panel-buyer" class="tabPanel active">
+        <div class="filterBar">
+          <input id="buyerSearch" placeholder="Search listing / buyer / phone / notes..." />
+          <select id="buyerBrokerFilter">
+            <option value="ALL">All Brokers</option>
+            <option value="__UNASSIGNED__">Unassigned</option>
+          </select>
+          <select id="buyerStatusFilter">
+            <option value="ALL">All Status</option>
+            <option value="NEW">NEW</option>
+            <option value="CONTACTED">CONTACTED</option>
+            <option value="VISIT_SCHEDULED">VISIT_SCHEDULED</option>
+            <option value="CLOSED">CLOSED</option>
+            <option value="ARCHIVED">ARCHIVED</option>
+          </select>
+          <select id="buyerOverdueFilter">
+            <option value="ALL">All</option>
+            <option value="OVERDUE">Overdue only</option>
+            <option value="NOT_OVERDUE">Not overdue</option>
+          </select>
+          <button type="button" class="ok" data-action="exportBuyerCSV">⬇ Export CSV</button>
+        </div>
+
+        <div class="tableWrap">
+          <table style="min-width:1450px;">
+            <thead>
+              <tr>
+                <th>Date</th><th>Listing</th><th>Buyer</th><th>Phone</th><th>Assigned</th>
+                <th>Status</th><th>Follow-up</th><th>Notes</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="buyerLeadsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="panel-seller" class="tabPanel">
+        <div class="filterBar">
+          <input id="sellerSearch" placeholder="Search seller / phone / title / area..." />
+          <select id="sellerStatusFilter">
+            <option value="ALL">All Status</option>
+            <option value="NEW">NEW</option>
+            <option value="CONTACTED">CONTACTED</option>
+            <option value="DOCUMENT_PENDING">DOCUMENT_PENDING</option>
+            <option value="PROPERTY_RECEIVED">PROPERTY_RECEIVED</option>
+            <option value="APPROVED">APPROVED</option>
+            <option value="CLOSED">CLOSED</option>
+            <option value="ARCHIVED">ARCHIVED</option>
+          </select>
+          <select id="sellerTypeFilter"><option value="ALL">All Seller Types</option></select>
+          <select id="sellerPropertyTypeFilter"><option value="ALL">All Property Types</option></select>
+          <button type="button" class="ok" data-action="exportSellerCSV">⬇ Export CSV</button>
+        </div>
+
+        <div class="tableWrap">
+          <table style="min-width:1500px;">
+            <thead>
+              <tr>
+                <th>Date</th><th>Seller</th><th>Phone</th><th>Listing Title</th><th>Property</th>
+                <th>Location</th><th>Expected Price</th><th>Docs</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="sellerLeadsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="panel-materials" class="tabPanel">
+        <div class="filterBar">
+          <input id="materialSearch" placeholder="Search material / customer / phone / location..." />
+          <select id="materialStatusFilter">
+            <option value="ALL">All Status</option>
+            <option value="NEW">NEW</option>
+            <option value="CONTACTED">CONTACTED</option>
+            <option value="CLOSED">CLOSED</option>
+            <option value="ARCHIVED">ARCHIVED</option>
+          </select>
+          <select id="materialTypeFilter"><option value="ALL">All Materials</option></select>
+          <select id="materialCustomerFilter"><option value="ALL">All Customer Types</option></select>
+          <button type="button" class="ok" data-action="exportMaterialCSV">⬇ Export CSV</button>
+        </div>
+
+        <div class="tableWrap">
+          <table style="min-width:1400px;">
+            <thead>
+              <tr>
+                <th>Date</th><th>Customer</th><th>Phone</th><th>Material</th><th>Qty</th>
+                <th>Location</th><th>Budget</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="materialLeadsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="panel-services" class="tabPanel">
+        <div class="filterBar">
+          <input id="serviceSearch" placeholder="Search service / customer / phone / location..." />
+          <select id="serviceStatusFilter">
+            <option value="ALL">All Status</option>
+            <option value="NEW">NEW</option>
+            <option value="CONTACTED">CONTACTED</option>
+            <option value="CLOSED">CLOSED</option>
+            <option value="ARCHIVED">ARCHIVED</option>
+          </select>
+          <select id="serviceTypeFilter"><option value="ALL">All Services</option></select>
+          <select id="serviceCustomerFilter"><option value="ALL">All Customer Types</option></select>
+          <button type="button" class="ok" data-action="exportServiceCSV">⬇ Export CSV</button>
+        </div>
+
+        <div class="tableWrap">
+          <table style="min-width:1450px;">
+            <thead>
+              <tr>
+                <th>Date</th><th>Customer</th><th>Phone</th><th>Service</th><th>Property Type</th>
+                <th>Location</th><th>Budget</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="serviceLeadsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="leadModalBack" class="modalBack" hidden>
+    <div class="modalCard">
+      <div class="top">
+        <div>
+          <div class="h2">Edit Buyer Lead</div>
+          <div id="mLeadMeta" class="muted"></div>
+        </div>
+        <div class="row">
+          <button type="button" data-action="closeLeadModal">✕ Close</button>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:10px;margin-top:12px;">
+        <div>
+          <label for="mFollowUp" class="mini" style="display:block;margin-bottom:6px;">Follow-up date</label>
+          <input id="mFollowUp" type="date" />
+        </div>
+
+        <div>
+          <label for="mAssigned" class="mini" style="display:block;margin-bottom:6px;">Assigned broker</label>
+          <select id="mAssigned"></select>
+        </div>
+
+        <div>
+          <label for="mStatus" class="mini" style="display:block;margin-bottom:6px;">Status</label>
+          <select id="mStatus">
+            <option value="NEW">NEW</option>
+            <option value="CONTACTED">CONTACTED</option>
+            <option value="VISIT_SCHEDULED">VISIT_SCHEDULED</option>
+            <option value="CLOSED">CLOSED</option>
+            <option value="ARCHIVED">ARCHIVED</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="mNotes" class="mini" style="display:block;margin-bottom:6px;">Notes</label>
+          <textarea id="mNotes"></textarea>
+        </div>
+
+        <div class="row">
+          <button type="button" class="ok" data-action="saveLeadModal">✅ Save</button>
+          <button type="button" data-action="closeLeadModal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    const WA_TEMPLATE_KEY = "mei_whatsapp_template_v1";
+
+    let MODAL_LEAD_ID = null;
+    let BUYER_EXPORT_CACHE = [];
+    let SELLER_EXPORT_CACHE = [];
+    let MATERIAL_EXPORT_CACHE = [];
+    let SERVICE_EXPORT_CACHE = [];
+
+    const $ = (id) => document.getElementById(id);
+
+    function escapeHtml(value){
+      return String(value ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function escapeAttr(value){
+      return String(value ?? "").replaceAll('"',"&quot;");
+    }
+
+    function fmtDate(iso){
+      if(!iso) return "—";
+      const d = new Date(iso);
+      return Number.isNaN(d.getTime()) ? String(iso) : d.toLocaleString("en-IN");
+    }
+
+    function todayYMD(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function tomorrowYMD(){
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function toast(msg, type="ok"){
+      const box = $("toast");
+      box.hidden = false;
+      box.classList.remove("warn","danger");
+      if(type === "warn") box.classList.add("warn");
+      if(type === "danger") box.classList.add("danger");
+      $("toastMsg").textContent = msg;
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => box.hidden = true, 2200);
+    }
+
+    function defaultWATemplate(){
+      return `Hello {buyer},
+
+Thanks for your interest in "{listing}".
+
+This is MEI Estate. Please share your preferred time to discuss today.
+
+- MEI`;
+    }
+
+    function getWATemplate(){
+      return localStorage.getItem(WA_TEMPLATE_KEY) || defaultWATemplate();
+    }
+
+    function setWATemplate(val){
+      localStorage.setItem(WA_TEMPLATE_KEY, val);
+    }
+
+    function updatePreview(){
+      const tpl = $("waTemplate").value.trim() || defaultWATemplate();
+      const preview = tpl
+        .replaceAll("{buyer}", "Arun")
+        .replaceAll("{listing}", "2BHK Whitefield")
+        .replaceAll("{phone}", "9876543210")
+        .replaceAll("{date}", new Date().toLocaleDateString("en-IN"));
+      $("waPreview").textContent = preview;
+    }
+
+    async function copyText(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch(e){
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand("copy");
+        ta.remove();
+        return ok;
+      }
+    }
+
+    function updateStats(){
+      const props = getAllProperties();
+      $("statPendingProps").textContent = props.filter(x => x.status === "pending").length;
+      $("statApprovedProps").textContent = props.filter(x => x.status === "approved").length;
+      $("statBuyerLeads").textContent = getAllLeads().length;
+      $("statSellerLeads").textContent = getSellerLeads().length;
+      $("statMaterialLeads").textContent = getMaterialLeads().length;
+      $("statServiceLeads").textContent = getServiceLeads().length;
+    }
+
+    function renderBrokerChips(){
+      const wrap = $("brokerChips");
+      wrap.innerHTML = "";
+      const brokers = getAllBrokers();
+
+      if(!brokers.length){
+        wrap.innerHTML = `<div class="mini">No brokers yet.</div>`;
+        return;
+      }
+
+      brokers.forEach(broker => {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.innerHTML = `<span>${escapeHtml(broker.name)}</span>`;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "danger iconBtn";
+        btn.textContent = "✕";
+        btn.addEventListener("click", () => {
+          if(!confirm(`Delete broker "${broker.name}"?`)) return;
+          saveAllBrokers(getAllBrokers().filter(x => x.name !== broker.name));
+          syncBrokerDropdowns();
+          renderBuyerLeads();
+          toast("Broker removed", "warn");
+        });
+        chip.appendChild(btn);
+        wrap.appendChild(chip);
+      });
+    }
+
+    function syncBrokerDropdowns(){
+      renderBrokerChips();
+
+      const brokerFilter = $("buyerBrokerFilter");
+      const current = brokerFilter.value || "ALL";
+      brokerFilter.innerHTML = `<option value="ALL">All Brokers</option><option value="__UNASSIGNED__">Unassigned</option>`;
+      getAllBrokers().forEach(b => {
+        const op = document.createElement("option");
+        op.value = b.name;
+        op.textContent = b.name;
+        brokerFilter.appendChild(op);
+      });
+      if([...brokerFilter.options].some(o => o.value === current)) brokerFilter.value = current;
+
+      const assigned = $("mAssigned");
+      const currentAssigned = assigned.value || "";
+      assigned.innerHTML = `<option value="">Unassigned</option>`;
+      getAllBrokers().forEach(b => {
+        const op = document.createElement("option");
+        op.value = b.name;
+        op.textContent = b.name;
+        assigned.appendChild(op);
+      });
+      if([...assigned.options].some(o => o.value === currentAssigned)) assigned.value = currentAssigned;
+    }
+
+    function addBrokerFromInput(){
+      const name = $("brokerName").value.trim();
+      if(!name){
+        alert("Broker name enter பண்ணுங்கள்");
+        return;
+      }
+      const ok = addBroker({ name, company:"MEI Associate" });
+      if(!ok){
+        toast("Broker already exists", "warn");
+        return;
+      }
+      $("brokerName").value = "";
+      syncBrokerDropdowns();
+      toast("Broker added");
+    }
+
+    function seedDemoBrokers(){
+      if(getAllBrokers().length){
+        toast("Brokers already available", "warn");
+        return;
+      }
+      saveAllBrokers([
+        { name:"Raj", city:"Bangalore", area:"Whitefield", company:"MEI Associate" },
+        { name:"Karthik", city:"Bangalore", area:"Hoodi", company:"MEI Associate" },
+        { name:"Priya", city:"Bangalore", area:"Sarjapur", company:"MEI Associate" }
+      ]);
+      syncBrokerDropdowns();
+      renderBuyerLeads();
+      toast("Demo brokers seeded");
+    }
+
+    function saveWATemplateAction(){
+      const val = $("waTemplate").value.trim();
+      if(!val){
+        alert("Template empty ஆக இருக்கக்கூடாது");
+        return;
+      }
+      setWATemplate(val);
+      updatePreview();
+      toast("Template saved");
+    }
+
+    function resetWATemplateAction(){
+      setWATemplate(defaultWATemplate());
+      $("waTemplate").value = getWATemplate();
+      updatePreview();
+      toast("Template reset", "warn");
+    }
+
+    async function copyPreviewAction(){
+      const ok = await copyText($("waPreview").textContent || "");
+      if(ok) toast("Preview copied");
+      else toast("Copy failed", "danger");
+    }
+
+    function renderPropertyRowCell(p){
+      const bits = [
+        p.city,
+        p.area,
+        p.type,
+        p.bhk,
+        p.sqft ? `${p.sqft} sqft` : "",
+        p.price ? "₹" + Number(p.price).toLocaleString("en-IN") : ""
+      ].filter(Boolean).join(" • ");
+      return `
+        <div class="title">${escapeHtml(p.title || "Listing")}</div>
+        <div class="mini">${escapeHtml(bits || "—")}</div>
+        <div class="mini">ID: ${escapeHtml(p.id)}</div>
+      `;
+    }
+
+    function approveProp(id){
+      const props = getAllProperties();
+      const idx = props.findIndex(x => x.id === id);
+      if(idx === -1) return;
+      props[idx].status = "approved";
+      props[idx].approvedAt = new Date().toISOString();
+      saveAllProperties(props);
+      refreshAll();
+      toast("Property approved");
+    }
+
+    function rejectProp(id){
+      const props = getAllProperties();
+      const idx = props.findIndex(x => x.id === id);
+      if(idx === -1) return;
+      props[idx].status = "rejected";
+      saveAllProperties(props);
+      refreshAll();
+      toast("Property rejected", "warn");
+    }
+
+    function archiveProp(id){
+      const props = getAllProperties();
+      const idx = props.findIndex(x => x.id === id);
+      if(idx === -1) return;
+      props[idx].status = "archived";
+      saveAllProperties(props);
+      refreshAll();
+      toast("Property archived", "warn");
+    }
+
+    function deleteProp(id){
+      if(!confirm("இந்த listing permanent delete செய்யவா?")) return;
+      saveAllProperties(getAllProperties().filter(x => x.id !== id));
+      refreshAll();
+      toast("Property deleted", "warn");
+    }
+
+    function renderProperties(){
+      const props = getAllProperties();
+      const pending = props.filter(x => x.status === "pending");
+      const approved = props.filter(x => x.status === "approved");
+
+      $("pendingCount").textContent = pending.length;
+      $("approvedCount").textContent = approved.length;
+
+      const pBody = $("pendingBody");
+      pBody.innerHTML = "";
+      if(!pending.length){
+        pBody.innerHTML = `<tr><td colspan="2" style="padding:14px;">No pending approvals.</td></tr>`;
+      }else{
+        pending.forEach(p => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${renderPropertyRowCell(p)}</td>
+            <td class="nowrap">
+              <div class="row">
+                <button type="button" class="ok btnSmall" data-approve="${escapeAttr(p.id)}">Approve</button>
+                <button type="button" class="warn btnSmall" data-archive="${escapeAttr(p.id)}">Archive</button>
+                <button type="button" class="danger btnSmall" data-reject="${escapeAttr(p.id)}">Reject</button>
+              </div>
+            </td>
+          `;
+          pBody.appendChild(tr);
+        });
+      }
+
+      const aBody = $("approvedBody");
+      aBody.innerHTML = "";
+      if(!approved.length){
+        aBody.innerHTML = `<tr><td colspan="2" style="padding:14px;">No approved listings yet.</td></tr>`;
+      }else{
+        approved.forEach(p => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>
+              ${renderPropertyRowCell(p)}
+              <div class="mini">Approved: ${escapeHtml(fmtDate(p.approvedAt))}</div>
+            </td>
+            <td class="nowrap">
+              <div class="row">
+                <a class="link" href="property.html?id=${encodeURIComponent(p.id)}" target="_blank">👁 View</a>
+                <button type="button" class="warn btnSmall" data-approve="${escapeAttr(p.id)}">Re-Approve</button>
+                <button type="button" class="danger btnSmall" data-delete="${escapeAttr(p.id)}">Delete</button>
+              </div>
+            </td>
+          `;
+          aBody.appendChild(tr);
+        });
+      }
+    }
+
+    function statusBadge(status){
+      const s = normalizeStatus(status, "NEW");
+      return `<span class="statusBadge status-${escapeAttr(s)}">${escapeHtml(s)}</span>`;
+    }
+
+    function isBuyerOverdue(lead){
+      if(["CLOSED","ARCHIVED"].includes(lead.status)) return false;
+      if(!lead.followUp) return false;
+      return String(lead.followUp) < todayYMD();
+    }
+
+    function buildBuyerMessage(lead){
+      return getWATemplate()
+        .replaceAll("{buyer}", lead.buyerName || "")
+        .replaceAll("{listing}", lead.listingTitle || "property")
+        .replaceAll("{phone}", lead.buyerPhone || "")
+        .replaceAll("{date}", new Date().toLocaleDateString("en-IN"));
+    }
+
+    function renderBuyerLeads(){
+      const q = $("buyerSearch").value.trim().toLowerCase();
+      const brokerF = $("buyerBrokerFilter").value;
+      const statusF = $("buyerStatusFilter").value;
+      const overdueF = $("buyerOverdueFilter").value;
+
+      let rows = getAllLeads().filter(l => {
+        const hay = [
+          l.listingTitle, l.listingId, l.buyerName, l.buyerPhone, l.notes, l.message, l.assignedTo
+        ].join(" ").toLowerCase();
+        return hay.includes(q);
+      });
+
+      rows = rows.filter(l => {
+        if(brokerF === "ALL") return true;
+        if(brokerF === "__UNASSIGNED__") return !l.assignedTo;
+        return l.assignedTo === brokerF;
+      });
+
+      rows = rows.filter(l => statusF === "ALL" ? true : l.status === statusF);
+      rows = rows.filter(l => {
+        if(overdueF === "ALL") return true;
+        if(overdueF === "OVERDUE") return isBuyerOverdue(l);
+        if(overdueF === "NOT_OVERDUE") return !isBuyerOverdue(l);
+        return true;
+      });
+
+      BUYER_EXPORT_CACHE = rows;
+
+      const body = $("buyerLeadsBody");
+      body.innerHTML = "";
+
+      if(!rows.length){
+        body.innerHTML = `<tr><td colspan="9" style="padding:14px;">No buyer leads match your filters.</td></tr>`;
+        return;
+      }
+
+      rows.forEach(l => {
+        const tr = document.createElement("tr");
+        if(isBuyerOverdue(l)) tr.classList.add("overdueRow");
+
+        const assignOptions = [`<option value="">Unassigned</option>`]
+          .concat(getAllBrokers().map(b => `<option value="${escapeAttr(b.name)}" ${l.assignedTo === b.name ? "selected" : ""}>${escapeHtml(b.name)}</option>`))
+          .join("");
+
+        tr.innerHTML = `
+          <td class="nowrap">${escapeHtml(fmtDate(l.createdAt))}</td>
+          <td><div class="title">${escapeHtml(l.listingTitle || "Listing")}</div><div class="mini">ID: ${escapeHtml(l.listingId || "-")}</div></td>
+          <td>${escapeHtml(l.buyerName || "-")}</td>
+          <td class="nowrap">${escapeHtml(l.buyerPhone || "-")}</td>
+          <td><select data-assign-buyer="${escapeAttr(l.id)}" style="min-width:160px">${assignOptions}</select></td>
+          <td>${statusBadge(l.status)}${isBuyerOverdue(l) ? `<div class="mini" style="color:#ff8fb0;margin-top:6px;font-weight:900;">⚠ OVERDUE</div>` : ""}</td>
+          <td><div>${escapeHtml(l.followUp || "—")}</div><div class="mini">${l.updatedAt ? "Updated: " + escapeHtml(fmtDate(l.updatedAt)) : ""}</div></td>
+          <td style="max-width:320px;">${escapeHtml(l.notes || "—")}</td>
+          <td class="nowrap">
+            <div class="row">
+              <a class="link" href="tel:${encodeURIComponent(l.buyerPhone || "")}">📞 Call</a>
+              <button type="button" class="btnSmall" data-wa-buyer="${escapeAttr(l.id)}">💬 WhatsApp</button>
+              <button type="button" class="btnSmall" data-edit-buyer="${escapeAttr(l.id)}">✏ Edit</button>
+              <button type="button" class="warn btnSmall" data-status-buyer="${escapeAttr(l.id)}" data-next="CONTACTED">Contacted</button>
+              <button type="button" class="ok btnSmall" data-status-buyer="${escapeAttr(l.id)}" data-next="CLOSED">Close</button>
+            </div>
+          </td>
+        `;
+        body.appendChild(tr);
+
+        if(l.message){
+          const tr2 = document.createElement("tr");
+          if(isBuyerOverdue(l)) tr2.classList.add("overdueRow");
+          tr2.innerHTML = `<td></td><td colspan="8" style="border-top:1px dashed rgba(255,255,255,.12);">📝 ${escapeHtml(l.message)}</td>`;
+          body.appendChild(tr2);
+        }
+      });
+    }
+
+    function renderSellerFilters(){
+      const list = getSellerLeads();
+      const sellerTypes = [...new Set(list.map(x => x.sellerType).filter(Boolean))];
+      const propertyTypes = [...new Set(list.map(x => x.propertyType).filter(Boolean))];
+
+      const st = $("sellerTypeFilter");
+      const currentSt = st.value || "ALL";
+      st.innerHTML = `<option value="ALL">All Seller Types</option>`;
+      sellerTypes.forEach(v => st.appendChild(new Option(v, v)));
+      if([...st.options].some(o => o.value === currentSt)) st.value = currentSt;
+
+      const pt = $("sellerPropertyTypeFilter");
+      const currentPt = pt.value || "ALL";
+      pt.innerHTML = `<option value="ALL">All Property Types</option>`;
+      propertyTypes.forEach(v => pt.appendChild(new Option(v, v)));
+      if([...pt.options].some(o => o.value === currentPt)) pt.value = currentPt;
+    }
+
+    function renderSellerLeads(){
+      renderSellerFilters();
+
+      const q = $("sellerSearch").value.trim().toLowerCase();
+      const statusF = $("sellerStatusFilter").value;
+      const sellerTypeF = $("sellerTypeFilter").value;
+      const propertyTypeF = $("sellerPropertyTypeFilter").value;
+
+      let rows = getSellerLeads().filter(x => {
+        const hay = [x.sellerName,x.phone,x.sellerType,x.propertyType,x.listingTitle,x.city,x.area,x.notes,x.expectedPrice].join(" ").toLowerCase();
+        return hay.includes(q);
+      });
+
+      rows = rows.filter(x => statusF === "ALL" ? true : x.status === statusF);
+      rows = rows.filter(x => sellerTypeF === "ALL" ? true : x.sellerType === sellerTypeF);
+      rows = rows.filter(x => propertyTypeF === "ALL" ? true : x.propertyType === propertyTypeF);
+
+      SELLER_EXPORT_CACHE = rows;
+
+      const body = $("sellerLeadsBody");
+      body.innerHTML = "";
+
+      if(!rows.length){
+        body.innerHTML = `<tr><td colspan="10" style="padding:14px;">No seller leads match your filters.</td></tr>`;
+        return;
+      }
+
+      rows.forEach(x => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="nowrap">${escapeHtml(fmtDate(x.createdAt))}</td>
+          <td><div class="title">${escapeHtml(x.sellerName || "-")}</div><div class="mini">${escapeHtml(x.sellerType || "")}</div></td>
+          <td class="nowrap">${escapeHtml(x.phone || "-")}</td>
+          <td><div class="title">${escapeHtml(x.listingTitle || "-")}</div><div class="mini">${escapeHtml(x.urgency || "")}</div></td>
+          <td>${escapeHtml(x.propertyType || "-")}</td>
+          <td>${escapeHtml([x.city, x.area].filter(Boolean).join(" • ") || "-")}</td>
+          <td>${escapeHtml(x.expectedPrice ? "₹" + Number(cleanNumber(x.expectedPrice)).toLocaleString("en-IN") : "—")}</td>
+          <td>${escapeHtml(x.documentsReady || "—")}</td>
+          <td>${statusBadge(x.status)}</td>
+          <td class="nowrap">
+            <div class="row">
+              <a class="link" href="tel:${encodeURIComponent(x.phone || "")}">📞 Call</a>
+              <a class="link" href="https://wa.me/${formatWA(x.phone)}" target="_blank">💬 WA</a>
+              <button type="button" class="warn btnSmall" data-status-seller="${escapeAttr(x.id)}" data-next="CONTACTED">Contacted</button>
+              <button type="button" class="btnSmall" data-status-seller="${escapeAttr(x.id)}" data-next="DOCUMENT_PENDING">Docs</button>
+              <button type="button" class="btnSmall" data-status-seller="${escapeAttr(x.id)}" data-next="PROPERTY_RECEIVED">Received</button>
+              <button type="button" class="ok btnSmall" data-status-seller="${escapeAttr(x.id)}" data-next="APPROVED">Approve</button>
+              <button type="button" class="danger btnSmall" data-status-seller="${escapeAttr(x.id)}" data-next="ARCHIVED">Archive</button>
+            </div>
+          </td>
+        `;
+        body.appendChild(tr);
+
+        if(x.notes){
+          const tr2 = document.createElement("tr");
+          tr2.innerHTML = `<td></td><td colspan="9" style="border-top:1px dashed rgba(255,255,255,.12);">📝 ${escapeHtml(x.notes)}</td>`;
+          body.appendChild(tr2);
+        }
+      });
+    }
+
+    function renderMaterialFilters(){
+      const list = getMaterialLeads();
+      const types = [...new Set(list.map(x => x.materialType).filter(Boolean))];
+      const customers = [...new Set(list.map(x => x.customerType).filter(Boolean))];
+
+      const mt = $("materialTypeFilter");
+      const cmt = mt.value || "ALL";
+      mt.innerHTML = `<option value="ALL">All Materials</option>`;
+      types.forEach(v => mt.appendChild(new Option(v, v)));
+      if([...mt.options].some(o => o.value === cmt)) mt.value = cmt;
+
+      const mc = $("materialCustomerFilter");
+      const cmc = mc.value || "ALL";
+      mc.innerHTML = `<option value="ALL">All Customer Types</option>`;
+      customers.forEach(v => mc.appendChild(new Option(v, v)));
+      if([...mc.options].some(o => o.value === cmc)) mc.value = cmc;
+    }
+
+    function renderMaterialLeads(){
+      renderMaterialFilters();
+
+      const q = $("materialSearch").value.trim().toLowerCase();
+      const statusF = $("materialStatusFilter").value;
+      const typeF = $("materialTypeFilter").value;
+      const customerF = $("materialCustomerFilter").value;
+
+      let rows = getMaterialLeads().filter(x => {
+        const hay = [x.name,x.phone,x.materialType,x.location,x.notes,x.quantity,x.budget].join(" ").toLowerCase();
+        return hay.includes(q);
+      });
+
+      rows = rows.filter(x => statusF === "ALL" ? true : x.status === statusF);
+      rows = rows.filter(x => typeF === "ALL" ? true : x.materialType === typeF);
+      rows = rows.filter(x => customerF === "ALL" ? true : x.customerType === customerF);
+
+      MATERIAL_EXPORT_CACHE = rows;
+
+      const body = $("materialLeadsBody");
+      body.innerHTML = "";
+
+      if(!rows.length){
+        body.innerHTML = `<tr><td colspan="9" style="padding:14px;">No material leads match your filters.</td></tr>`;
+        return;
+      }
+
+      rows.forEach(x => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="nowrap">${escapeHtml(fmtDate(x.createdAt))}</td>
+          <td><div class="title">${escapeHtml(x.name || "-")}</div><div class="mini">${escapeHtml(x.customerType || "")}</div></td>
+          <td class="nowrap">${escapeHtml(x.phone || "-")}</td>
+          <td><div class="title">${escapeHtml(x.materialType || "-")}</div><div class="mini">${escapeHtml(x.requiredDate || "")}</div></td>
+          <td>${escapeHtml((x.quantity || "") + (x.unit ? " " + x.unit : ""))}</td>
+          <td>${escapeHtml(x.location || "-")}</td>
+          <td>${escapeHtml(x.budget || "—")}</td>
+          <td>${statusBadge(x.status)}</td>
+          <td class="nowrap">
+            <div class="row">
+              <a class="link" href="tel:${encodeURIComponent(x.phone || "")}">📞 Call</a>
+              <a class="link" href="https://wa.me/${formatWA(x.phone)}" target="_blank">💬 WA</a>
+              <button type="button" class="warn btnSmall" data-status-material="${escapeAttr(x.id)}" data-next="CONTACTED">Contacted</button>
+              <button type="button" class="ok btnSmall" data-status-material="${escapeAttr(x.id)}" data-next="CLOSED">Close</button>
+              <button type="button" class="danger btnSmall" data-status-material="${escapeAttr(x.id)}" data-next="ARCHIVED">Archive</button>
+            </div>
+          </td>
+        `;
+        body.appendChild(tr);
+
+        if(x.notes){
+          const tr2 = document.createElement("tr");
+          tr2.innerHTML = `<td></td><td colspan="8" style="border-top:1px dashed rgba(255,255,255,.12);">📝 ${escapeHtml(x.notes)}</td>`;
+          body.appendChild(tr2);
+        }
+      });
+    }
+
+    function renderServiceFilters(){
+      const list = getServiceLeads();
+      const types = [...new Set(list.map(x => x.serviceType).filter(Boolean))];
+      const customers = [...new Set(list.map(x => x.customerType).filter(Boolean))];
+
+      const st = $("serviceTypeFilter");
+      const cst = st.value || "ALL";
+      st.innerHTML = `<option value="ALL">All Services</option>`;
+      types.forEach(v => st.appendChild(new Option(v, v)));
+      if([...st.options].some(o => o.value === cst)) st.value = cst;
+
+      const sc = $("serviceCustomerFilter");
+      const csc = sc.value || "ALL";
+      sc.innerHTML = `<option value="ALL">All Customer Types</option>`;
+      customers.forEach(v => sc.appendChild(new Option(v, v)));
+      if([...sc.options].some(o => o.value === csc)) sc.value = csc;
+    }
+
+    function renderServiceLeads(){
+      renderServiceFilters();
+
+      const q = $("serviceSearch").value.trim().toLowerCase();
+      const statusF = $("serviceStatusFilter").value;
+      const typeF = $("serviceTypeFilter").value;
+      const customerF = $("serviceCustomerFilter").value;
+
+      let rows = getServiceLeads().filter(x => {
+        const hay = [x.name,x.phone,x.serviceType,x.location,x.notes,x.propertyType,x.budget].join(" ").toLowerCase();
+        return hay.includes(q);
+      });
+
+      rows = rows.filter(x => statusF === "ALL" ? true : x.status === statusF);
+      rows = rows.filter(x => typeF === "ALL" ? true : x.serviceType === typeF);
+      rows = rows.filter(x => customerF === "ALL" ? true : x.customerType === customerF);
+
+      SERVICE_EXPORT_CACHE = rows;
+
+      const body = $("serviceLeadsBody");
+      body.innerHTML = "";
+
+      if(!rows.length){
+        body.innerHTML = `<tr><td colspan="9" style="padding:14px;">No service leads match your filters.</td></tr>`;
+        return;
+      }
+
+      rows.forEach(x => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="nowrap">${escapeHtml(fmtDate(x.createdAt))}</td>
+          <td><div class="title">${escapeHtml(x.name || "-")}</div><div class="mini">${escapeHtml(x.customerType || "")}</div></td>
+          <td class="nowrap">${escapeHtml(x.phone || "-")}</td>
+          <td><div class="title">${escapeHtml(x.serviceType || "-")}</div><div class="mini">${escapeHtml(x.priority || "")}</div></td>
+          <td>${escapeHtml(x.propertyType || "-")}</td>
+          <td>${escapeHtml(x.location || "-")}</td>
+          <td>${escapeHtml(x.budget || "—")}</td>
+          <td>${statusBadge(x.status)}</td>
+          <td class="nowrap">
+            <div class="row">
+              <a class="link" href="tel:${encodeURIComponent(x.phone || "")}">📞 Call</a>
+              <a class="link" href="https://wa.me/${formatWA(x.phone)}" target="_blank">💬 WA</a>
+              <button type="button" class="warn btnSmall" data-status-service="${escapeAttr(x.id)}" data-next="CONTACTED">Contacted</button>
+              <button type="button" class="ok btnSmall" data-status-service="${escapeAttr(x.id)}" data-next="CLOSED">Close</button>
+              <button type="button" class="danger btnSmall" data-status-service="${escapeAttr(x.id)}" data-next="ARCHIVED">Archive</button>
+            </div>
+          </td>
+        `;
+        body.appendChild(tr);
+
+        if(x.notes){
+          const tr2 = document.createElement("tr");
+          tr2.innerHTML = `<td></td><td colspan="8" style="border-top:1px dashed rgba(255,255,255,.12);">📝 ${escapeHtml(x.notes)}</td>`;
+          body.appendChild(tr2);
+        }
+      });
+    }
+
+    function setBuyerAssigned(id, broker){
+      const list = getAllLeads();
+      const idx = list.findIndex(x => x.id === id);
+      if(idx === -1) return;
+      list[idx].assignedTo = broker || "";
+      list[idx].assignedBrokerName = broker || "";
+      list[idx].updatedAt = new Date().toISOString();
+      saveAllLeads(list);
+      renderBuyerLeads();
+      toast("Buyer lead assigned");
+    }
+
+    function setBuyerStatus(id, status){
+      const list = getAllLeads();
+      const idx = list.findIndex(x => x.id === id);
+      if(idx === -1) return;
+      list[idx].status = normalizeStatus(status, "NEW");
+      if(list[idx].status === "CONTACTED" && !list[idx].followUp){
+        list[idx].followUp = tomorrowYMD();
+        list[idx].followUpDate = list[idx].followUp;
+      }
+      list[idx].updatedAt = new Date().toISOString();
+      saveAllLeads(list);
+      renderBuyerLeads();
+      updateStats();
+      toast("Buyer lead updated");
+    }
+
+    function setSellerStatus(id, status){
+      const list = getSellerLeads();
+      const idx = list.findIndex(x => x.id === id);
+      if(idx === -1) return;
+      list[idx].status = normalizeStatus(status, "NEW");
+      saveSellerLeads(list);
+      renderSellerLeads();
+      updateStats();
+      toast("Seller lead updated");
+    }
+
+    function setMaterialStatus(id, status){
+      const list = getMaterialLeads();
+      const idx = list.findIndex(x => x.id === id);
+      if(idx === -1) return;
+      list[idx].status = normalizeStatus(status, "NEW");
+      saveMaterialLeads(list);
+      renderMaterialLeads();
+      updateStats();
+      toast("Material lead updated");
+    }
+
+    function setServiceStatus(id, status){
+      const list = getServiceLeads();
+      const idx = list.findIndex(x => x.id === id);
+      if(idx === -1) return;
+      list[idx].status = normalizeStatus(status, "NEW");
+      saveServiceLeads(list);
+      renderServiceLeads();
+      updateStats();
+      toast("Service lead updated");
+    }
+
+    function openLeadModal(id){
+      const lead = getAllLeads().find(x => x.id === id);
+      if(!lead) return;
+      MODAL_LEAD_ID = id;
+      syncBrokerDropdowns();
+      $("mLeadMeta").textContent = `${lead.listingTitle} • ${lead.buyerName} • ${lead.buyerPhone}`;
+      $("mFollowUp").value = lead.followUp || "";
+      $("mAssigned").value = lead.assignedTo || "";
+      $("mStatus").value = lead.status || "NEW";
+      $("mNotes").value = lead.notes || "";
+      $("leadModalBack").hidden = false;
+    }
+
+    function closeLeadModal(){
+      MODAL_LEAD_ID = null;
+      $("leadModalBack").hidden = true;
+    }
+
+    function saveLeadModal(){
+      if(!MODAL_LEAD_ID) return;
+      const list = getAllLeads();
+      const idx = list.findIndex(x => x.id === MODAL_LEAD_ID);
+      if(idx === -1) return;
+
+      list[idx].followUp = $("mFollowUp").value || "";
+      list[idx].followUpDate = list[idx].followUp;
+      list[idx].assignedTo = $("mAssigned").value || "";
+      list[idx].assignedBrokerName = list[idx].assignedTo;
+      list[idx].status = $("mStatus").value || "NEW";
+      list[idx].notes = $("mNotes").value.trim();
+      list[idx].updatedAt = new Date().toISOString();
+
+      saveAllLeads(list);
+      closeLeadModal();
+      renderBuyerLeads();
+      toast("Buyer lead saved");
+    }
+
+    function formatWA(phone){
+      const p = normalizePhone(phone || "");
+      return p.length === 10 ? "91" + p : p;
+    }
+
+    function exportCSV(filename, rows, mapper){
+      if(!rows.length){
+        alert("Export செய்ய data இல்லை");
+        return;
+      }
+
+      const lines = rows.map(mapper);
+      const headers = Object.keys(lines[0]);
+      const csv = [
+        headers.join(","),
+        ...lines.map(obj => headers.map(h => `"${String(obj[h] ?? "").replace(/"/g,'""')}"`).join(","))
+      ].join("\n");
+
+      const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast(`CSV exported: ${filename}`);
+    }
+
+    function bindTabs(){
+      document.querySelectorAll(".tabBtn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const tab = btn.getAttribute("data-tab");
+          document.querySelectorAll(".tabBtn").forEach(x => x.classList.remove("active"));
+          document.querySelectorAll(".tabPanel").forEach(x => x.classList.remove("active"));
+          btn.classList.add("active");
+          $("panel-" + tab).classList.add("active");
+        });
+      });
+    }
+
+    function refreshAll(){
+      $("waTemplate").value = getWATemplate();
+      updatePreview();
+      syncBrokerDropdowns();
+      renderProperties();
+      renderBuyerLeads();
+      renderSellerLeads();
+      renderMaterialLeads();
+      renderServiceLeads();
+      updateStats();
+    }
+
+    function resetDemoAction(){
+      const typed = prompt("RESET என்று type பண்ணுங்கள்");
+      if(String(typed || "").trim().toUpperCase() !== "RESET"){
+        toast("Reset cancelled", "warn");
+        return;
+      }
+      clearAllMeiData();
+      seedData();
+      refreshAll();
+      toast("Demo data reset", "warn");
+    }
+
+    function bindEvents(){
+      document.addEventListener("click", async (e) => {
+        const actionBtn = e.target.closest("[data-action]");
+        if(actionBtn){
+          const act = actionBtn.getAttribute("data-action");
+          if(act === "refreshAll") refreshAll();
+          if(act === "resetDemo") resetDemoAction();
+          if(act === "addBroker") addBrokerFromInput();
+          if(act === "seedBrokers") seedDemoBrokers();
+          if(act === "saveWATemplate") saveWATemplateAction();
+          if(act === "resetWATemplate") resetWATemplateAction();
+          if(act === "updatePreview") updatePreview();
+          if(act === "copyPreview") copyPreviewAction();
+          if(act === "closeLeadModal") closeLeadModal();
+          if(act === "saveLeadModal") saveLeadModal();
+
+          if(act === "exportBuyerCSV"){
+            exportCSV("MEI_Buyer_Leads.csv", BUYER_EXPORT_CACHE, x => ({
+              createdAt: fmtDate(x.createdAt),
+              listingTitle: x.listingTitle,
+              listingId: x.listingId,
+              buyerName: x.buyerName,
+              buyerPhone: x.buyerPhone,
+              assignedTo: x.assignedTo,
+              status: x.status,
+              followUp: x.followUp,
+              notes: x.notes,
+              message: x.message
+            }));
+          }
+
+          if(act === "exportSellerCSV"){
+            exportCSV("MEI_Seller_Leads.csv", SELLER_EXPORT_CACHE, x => ({
+              createdAt: fmtDate(x.createdAt),
+              sellerName: x.sellerName,
+              phone: x.phone,
+              sellerType: x.sellerType,
+              propertyType: x.propertyType,
+              listingTitle: x.listingTitle,
+              city: x.city,
+              area: x.area,
+              expectedPrice: x.expectedPrice,
+              urgency: x.urgency,
+              documentsReady: x.documentsReady,
+              status: x.status,
+              notes: x.notes
+            }));
+          }
+
+          if(act === "exportMaterialCSV"){
+            exportCSV("MEI_Material_Leads.csv", MATERIAL_EXPORT_CACHE, x => ({
+              createdAt: fmtDate(x.createdAt),
+              name: x.name,
+              phone: x.phone,
+              materialType: x.materialType,
+              quantity: x.quantity,
+              unit: x.unit,
+              location: x.location,
+              budget: x.budget,
+              customerType: x.customerType,
+              status: x.status,
+              notes: x.notes
+            }));
+          }
+
+          if(act === "exportServiceCSV"){
+            exportCSV("MEI_Service_Leads.csv", SERVICE_EXPORT_CACHE, x => ({
+              createdAt: fmtDate(x.createdAt),
+              name: x.name,
+              phone: x.phone,
+              serviceType: x.serviceType,
+              propertyType: x.propertyType,
+              location: x.location,
+              budget: x.budget,
+              customerType: x.customerType,
+              preferredDate: x.preferredDate,
+              priority: x.priority,
+              status: x.status,
+              notes: x.notes
+            }));
+          }
+        }
+
+        const approveBtn = e.target.closest("[data-approve]");
+        if(approveBtn) approveProp(approveBtn.getAttribute("data-approve"));
+
+        const rejectBtn = e.target.closest("[data-reject]");
+        if(rejectBtn) rejectProp(rejectBtn.getAttribute("data-reject"));
+
+        const archiveBtn = e.target.closest("[data-archive]");
+        if(archiveBtn) archiveProp(archiveBtn.getAttribute("data-archive"));
+
+        const deleteBtn = e.target.closest("[data-delete]");
+        if(deleteBtn) deleteProp(deleteBtn.getAttribute("data-delete"));
+
+        const editBuyerBtn = e.target.closest("[data-edit-buyer]");
+        if(editBuyerBtn) openLeadModal(editBuyerBtn.getAttribute("data-edit-buyer"));
+
+        const waBuyerBtn = e.target.closest("[data-wa-buyer]");
+        if(waBuyerBtn){
+          const id = waBuyerBtn.getAttribute("data-wa-buyer");
+          const lead = getAllLeads().find(x => x.id === id);
+          if(lead && lead.buyerPhone){
+            const msg = buildBuyerMessage(lead);
+            window.open(`https://wa.me/${formatWA(lead.buyerPhone)}?text=${encodeURIComponent(msg)}`, "_blank");
+            setBuyerStatus(id, "CONTACTED");
+          }
+        }
+
+        const buyerStatusBtn = e.target.closest("[data-status-buyer]");
+        if(buyerStatusBtn){
+          setBuyerStatus(buyerStatusBtn.getAttribute("data-status-buyer"), buyerStatusBtn.getAttribute("data-next"));
+        }
+
+        const sellerStatusBtn = e.target.closest("[data-status-seller]");
+        if(sellerStatusBtn){
+          setSellerStatus(sellerStatusBtn.getAttribute("data-status-seller"), sellerStatusBtn.getAttribute("data-next"));
+        }
+
+        const matStatusBtn = e.target.closest("[data-status-material]");
+        if(matStatusBtn){
+          setMaterialStatus(matStatusBtn.getAttribute("data-status-material"), matStatusBtn.getAttribute("data-next"));
+        }
+
+        const serStatusBtn = e.target.closest("[data-status-service]");
+        if(serStatusBtn){
+          setServiceStatus(serStatusBtn.getAttribute("data-status-service"), serStatusBtn.getAttribute("data-next"));
+        }
+      });
+
+      document.addEventListener("change", (e) => {
+        if(e.target.matches("[data-assign-buyer]")){
+          setBuyerAssigned(e.target.getAttribute("data-assign-buyer"), e.target.value);
+        }
+      });
+
+      ["buyerSearch","buyerBrokerFilter","buyerStatusFilter","buyerOverdueFilter"].forEach(id => $(id).addEventListener("input", renderBuyerLeads));
+      ["buyerBrokerFilter","buyerStatusFilter","buyerOverdueFilter"].forEach(id => $(id).addEventListener("change", renderBuyerLeads));
+
+      ["sellerSearch","sellerStatusFilter","sellerTypeFilter","sellerPropertyTypeFilter"].forEach(id => $(id).addEventListener("input", renderSellerLeads));
+      ["sellerStatusFilter","sellerTypeFilter","sellerPropertyTypeFilter"].forEach(id => $(id).addEventListener("change", renderSellerLeads));
+
+      ["materialSearch","materialStatusFilter","materialTypeFilter","materialCustomerFilter"].forEach(id => $(id).addEventListener("input", renderMaterialLeads));
+      ["materialStatusFilter","materialTypeFilter","materialCustomerFilter"].forEach(id => $(id).addEventListener("change", renderMaterialLeads));
+
+      ["serviceSearch","serviceStatusFilter","serviceTypeFilter","serviceCustomerFilter"].forEach(id => $(id).addEventListener("input", renderServiceLeads));
+      ["serviceStatusFilter","serviceTypeFilter","serviceCustomerFilter"].forEach(id => $(id).addEventListener("change", renderServiceLeads));
+
+      $("waTemplate").addEventListener("input", updatePreview);
+
+      document.querySelectorAll("[data-insert]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const ta = $("waTemplate");
+          const insert = btn.getAttribute("data-insert");
+          const start = ta.selectionStart ?? ta.value.length;
+          const end = ta.selectionEnd ?? ta.value.length;
+          ta.value = ta.value.slice(0,start) + insert + ta.value.slice(end);
+          ta.focus();
+          ta.setSelectionRange(start + insert.length, start + insert.length);
+          updatePreview();
+        });
+      });
+
+      $("brokerName").addEventListener("keydown", (e) => {
+        if(e.key === "Enter"){
+          e.preventDefault();
+          addBrokerFromInput();
+        }
+      });
+
+      $("leadModalBack").addEventListener("mousedown", (e) => {
+        if(e.target === $("leadModalBack")) closeLeadModal();
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      seedData();
+      bindTabs();
+      bindEvents();
+      refreshAll();
+    });
+  </script>
+</body>
+</html>
