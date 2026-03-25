@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Broker Dashboard</title>
+  <meta name="description" content="Broker dashboard: listings, leads, deals summary." />
+  <style>
+    :root{
+      --bg:#0b0f17; --card:#0f1624; --text:#e7eefc; --muted:#a8b3c7;
+      --line:#1f2a3d; --accent:#6ee7ff; --accent2:#a78bfa;
+      --ok:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:radial-gradient(1200px 600px at 20% 10%, rgba(110,231,255,.18), transparent 50%),
+      radial-gradient(900px 500px at 70% 20%, rgba(167,139,250,.18), transparent 55%), var(--bg);
+      color:var(--text)}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1150px;margin:0 auto;padding:22px}
+    header{position:sticky;top:0;background:rgba(11,15,23,.65);backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(31,42,61,.6);z-index:10}
+    header .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
+    .logo{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+    nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:14px;
+      border:1px solid rgba(31,42,61,.9);background:rgba(15,22,36,.7);cursor:pointer}
+    .btn.primary{background:linear-gradient(135deg, rgba(110,231,255,.25), rgba(167,139,250,.25));
+      border-color:rgba(110,231,255,.35)}
+    .btn.small{padding:8px 12px;border-radius:12px;font-size:14px}
+    .card{background:rgba(15,22,36,.55);border:1px solid rgba(31,42,61,.85);border-radius:22px;padding:16px;
+      box-shadow:0 18px 60px rgba(0,0,0,.25)}
+    h1{margin:0;font-size:26px}
+    .sub{margin:8px 0 0;color:var(--muted);line-height:1.6}
+    .top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-top:14px}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+    @media (max-width: 980px){.kpis{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width: 520px){.kpis{grid-template-columns:1fr}}
+    .kpi{padding:14px;border-radius:18px;border:1px solid rgba(31,42,61,.85);background:rgba(11,15,23,.45)}
+    .kpi .n{font-size:22px;font-weight:950}
+    .kpi .t{font-size:12px;color:var(--muted);margin-top:4px}
+    .badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;padding:6px 9px;border-radius:999px;
+      border:1px solid rgba(31,42,61,.85);background:rgba(11,15,23,.45);color:var(--muted)}
+    .badge.ok{border-color:rgba(52,211,153,.35);color:rgba(52,211,153,.95)}
+    .badge.warn{border-color:rgba(251,191,36,.35);color:rgba(251,191,36,.95)}
+    .badge.bad{border-color:rgba(251,113,133,.35);color:rgba(251,113,133,.95)}
+    .layout{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+    .tabs{display:flex;gap:10px;flex-wrap:wrap}
+    .tab{padding:10px 12px;border-radius:14px;border:1px solid rgba(31,42,61,.85);background:rgba(11,15,23,.45);cursor:pointer}
+    .tab.active{background:linear-gradient(135deg, rgba(110,231,255,.18), rgba(167,139,250,.18));
+      border-color:rgba(110,231,255,.30)}
+    table{width:100%;border-collapse:separate;border-spacing:0 10px}
+    th{font-size:12px;color:var(--muted);text-align:left;font-weight:800;padding:0 10px}
+    td{padding:12px 10px;background:rgba(11,15,23,.45);border-top:1px solid rgba(31,42,61,.85);
+      border-bottom:1px solid rgba(31,42,61,.85)}
+    td:first-child{border-left:1px solid rgba(31,42,61,.85);border-top-left-radius:16px;border-bottom-left-radius:16px}
+    td:last-child{border-right:1px solid rgba(31,42,61,.85);border-top-right-radius:16px;border-bottom-right-radius:16px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .muted{color:var(--muted)}
+    .toast{position:fixed;right:18px;bottom:18px;max-width:360px;background:rgba(15,22,36,.92);
+      border:1px solid rgba(31,42,61,.9);padding:12px 14px;border-radius:16px;display:none}
+    .hide{display:none}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap row">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div>Broker Dashboard</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:600">Listings • Leads • Deals</div>
+        </div>
+      </div>
+      <nav>
+        <a class="btn small" href="index.html">Home</a>
+        <a class="btn small" href="broker.html">Broker Portal</a>
+        <a class="btn small" href="listings.html">Listings</a>
+        <a class="btn primary small" href="index.html#lead">Post Lead</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="top">
+      <div>
+        <h1>Welcome, <span id="bname">Demo Broker</span></h1>
+        <p class="sub">MVP demo dashboard. Later: connect to real data via APIs.</p>
+      </div>
+      <div class="actions">
+        <a class="btn primary" href="listings.html">Browse Market</a>
+        <button class="btn" id="addPropBtn" type="button">+ Add Property</button>
+        <button class="btn" id="apiBtn" type="button">Connect API (later)</button>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi">
+        <div class="n" id="kListings">0</div>
+        <div class="t">Your Listings</div>
+      </div>
+      <div class="kpi">
+        <div class="n" id="kLeads">0</div>
+        <div class="t">Active Leads</div>
+      </div>
+      <div class="kpi">
+        <div class="n" id="kDeals">0</div>
+        <div class="t">Open Deals</div>
+      </div>
+      <div class="kpi">
+        <div class="n"><span id="kycBadge" class="badge warn">KYC Pending</span></div>
+        <div class="t">Verification Status</div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+          <div class="tabs">
+            <button class="tab active" data-tab="listings">Listings</button>
+            <button class="tab" data-tab="leads">Leads</button>
+            <button class="tab" data-tab="deals">Deals</button>
+          </div>
+          <div class="muted" id="tabHint">Showing your approved + pending listings</div>
+        </div>
+
+        <!-- LISTINGS TABLE -->
+        <div id="tab_listings" style="margin-top:12px">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Locality</th>
+                <th>Type</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="listingsBody"></tbody>
+          </table>
+        </div>
+
+        <!-- LEADS TABLE -->
+        <div id="tab_leads" class="hide" style="margin-top:12px">
+          <table>
+            <thead>
+              <tr>
+                <th>Lead</th>
+                <th>Locality</th>
+                <th>Budget</th>
+                <th>Timeline</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="leadsBody"></tbody>
+          </table>
+        </div>
+
+        <!-- DEALS TABLE -->
+        <div id="tab_deals" class="hide" style="margin-top:12px">
+          <table>
+            <thead>
+              <tr>
+                <th>Deal</th>
+                <th>Locality</th>
+                <th>Value</th>
+                <th>Step</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="dealsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3 style="margin:0 0 8px">Quick Actions</h3>
+        <div class="actions">
+          <a class="btn" href="broker.html">Update KYC</a>
+          <a class="btn" href="index.html#lead">Collect Lead</a>
+          <button class="btn" id="exportBtn" type="button">Export (demo)</button>
+        </div>
+        <p class="sub" style="margin-top:10px;font-size:13px">
+          Next upgrade: notifications + deal room tracking + commission ledger.
+        </p>
+      </section>
+    </div>
+
+    <footer style="padding:22px 0;color:var(--muted);border-top:1px solid rgba(31,42,61,.6);margin-top:18px">
+      © <span id="yr"></span> Broker Network • Whitefield
+    </footer>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    const toast = (msg) => {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.display = 'block';
+      clearTimeout(window.__t);
+      window.__t = setTimeout(() => el.style.display = 'none', 2600);
+    };
+
+    // TODO later: API base
+    const API_BASE = "https://api.yourplatform.in";
+
+    const INR = (n) => "₹" + Number(n).toLocaleString("en-IN");
+
+    // Demo broker state
+    const broker = {
+      name: "Demo Broker",
+      kyc: "PENDING" // PENDING | VERIFIED
+    };
+
+    // Demo data
+    const myListings = [
+      { id:"p1", title:"2BHK near ITPL", locality:"Whitefield", type:"APARTMENT", price:8200000, status:"APPROVED" },
+      { id:"p2", title:"2BHK Hoodi main road", locality:"Hoodi", type:"APARTMENT", price:6900000, status:"PENDING_APPROVAL" },
+      { id:"p4", title:"4BHK Villa (Whitefield)", locality:"Whitefield", type:"VILLA", price:26500000, status:"APPROVED" }
+    ];
+
+    const myLeads = [
+      { id:"l1", name:"Kumar (Buyer)", locality:"Whitefield", bmin:7000000, bmax:9000000, timeline:"30_DAYS", status:"NEW" },
+      { id:"l2", name:"Priya (Seller)", locality:"Hoodi", bmin:0, bmax:0, timeline:"IMMEDIATE", status:"CONTACTED" },
+      { id:"l3", name:"Rahul (Buyer)", locality:"Marathahalli", bmin:8500000, bmax:10000000, timeline:"60_DAYS", status:"SITE_VISIT" }
+    ];
+
+    const myDeals = [
+      { id:"d1", title:"Whitefield 2BHK — Kumar", locality:"Whitefield", value:8200000, step:"VISIT", status:"OPEN" },
+      { id:"d2", title:"Hoodi 2BHK — Priya", locality:"Hoodi", value:6900000, step:"TOKEN", status:"OPEN" }
+    ];
+
+    function setKycBadge(){
+      const el = document.getElementById("kycBadge");
+      if(broker.kyc === "VERIFIED"){
+        el.className = "badge ok";
+        el.textContent = "KYC Verified";
+      }else{
+        el.className = "badge warn";
+        el.textContent = "KYC Pending";
+      }
+    }
+
+    function renderKpis(){
+      document.getElementById("bname").textContent = broker.name;
+      document.getElementById("kListings").textContent = myListings.length;
+      document.getElementById("kLeads").textContent = myLeads.filter(x => x.status !== "CLOSED" && x.status !== "DROPPED").length;
+      document.getElementById("kDeals").textContent = myDeals.filter(x => x.status === "OPEN").length;
+      setKycBadge();
+    }
+
+    function pill(status){
+      if(status.includes("APPROVED")) return `<span class="badge ok">${status.replaceAll("_"," ")}</span>`;
+      if(status.includes("PENDING")) return `<span class="badge warn">${status.replaceAll("_"," ")}</span>`;
+      if(status.includes("REJECT")) return `<span class="badge bad">${status.replaceAll("_"," ")}</span>`;
+      return `<span class="badge">${status.replaceAll("_"," ")}</span>`;
+    }
+
+    function renderListings(){
+      const tb = document.getElementById("listingsBody");
+      tb.innerHTML = "";
+      myListings.forEach(x=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${x.title}</td>
+          <td class="muted">${x.locality}</td>
+          <td class="muted">${x.type}</td>
+          <td><b>${INR(x.price)}</b></td>
+          <td>${pill(x.status)}</td>
+          <td class="actions">
+            <a class="btn small" href="property.html?id=${encodeURIComponent(x.id)}">View</a>
+            <button class="btn small" data-action="edit" data-id="${x.id}">Edit</button>
+          </td>
+        `;
+        tb.appendChild(tr);
+      });
+    }
+
+    function renderLeads(){
+      const tb = document.getElementById("leadsBody");
+      tb.innerHTML = "";
+      myLeads.forEach(x=>{
+        const budget = x.bmin && x.bmax ? `${INR(x.bmin)} – ${INR(x.bmax)}` : "—";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><b>${x.name}</b></td>
+          <td class="muted">${x.locality}</td>
+          <td>${budget}</td>
+          <td class="muted">${x.timeline.replaceAll("_"," ")}</td>
+          <td>${pill(x.status)}</td>
+          <td class="actions">
+            <button class="btn small" data-action="nextLead" data-id="${x.id}">Next Status</button>
+            <button class="btn small" data-action="makeDeal" data-id="${x.id}">Open Deal</button>
+          </td>
+        `;
+        tb.appendChild(tr);
+      });
+    }
+
+    function renderDeals(){
+      const tb = document.getElementById("dealsBody");
+      tb.innerHTML = "";
+      myDeals.forEach(x=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><b>${x.title}</b></td>
+          <td class="muted">${x.locality}</td>
+          <td><b>${INR(x.value)}</b></td>
+          <td class="muted">${x.step}</td>
+          <td>${pill(x.status)}</td>
+          <td class="actions">
+            <button class="btn small" data-action="openRoom" data-id="${x.id}">Deal Room</button>
+            <button class="btn small" data-action="closeDeal" data-id="${x.id}">Close</button>
+          </td>
+        `;
+        tb.appendChild(tr);
+      });
+    }
+
+    function showTab(name){
+      ["listings","leads","deals"].forEach(t=>{
+        document.getElementById("tab_"+t).classList.toggle("hide", t !== name);
+      });
+      document.querySelectorAll(".tab").forEach(b=>{
+        b.classList.toggle("active", b.dataset.tab === name);
+      });
+
+      const hint = document.getElementById("tabHint");
+      hint.textContent =
+        name === "listings" ? "Showing your approved + pending listings" :
+        name === "leads" ? "Manage lead status and open Deal Room" :
+        "Track open deals and close when completed";
+    }
+
+    // Tab click
+    document.querySelectorAll(".tab").forEach(btn=>{
+      btn.addEventListener("click", ()=> showTab(btn.dataset.tab));
+    });
+
+    // Actions (event delegation)
+    document.addEventListener("click", (e)=>{
+      const t = e.target;
+      if(!t.dataset || !t.dataset.action) return;
+
+      const action = t.dataset.action;
+      const id = t.dataset.id;
+
+      if(action === "edit"){
+        toast("Edit property (demo). Later: PATCH /properties/{id}");
+      }
+
+      if(action === "nextLead"){
+        const lead = myLeads.find(x=>x.id===id);
+        const flow = ["NEW","CONTACTED","SITE_VISIT","NEGOTIATION","CLOSED"];
+        const idx = Math.max(0, flow.indexOf(lead.status));
+        lead.status = flow[Math.min(idx+1, flow.length-1)];
+        renderLeads(); renderKpis();
+        toast("Lead status updated ✅ (demo)");
+      }
+
+      if(action === "makeDeal"){
+        const lead = myLeads.find(x=>x.id===id);
+        myDeals.unshift({ id:"d"+Math.floor(Math.random()*1000), title:`Deal — ${lead.name}`, locality:lead.locality, value:(lead.bmax||0), step:"INTEREST", status:"OPEN" });
+        showTab("deals");
+        renderDeals(); renderKpis();
+        toast("Deal opened ✅ (demo). Later: POST /deals");
+      }
+
+      if(action === "openRoom"){
+        toast("Deal Room (demo). Later: deal-room page + GET /deals/{id}");
+      }
+
+      if(action === "closeDeal"){
+        const deal = myDeals.find(x=>x.id===id);
+        deal.status = "CLOSED";
+        renderDeals(); renderKpis();
+        toast("Deal closed ✅ (demo). Later: PATCH /deals/{id}");
+      }
+    });
+
+    document.getElementById("addPropBtn").addEventListener("click", ()=>{
+      toast("Add Property: next we can build add-property.html (form) ✅");
+    });
+
+    document.getElementById("exportBtn").addEventListener("click", ()=>{
+      toast("Export (demo). Later: CSV export via backend.");
+    });
+
+    document.getElementById("apiBtn").addEventListener("click", ()=>{
+      toast("API connect next: GET /properties, /leads, /deals + PATCH updates ✅");
+    });
+
+    // Initial render
+    renderKpis();
+    renderListings();
+    renderLeads();
+    renderDeals();
+    showTab("listings");
+  </script>
+</body>
+</html>
