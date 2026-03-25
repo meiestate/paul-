@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Properties — Whitefield</title>
+  <meta name="description" content="Browse verified listings in Whitefield. Filter by locality, type, budget." />
+  <style>
+    :root{
+      --bg:#0b0f17; --card:#0f1624; --text:#e7eefc; --muted:#a8b3c7;
+      --line:#1f2a3d; --accent:#6ee7ff; --accent2:#a78bfa;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:radial-gradient(1200px 600px at 20% 10%, rgba(110,231,255,.18), transparent 50%),
+      radial-gradient(900px 500px at 70% 20%, rgba(167,139,250,.18), transparent 55%), var(--bg);
+      color:var(--text)}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1150px;margin:0 auto;padding:22px}
+    header{position:sticky;top:0;background:rgba(11,15,23,.65);backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(31,42,61,.6);z-index:10}
+    header .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .logo{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+    nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:14px;
+      border:1px solid rgba(31,42,61,.9);background:rgba(15,22,36,.7);cursor:pointer}
+    .btn.primary{background:linear-gradient(135deg, rgba(110,231,255,.25), rgba(167,139,250,.25));
+      border-color:rgba(110,231,255,.35)}
+    .top{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:16px}
+    h1{margin:0;font-size:26px}
+    .sub{margin:6px 0 0;color:var(--muted);line-height:1.6}
+    .layout{display:grid;grid-template-columns:320px 1fr;gap:14px;margin-top:16px}
+    @media (max-width: 980px){.layout{grid-template-columns:1fr}}
+    .card{background:rgba(15,22,36,.55);border:1px solid rgba(31,42,61,.85);border-radius:22px;padding:16px}
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+    input,select{
+      width:100%; padding:11px 12px; border-radius:14px;
+      border:1px solid rgba(31,42,61,.95); background:rgba(11,15,23,.55); color:var(--text);
+      outline:none;
+    }
+    .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media (max-width: 1100px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width: 650px){.grid{grid-template-columns:1fr}}
+    .p{background:rgba(15,22,36,.45);border:1px solid rgba(31,42,61,.85);border-radius:20px;overflow:hidden}
+    .img{height:160px;background:
+      linear-gradient(135deg, rgba(110,231,255,.18), rgba(167,139,250,.18)),
+      radial-gradient(300px 140px at 20% 20%, rgba(110,231,255,.20), transparent 55%),
+      radial-gradient(300px 140px at 70% 30%, rgba(167,139,250,.20), transparent 55%);}
+    .body{padding:14px}
+    .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .chip{font-size:12px;color:var(--muted);border:1px solid rgba(31,42,61,.85);padding:6px 9px;border-radius:999px;background:rgba(11,15,23,.45)}
+    .price{font-size:18px;font-weight:900;margin:2px 0 0}
+    .addr{color:var(--muted);margin-top:6px;line-height:1.4}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .small{padding:8px 12px;border-radius:12px;font-size:14px}
+    .rowline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+    .count{color:var(--muted);font-size:13px}
+    footer{padding:22px 0;color:var(--muted);border-top:1px solid rgba(31,42,61,.6);margin-top:18px}
+    .toast{position:fixed;right:18px;bottom:18px;max-width:360px;background:rgba(15,22,36,.92);
+      border:1px solid rgba(31,42,61,.9);padding:12px 14px;border-radius:16px;display:none}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap row">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div>Broker Network</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:600">Listings • Whitefield</div>
+        </div>
+      </div>
+      <nav>
+        <a class="btn small" href="index.html">⬅ Home</a>
+        <a class="btn primary small" href="index.html#lead">Post Lead</a>
+        <a class="btn small" href="index.html#broker">Join Broker</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="top">
+      <div>
+        <h1>Verified Listings (MVP)</h1>
+        <p class="sub">Filters apply instantly. Later we’ll connect this to <b>GET /properties</b>.</p>
+      </div>
+      <div class="count" id="count">0 results</div>
+    </div>
+
+    <div class="layout">
+      <!-- FILTERS -->
+      <aside class="card">
+        <div class="rowline">
+          <div style="font-weight:800">Filters</div>
+          <button class="btn small" id="resetBtn" type="button">Reset</button>
+        </div>
+
+        <div style="margin-top:10px">
+          <label>City</label>
+          <select id="city">
+            <option value="Bangalore">Bangalore</option>
+          </select>
+        </div>
+
+        <div style="margin-top:10px">
+          <label>Locality</label>
+          <select id="locality">
+            <option value="">Any</option>
+            <option>Whitefield</option>
+            <option>ITPL</option>
+            <option>Hoodi</option>
+            <option>KR Puram</option>
+            <option>Marathahalli</option>
+          </select>
+        </div>
+
+        <div style="margin-top:10px">
+          <label>Property Type</label>
+          <select id="ptype">
+            <option value="">Any</option>
+            <option value="APARTMENT">Apartment</option>
+            <option value="VILLA">Villa</option>
+            <option value="PLOT">Plot</option>
+            <option value="COMMERCIAL">Commercial</option>
+          </select>
+        </div>
+
+        <div class="frow" style="margin-top:10px">
+          <div>
+            <label>Budget Min (₹)</label>
+            <input id="bmin" type="number" min="0" placeholder="5000000">
+          </div>
+          <div>
+            <label>Budget Max (₹)</label>
+            <input id="bmax" type="number" min="0" placeholder="9000000">
+          </div>
+        </div>
+
+        <div style="margin-top:10px">
+          <label>Sort</label>
+          <select id="sort">
+            <option value="new">Newest</option>
+            <option value="price_asc">Price: Low → High</option>
+            <option value="price_desc">Price: High → Low</option>
+          </select>
+        </div>
+
+        <div class="actions" style="margin-top:12px">
+          <button class="btn primary" id="applyBtn" type="button">Apply</button>
+          <button class="btn" id="apiBtn" type="button">Connect API (later)</button>
+        </div>
+
+        <p class="sub" style="margin-top:10px;font-size:13px">
+          MVP mode: this page uses sample listings (static).  
+          When backend ready → we replace data with <b>GET /properties</b>.
+        </p>
+      </aside>
+
+      <!-- LIST -->
+      <section class="card">
+        <div class="grid" id="grid"></div>
+      </section>
+    </div>
+
+    <footer>
+      © <span id="yr"></span> Broker Network • Whitefield
+    </footer>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    const toast = (msg) => {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.display = 'block';
+      clearTimeout(window.__t);
+      window.__t = setTimeout(() => el.style.display = 'none', 2600);
+    };
+
+    // TODO later: set actual API base and fetch from GET /properties
+    const API_BASE = "https://api.yourplatform.in";
+
+    const INR = (n) => "₹" + Number(n).toLocaleString("en-IN");
+
+    // Static sample listings (MVP demo)
+    const listings = [
+      { id:"p1", city:"Bangalore", locality:"Whitefield", type:"APARTMENT", price:8200000, area:1180, bhk:2, badge:"Verified", title:"2BHK near ITPL", note:"Gated community • Lift • Parking" },
+      { id:"p2", city:"Bangalore", locality:"Hoodi", type:"APARTMENT", price:6900000, area:1030, bhk:2, badge:"Verified+", title:"2BHK Hoodi main road", note:"Near Metro • Good rental demand" },
+      { id:"p3", city:"Bangalore", locality:"ITPL", type:"COMMERCIAL", price:15500000, area:920, bhk:null, badge:"Elite", title:"Commercial office near ITPL", note:"High footfall • Ideal for clinic/office" },
+      { id:"p4", city:"Bangalore", locality:"Whitefield", type:"VILLA", price:26500000, area:2400, bhk:4, badge:"Elite", title:"4BHK Villa (Whitefield)", note:"Premium layout • Calm street" },
+      { id:"p5", city:"Bangalore", locality:"KR Puram", type:"PLOT", price:9800000, area:1200, bhk:null, badge:"Verified", title:"Plot near KR Puram", note:"Clear docs • Ready to register" },
+      { id:"p6", city:"Bangalore", locality:"Marathahalli", type:"APARTMENT", price:9100000, area:1250, bhk:3, badge:"Verified", title:"3BHK Marathahalli", note:"Family friendly • Schools nearby" },
+    ];
+
+    const el = (tag, cls) => {
+      const d = document.createElement(tag);
+      if(cls) d.className = cls;
+      return d;
+    };
+
+    function card(item){
+      const c = el("div","p");
+      const img = el("div","img");
+      const b = el("div","body");
+
+      const price = el("div","price");
+      price.textContent = INR(item.price);
+
+      const h = el("div","");
+      h.style.fontWeight = "900";
+      h.style.marginTop = "6px";
+      h.textContent = item.title;
+
+      const addr = el("div","addr");
+      addr.textContent = `${item.locality}, ${item.city} • ${item.type}${item.bhk ? " • " + item.bhk + "BHK" : ""} • ${item.area} sqft`;
+
+      const meta = el("div","meta");
+      ["Approved","KYC "+item.badge, "Deal Room"].forEach(t=>{
+        const chip = el("span","chip"); chip.textContent=t; meta.appendChild(chip);
+      });
+
+      const note = el("div","addr");
+      note.textContent = item.note;
+
+      const actions = el("div","actions");
+      const view = el("a","btn small"); view.href = `property.html?id=${encodeURIComponent(item.id)}`;
+      view.textContent = "View";
+      const lead = el("a","btn primary small"); lead.href = "index.html#lead";
+      lead.textContent = "I'm Interested";
+      actions.appendChild(view); actions.appendChild(lead);
+
+      b.appendChild(price);
+      b.appendChild(h);
+      b.appendChild(addr);
+      b.appendChild(meta);
+      b.appendChild(note);
+      b.appendChild(actions);
+
+      c.appendChild(img);
+      c.appendChild(b);
+      return c;
+    }
+
+    function applyFilters(){
+      const city = document.getElementById("city").value;
+      const locality = document.getElementById("locality").value;
+      const ptype = document.getElementById("ptype").value;
+      const bmin = Number(document.getElementById("bmin").value || 0);
+      const bmax = Number(document.getElementById("bmax").value || 0);
+      const sort = document.getElementById("sort").value;
+
+      let data = listings.filter(x => x.city === city);
+
+      if(locality) data = data.filter(x => x.locality === locality);
+      if(ptype) data = data.filter(x => x.type === ptype);
+
+      if(bmin) data = data.filter(x => x.price >= bmin);
+      if(bmax) data = data.filter(x => x.price <= bmax);
+
+      if(sort === "price_asc") data.sort((a,b)=>a.price-b.price);
+      if(sort === "price_desc") data.sort((a,b)=>b.price-a.price);
+      if(sort === "new") data = data.slice(); // keep original order
+
+      render(data);
+    }
+
+    function render(data){
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+      data.forEach(item => grid.appendChild(card(item)));
+      document.getElementById("count").textContent = `${data.length} results`;
+    }
+
+    document.getElementById("applyBtn").addEventListener("click", applyFilters);
+    document.getElementById("resetBtn").addEventListener("click", ()=>{
+      document.getElementById("locality").value = "";
+      document.getElementById("ptype").value = "";
+      document.getElementById("bmin").value = "";
+      document.getElementById("bmax").value = "";
+      document.getElementById("sort").value = "new";
+      applyFilters();
+    });
+
+    document.getElementById("apiBtn").addEventListener("click", ()=>{
+      toast("API connect next: replace static data with GET /properties ✅");
+      // Later we will do:
+      // fetch(`${API_BASE}/properties?city=Bangalore&locality=...`)
+    });
+
+    // initial render
+    applyFilters();
+  </script>
+</body>
+</html>
