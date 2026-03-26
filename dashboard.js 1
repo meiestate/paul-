@@ -1,0 +1,1631 @@
+(() => {
+  "use strict";
+
+  // ===== Role / Auth Compatibility =====
+  try{
+    if (typeof requireRole === "function") {
+      requireRole(["admin"]);
+    }
+  }catch(e){}
+
+  const currentUser = (typeof getCurrentUser === "function")
+    ? getCurrentUser()
+    : null;
+
+  // ====== Storage Keys ======
+  const PROPS_KEY = "mei_properties_v1";
+  const LEADS_KEY = "mei_leads_v1";
+  const WA_TEMPLATE_KEY = "mei_whatsapp_template_v1";
+  const BROKERS_KEY = "mei_brokers_v1";
+  const ACTIVITY_KEY = "mei_activity_v1";
+  const CURRENT_USER_KEY = "mei_current_user_v1";
+
+  // ====== State ======
+  let MODAL_LEAD_ID = null;
+  let CURRENT_FILTERED_LEADS = [];
+  let LAST_FOCUSED_BEFORE_MODAL = null;
+  let LEAD_SEARCH_TIMER = null;
+
+  const QUICK = {
+    overdueOnly: false,
+    dueTodayOnly: false,
+    unassignedOnly: false,
+  };
+
+  const MENU = {
+    open: false,
+    leadId: null,
+    anchorEl: null,
+  };
+
+  const PAGINATION = {
+    page: 1,
+    pageSize: 20,
+    totalPages: 1
+  };
+
+  const $ = (id)=>document.getElementById(id);
+
+  // ====== Tiny DOM helpers ======
+  function el(tag, attrs = {}, children = []){
+    const node = document.createElement(tag);
+    for (const [k,v] of Object.entries(attrs || {})){
+      if(k === "class") node.className = v;
+      else if(k === "text") node.textContent = v;
+      else if(k === "html") node.innerHTML = v;
+      else if(k === "style") node.style.cssText = v;
+      else if(k.startsWith("data-")) node.setAttribute(k, v);
+      else if(v === true) node.setAttribute(k, "");
+      else if(v !== false && v != null) node.setAttribute(k, String(v));
+    }
+    (children || []).forEach(ch => {
+      if(ch == null) return;
+      if(typeof ch === "string") node.appendChild(document.createTextNode(ch));
+      else node.appendChild(ch);
+    });
+    return node;
+  }
+
+  function uid(){
+    try{
+      if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    }catch(e){}
+    return "id_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+  }
+
+  // ====== Toast ======
+  let TOAST_TIMER = null;
+  let TOAST_ACTION_FN = null;
+
+  function toast(msg = "✅ Updated", opts = {}){
+    const { type = "ok", actionText = "", actionFn = null, timeout = 1800 } = opts;
+
+    const t = $("toast");
+    const m = $("toastMsg");
+    const a = $("toastAction");
+
+    t.classList.remove("danger","warn","info");
+    if(type === "danger") t.classList.add("danger");
+    if(type === "warn") t.classList.add("warn");
+    if(type === "info") t.classList.add("info");
+
+    m.textContent = msg;
+
+    TOAST_ACTION_FN = (typeof actionFn === "function") ? actionFn : null;
+    if(actionText && TOAST_ACTION_FN){
+      a.textContent = actionText;
+      a.hidden = false;
+    }else{
+      a.hidden = true;
+    }
+
+    t.hidden = false;
+
+    if(TOAST_TIMER) clearTimeout(TOAST_TIMER);
+    TOAST_TIMER = setTimeout(()=>{
+      t.hidden = true;
+      a.hidden = true;
+      TOAST_ACTION_FN = null;
+    }, timeout);
+  }
+
+  function onToastAction(){
+    if(typeof TOAST_ACTION_FN === "function"){
+      const fn = TOAST_ACTION_FN;
+      $("toast").hidden = true;
+      $("toastAction").hidden = true;
+      TOAST_ACTION_FN = null;
+      try{ fn(); }catch(e){}
+    }
+  }
+
+  // ====== Date helpers ======
+  function fmtDate(iso){
+    try {
+      const d = new Date(iso);
+      if(Number.isNaN(d.getTime())) return String(iso || "");
+      return d.toLocaleString();
+    } catch(e){
+      return String(iso || "");
+    }
+  }
+
+  function todayYMD(){
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function todayDateObj(){
+    const d = new Date();
+    d.setHours(0,0,0,0);
+    return d;
+  }
+
+  function isOverdue(lead){
+    const status = (lead.status || "").toUpperCase();
+    if(["CLOSED","ARCHIVED"].includes(status)) return false;
+    if(!lead.followUp) return false;
+    return String(lead.followUp) < todayYMD();
+  }
+
+  function isDueToday(lead){
+    const status = (lead.status || "").toUpperCase();
+    if(["CLOSED","ARCHIVED"].includes(status)) return false;
+    if(!lead.followUp) return false;
+    return String(lead.followUp) === todayYMD();
+  }
+
+  function isContactedToday(lead){
+    if(!lead.lastContactedAt) return false;
+    const d = new Date(lead.lastContactedAt);
+    if(Number.isNaN(d.getTime())) return false;
+    const today = todayDateObj();
+    d.setHours(0,0,0,0);
+    return d.getTime() === today.getTime();
+  }
+
+  // ====== Normalizers ======
+  function normalizeProp(p){
+    const out = Object.assign({}, p || {});
+    if(!out.id) out.id = uid();
+    if(!out.status) out.status = "pending";
+    if(!out.title && out.name) out.title = out.name;
+    if(out.createdAt == null) out.createdAt = new Date().toISOString();
+    return out;
+  }
+
+  function normalizeLead(lead){
+    const out = Object.assign({}, lead || {});
+    if(!out.id) out.id = uid();
+    if(!out.createdAt) out.createdAt = new Date().toISOString();
+    if(out.notes == null) out.notes = "";
+    if(out.message == null) out.message = "";
+    if(out.followUp == null) out.followUp = "";
+    if(out.lastContactedAt == null) out.lastContactedAt = "";
+    if(out.updatedAt == null) out.updatedAt = "";
+    if(out.status == null) out.status = "NEW";
+    if(out.assignedTo == null) out.assignedTo = "";
+    if(out.buyerName == null) out.buyerName = "";
+    if(out.buyerPhone == null) out.buyerPhone = "";
+    if(out.listingTitle == null) out.listingTitle = "";
+    if(out.listingId == null) out.listingId = "";
+    return out;
+  }
+
+  // ====== Data access ======
+  function safeReadJSON(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      if(!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      return parsed ?? fallback;
+    }catch(e){
+      return fallback;
+    }
+  }
+
+  function safeWriteJSON(key, value){
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function getProps(){ return safeReadJSON(PROPS_KEY, []).map(normalizeProp); }
+  function saveProps(props){ safeWriteJSON(PROPS_KEY, (props || []).map(normalizeProp)); }
+
+  function getLeads(){ return safeReadJSON(LEADS_KEY, []).map(normalizeLead); }
+  function saveLeads(leads){ safeWriteJSON(LEADS_KEY, (leads || []).map(normalizeLead)); }
+
+  function getBrokers(){ return safeReadJSON(BROKERS_KEY, []); }
+  function saveBrokers(list){
+    const cleaned = Array.from(new Set((list || [])
+      .map(x => String(x||"").trim())
+      .filter(Boolean)
+    ));
+    safeWriteJSON(BROKERS_KEY, cleaned);
+  }
+
+  function getActivities(){
+    const arr = safeReadJSON(ACTIVITY_KEY, []);
+    return Array.isArray(arr) ? arr : [];
+  }
+
+  function saveActivities(list){
+    const safe = Array.isArray(list) ? list.slice(0, 80) : [];
+    safeWriteJSON(ACTIVITY_KEY, safe);
+  }
+
+  function addActivity(text, type = "info"){
+    const items = getActivities();
+    items.unshift({
+      id: uid(),
+      text: String(text || ""),
+      type: String(type || "info"),
+      at: new Date().toISOString()
+    });
+    saveActivities(items.slice(0, 40));
+    renderActivityFeed();
+  }
+
+  // ====== User display ======
+  function renderCurrentUser(){
+    if(currentUser && $("currentUserText")){
+      const n = currentUser.name || "Admin";
+      const r = currentUser.role || "admin";
+      $("currentUserText").textContent = `${n} • ${r}`;
+      return;
+    }
+    $("currentUserText").textContent = "Admin • local";
+  }
+
+  function logoutUserLocal(){
+    try{
+      if(typeof logoutUser === "function"){
+        logoutUser();
+        return;
+      }
+    }catch(e){}
+    localStorage.removeItem(CURRENT_USER_KEY);
+    location.href = "login.html";
+  }
+
+  // ====== Broker master ======
+  function renderBrokerChips(){
+    const brokers = getBrokers();
+    const wrap = $("brokerChips");
+    wrap.innerHTML = "";
+
+    if(brokers.length === 0){
+      wrap.appendChild(el("div", { class:"mini", style:"opacity:.85", text:"No brokers yet. Add one." }));
+      return;
+    }
+
+    brokers.forEach(b => {
+      const name = String(b);
+      const chip = el("span", { class:"chip" }, [
+        el("span", { style:"font-weight:900", text:name }),
+        el("button", {
+          type:"button",
+          class:"danger iconBtn",
+          "aria-label":`Remove broker ${name}`
+        }, [ "✕" ])
+      ]);
+
+      chip.querySelector("button").addEventListener("click", () => deleteBroker(name));
+      wrap.appendChild(chip);
+    });
+  }
+
+  function addBroker(){
+    const name = ($("brokerName").value || "").trim();
+    if(!name){ alert("Enter broker name"); return; }
+    const brokers = getBrokers();
+    if(brokers.includes(name)){
+      toast("Broker already exists", { type:"warn" });
+      return;
+    }
+    brokers.push(name);
+    saveBrokers(brokers);
+    $("brokerName").value = "";
+    addActivity(`Broker added: ${name}`, "ok");
+    toast("✅ Broker added");
+    syncBrokerDropdowns();
+    refreshLeads();
+    renderBrokerSummary();
+    refreshStats();
+  }
+
+  function deleteBroker(name){
+    if(!confirm(`Delete broker "${name}" from list?`)) return;
+    const brokers = getBrokers().filter(b => b !== name);
+    saveBrokers(brokers);
+    addActivity(`Broker removed: ${name}`, "warn");
+    toast("🧹 Broker removed", { type:"warn" });
+    syncBrokerDropdowns();
+    refreshLeads();
+    renderBrokerSummary();
+    refreshStats();
+  }
+
+  function seedBrokers(){
+    const brokers = getBrokers();
+    if(brokers.length) { toast("Already has brokers"); return; }
+    saveBrokers(["Raj","Karthik","Priya","Sanjay"]);
+    addActivity("Demo brokers seeded", "info");
+    toast("✨ Demo brokers added");
+    syncBrokerDropdowns();
+    refreshLeads();
+    renderBrokerSummary();
+    refreshStats();
+  }
+
+  function syncBrokerDropdowns(){
+    renderBrokerChips();
+
+    const bf = $("brokerFilter");
+    const current = bf.value || "ALL";
+    bf.innerHTML = "";
+    bf.appendChild(el("option", { value:"ALL", text:"All Brokers" }));
+    bf.appendChild(el("option", { value:"__UNASSIGNED__", text:"Unassigned" }));
+    getBrokers().forEach(b => bf.appendChild(el("option", { value:b, text:b })));
+    const has = Array.from(bf.options).some(o => o.value === current);
+    bf.value = has ? current : "ALL";
+
+    const md = $("mAssigned");
+    const curM = md.value || "";
+    md.innerHTML = "";
+    md.appendChild(el("option", { value:"", text:"Unassigned" }));
+    getBrokers().forEach(b => md.appendChild(el("option", { value:b, text:b })));
+    md.value = Array.from(md.options).some(o => o.value === curM) ? curM : "";
+  }
+
+  function renderBrokerSummary(){
+    const body = $("brokerSummaryBody");
+    const brokers = getBrokers();
+    const leads = getLeads();
+    body.innerHTML = "";
+
+    if(!brokers.length){
+      body.appendChild(el("tr", {}, [
+        el("td", { colspan:"5", style:"padding:14px;opacity:.80;", text:"No brokers added yet." })
+      ]));
+      return;
+    }
+
+    brokers.forEach(name => {
+      const own = leads.filter(l => (l.assignedTo || "").trim() === name);
+      const contacted = own.filter(l => (l.status || "").toUpperCase() === "CONTACTED").length;
+      const closed = own.filter(l => (l.status || "").toUpperCase() === "CLOSED").length;
+      const overdue = own.filter(isOverdue).length;
+
+      body.appendChild(el("tr", {}, [
+        el("td", { text:name }),
+        el("td", { text:String(own.length) }),
+        el("td", { text:String(contacted) }),
+        el("td", { text:String(closed) }),
+        el("td", { text:String(overdue) }),
+      ]));
+    });
+  }
+
+  // ====== WhatsApp Template ======
+  function defaultWATemplate(){
+    return `Hello {buyer},
+
+Thanks for your interest in "{listing}".
+
+This is MEI Realty. Please share your preferred time to discuss today.
+
+- MEI`;
+  }
+
+  function getWATemplate(){
+    return localStorage.getItem(WA_TEMPLATE_KEY) || defaultWATemplate();
+  }
+
+  function saveWATemplateFn(){
+    const val = ($("waTemplate").value || "").trim();
+    if(!val){ alert("Template cannot be empty"); return; }
+    localStorage.setItem(WA_TEMPLATE_KEY, val);
+    addActivity("WhatsApp template saved", "ok");
+    toast("💾 WhatsApp template saved");
+    updatePreview();
+  }
+
+  function resetWATemplate(){
+    localStorage.setItem(WA_TEMPLATE_KEY, defaultWATemplate());
+    $("waTemplate").value = getWATemplate();
+    addActivity("WhatsApp template reset", "warn");
+    toast("↩ Template reset to default", { type:"warn" });
+    updatePreview();
+  }
+
+  function applyTemplate(tpl, lead){
+    const dateStr = new Date().toLocaleDateString();
+    return String(tpl || "")
+      .replaceAll("{buyer}", lead.buyerName || "")
+      .replaceAll("{listing}", lead.listingTitle || "property")
+      .replaceAll("{phone}", lead.buyerPhone || "")
+      .replaceAll("{date}", dateStr);
+  }
+
+  function updatePreview(){
+    const tpl = ($("waTemplate").value || "").trim() || defaultWATemplate();
+    const sample = { buyerName:"Arun", listingTitle:"2BHK Whitefield", buyerPhone:"9876543210" };
+    $("waPreview").textContent = applyTemplate(tpl, sample);
+  }
+
+  function insertAtCursor(textarea, insertText){
+    textarea.focus();
+    const start = textarea.selectionStart ?? textarea.value.length;
+    const end = textarea.selectionEnd ?? textarea.value.length;
+    const before = textarea.value.slice(0, start);
+    const after = textarea.value.slice(end);
+    textarea.value = before + insertText + after;
+    const newPos = start + insertText.length;
+    textarea.setSelectionRange(newPos, newPos);
+  }
+
+  // ====== Clipboard ======
+  async function copyToClipboard(text){
+    const t = String(text ?? "");
+    if(!t.trim()){ alert("Nothing to copy"); return false; }
+    try{
+      if(navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(t);
+        return true;
+      }
+    }catch(e){}
+    try{
+      const ta = document.createElement("textarea");
+      ta.value = t;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    }catch(e){
+      return false;
+    }
+  }
+
+  async function copyPreview(){
+    const txt = $("waPreview").textContent || "";
+    const ok = await copyToClipboard(txt);
+    if(ok) toast("📋 Preview copied");
+    else alert("Copy failed.");
+  }
+
+  // ====== WhatsApp + Copy ======
+  function cleanPhoneForWA(phone){
+    const clean = String(phone || "").replace(/[^\d]/g,'');
+    if(clean.length === 10) return "91" + clean;
+    return clean;
+  }
+
+  function buildLeadMessage(lead){
+    const tpl = getWATemplate();
+    return applyTemplate(tpl, lead);
+  }
+
+  function safeOpenNewTab(url){
+    const w = window.open(url, "_blank", "noopener,noreferrer");
+    if(w) w.opener = null;
+    return w;
+  }
+
+  function openWhatsAppForLead(leadId){
+    const lead = getLeads().find(l => l.id === leadId);
+    if(!lead) return;
+    if(!lead.buyerPhone){ alert("No phone number"); return; }
+
+    const finalPhone = cleanPhoneForWA(lead.buyerPhone);
+    const message = buildLeadMessage(lead);
+    const url = `https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`;
+
+    safeOpenNewTab(url);
+    autoLogCommunication(leadId, "WhatsApp opened");
+    addActivity(`WhatsApp opened for ${lead.buyerName || "lead"}`, "info");
+    toast("💬 WhatsApp opened + Logged");
+    refreshLeads();
+  }
+
+  async function copyLeadMessageById(leadId){
+    const lead = getLeads().find(l => l.id === leadId);
+    if(!lead) return;
+
+    const message = buildLeadMessage(lead);
+    const ok = await copyToClipboard(message);
+
+    if(ok){
+      autoLogCommunication(leadId, "Message copied");
+      addActivity(`Message copied for ${lead.buyerName || "lead"}`, "info");
+      toast("📋 Message copied + Logged");
+      refreshLeads();
+    }else{
+      alert("Copy failed.");
+    }
+  }
+
+  // ====== Auto Log ======
+  function autoLogCommunication(leadId, type){
+    const leads = getLeads();
+    const idx = leads.findIndex(l => l.id === leadId);
+    if(idx === -1) return;
+
+    const now = new Date();
+    const logLine = `[${now.toLocaleString()}] ${type}`;
+
+    const existing = (leads[idx].notes || "").trim();
+    leads[idx].notes = existing ? (existing + "\n" + logLine) : logLine;
+
+    leads[idx].status = "CONTACTED";
+    leads[idx].lastContactedAt = now.toISOString();
+    leads[idx].updatedAt = now.toISOString();
+
+    if(!leads[idx].followUp){
+      const d = new Date();
+      d.setDate(d.getDate()+1);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      leads[idx].followUp = `${yyyy}-${mm}-${dd}`;
+    }
+
+    saveLeads(leads);
+  }
+
+  // ====== Listings approvals ======
+  function approveProp(id){
+    const props = getProps();
+    const i = props.findIndex(p => p.id === id);
+    if(i === -1) return;
+    props[i].status = "approved";
+    props[i].approvedAt = new Date().toISOString();
+    saveProps(props);
+    addActivity(`Listing approved: ${props[i].title || props[i].name || props[i].id}`, "ok");
+    toast("✅ Approved");
+    refreshProps();
+    refreshStats();
+  }
+
+  function rejectProp(id){
+    const props = getProps();
+    const i = props.findIndex(p => p.id === id);
+    if(i === -1) return;
+    const title = props[i].title || props[i].name || props[i].id;
+    props[i].status = "rejected";
+    props[i].rejectedAt = new Date().toISOString();
+    saveProps(props);
+    addActivity(`Listing rejected: ${title}`, "warn");
+    toast("🗑️ Rejected", { type:"warn" });
+    refreshProps();
+    refreshStats();
+  }
+
+  function deleteProp(id){
+    if(!confirm("Delete this listing permanently?")) return;
+    const props = getProps();
+    const target = props.find(p => p.id === id);
+    saveProps(props.filter(p => p.id !== id));
+    addActivity(`Listing deleted: ${(target && (target.title || target.name)) || id}`, "warn");
+    toast("🧹 Deleted", { type:"warn" });
+    refreshProps();
+    refreshStats();
+  }
+
+  function rowListingCell(p){
+    const wrap = el("div", {}, []);
+    const title = p.title || p.name || "Listing";
+    const metaBits = [p.city, p.area, p.price ? ("₹"+p.price) : ""].filter(Boolean);
+    wrap.appendChild(el("div", { class:"title", text:title }));
+    wrap.appendChild(el("div", { class:"mini", text: metaBits.length ? metaBits.join(" • ") : "—" }));
+    wrap.appendChild(el("div", { class:"mini", text: "ID: " + (p.id || "-") }));
+    return wrap;
+  }
+
+  function refreshProps(){
+    const props = getProps();
+    const pending = props.filter(p => (p.status || "pending").toLowerCase() === "pending");
+    const approved = props.filter(p => (p.status || "").toLowerCase() === "approved");
+
+    $("pendingCount").textContent = pending.length;
+    $("approvedCount").textContent = approved.length;
+
+    const pBody = $("pendingBody");
+    pBody.innerHTML = "";
+    if(!pending.length){
+      pBody.appendChild(el("tr", {}, [
+        el("td", { colspan:"2", style:"opacity:.80;padding:14px;", text:"No pending approvals." })
+      ]));
+    }else{
+      pending.forEach(p => {
+        const tr = el("tr", {}, []);
+        const tdListing = el("td", {}, [ rowListingCell(p) ]);
+        const tdActions = el("td", { class:"nowrap" }, []);
+        const row = el("div", { class:"row" }, [
+          el("button", { type:"button", class:"ok btnSmall", text:"Approve" }),
+          el("button", { type:"button", class:"danger btnSmall", text:"Reject" }),
+        ]);
+        const [btnApprove, btnReject] = row.querySelectorAll("button");
+        btnApprove.addEventListener("click", ()=> approveProp(p.id));
+        btnReject.addEventListener("click", ()=> rejectProp(p.id));
+        tdActions.appendChild(row);
+        tr.appendChild(tdListing);
+        tr.appendChild(tdActions);
+        pBody.appendChild(tr);
+      });
+    }
+
+    const aBody = $("approvedBody");
+    aBody.innerHTML = "";
+    if(!approved.length){
+      aBody.appendChild(el("tr", {}, [
+        el("td", { colspan:"2", style:"opacity:.80;padding:14px;", text:"No approved listings yet." })
+      ]));
+    }else{
+      approved.forEach(p => {
+        const tr = el("tr", {}, []);
+        const tdListing = el("td", {}, [
+          rowListingCell(p),
+          el("div", { class:"mini", text: "Approved: " + fmtDate(p.approvedAt || "") })
+        ]);
+
+        const tdActions = el("td", { class:"nowrap" }, []);
+        const row = el("div", { class:"row" }, [
+          el("button", { type:"button", class:"warn btnSmall", text:"Re-Approve" }),
+          el("button", { type:"button", class:"danger btnSmall", text:"Delete" }),
+        ]);
+        const [btnReapprove, btnDelete] = row.querySelectorAll("button");
+        btnReapprove.addEventListener("click", ()=> approveProp(p.id));
+        btnDelete.addEventListener("click", ()=> deleteProp(p.id));
+        tdActions.appendChild(row);
+
+        tr.appendChild(tdListing);
+        tr.appendChild(tdActions);
+        aBody.appendChild(tr);
+      });
+    }
+  }
+
+  // ====== Lead assignment + status ======
+  function setLeadAssigned(id, broker){
+    const leads = getLeads();
+    const idx = leads.findIndex(l => l.id === id);
+    if(idx === -1) return;
+    const prev = leads[idx].assignedTo || "";
+    leads[idx].assignedTo = String(broker || "").trim();
+    leads[idx].updatedAt = new Date().toISOString();
+    saveLeads(leads);
+    addActivity(`Lead assignment changed: ${leads[idx].buyerName || id} → ${leads[idx].assignedTo || "Unassigned"}`, "info");
+    toast(prev !== broker ? "👤 Assigned updated" : "No change");
+    refreshLeads();
+    renderBrokerSummary();
+    refreshStats();
+  }
+
+  function setLeadStatus(id, status){
+    const leads = getLeads();
+    const idx = leads.findIndex(x => x.id === id);
+    if(idx === -1) return;
+
+    const prev = Object.assign({}, leads[idx]);
+    leads[idx].status = status;
+    leads[idx].updatedAt = new Date().toISOString();
+
+    if(String(status).toUpperCase() === "CONTACTED"){
+      leads[idx].lastContactedAt = new Date().toISOString();
+      if(!leads[idx].followUp){
+        const d = new Date(); d.setDate(d.getDate()+1);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,"0");
+        const dd = String(d.getDate()).padStart(2,"0");
+        leads[idx].followUp = `${yyyy}-${mm}-${dd}`;
+      }
+    }
+
+    saveLeads(leads);
+    addActivity(`Lead status changed: ${leads[idx].buyerName || id} → ${String(status).toUpperCase()}`, "ok");
+
+    const isUndoWorthy = ["CLOSED","ARCHIVED"].includes(String(status).toUpperCase());
+    if(isUndoWorthy){
+      toast(`✅ Lead marked ${String(status).toUpperCase()}`, {
+        actionText: "Undo",
+        actionFn: () => {
+          const ls = getLeads();
+          const i2 = ls.findIndex(x => x.id === id);
+          if(i2 === -1) return;
+          ls[i2] = normalizeLead(prev);
+          saveLeads(ls);
+          addActivity(`Undo status change for ${prev.buyerName || id}`, "warn");
+          toast("↩ Undone", { type:"warn" });
+          refreshLeads();
+          refreshStats();
+          renderPipelineSummary();
+          renderBrokerSummary();
+        },
+        timeout: 4500
+      });
+    }else{
+      toast("✅ Lead updated");
+    }
+
+    refreshLeads();
+    refreshStats();
+    renderPipelineSummary();
+    renderBrokerSummary();
+  }
+
+  function archiveLead(id){
+    if(!confirm("Archive this lead? (You can Undo right after)")) return;
+    setLeadStatus(id, "ARCHIVED");
+  }
+
+  function clearClosedLeads(){
+    if(!confirm("Clear all CLOSED and ARCHIVED leads from local storage?")) return;
+    const leads = getLeads();
+    const filtered = leads.filter(l => !["CLOSED","ARCHIVED"].includes((l.status||"").toUpperCase()));
+    const removed = leads.length - filtered.length;
+    saveLeads(filtered);
+    addActivity(`Cleared ${removed} closed/archived leads`, "warn");
+    toast("🧹 Cleared closed/archived", { type:"warn" });
+    refreshLeads();
+    refreshStats();
+    renderPipelineSummary();
+    renderBrokerSummary();
+  }
+
+  // ====== Modal ======
+  function openLeadModal(id){
+    const leads = getLeads();
+    const lead = leads.find(l => l.id === id);
+    if(!lead) return;
+
+    LAST_FOCUSED_BEFORE_MODAL = document.activeElement;
+    MODAL_LEAD_ID = id;
+
+    $("mListing").textContent = `${lead.listingTitle || "Listing"} • ${lead.buyerName || ""} • ${lead.buyerPhone || ""}`;
+    $("mFollowUp").value = lead.followUp || "";
+    syncBrokerDropdowns();
+    $("mAssigned").value = lead.assignedTo || "";
+    $("mNotes").value = lead.notes || "";
+
+    $("leadModalBack").hidden = false;
+    $("app").setAttribute("aria-hidden", "true");
+
+    setTimeout(()=> $("mFollowUp").focus(), 0);
+  }
+
+  function closeLeadModal(){
+    $("leadModalBack").hidden = true;
+    $("app").removeAttribute("aria-hidden");
+    MODAL_LEAD_ID = null;
+
+    if(LAST_FOCUSED_BEFORE_MODAL && typeof LAST_FOCUSED_BEFORE_MODAL.focus === "function"){
+      LAST_FOCUSED_BEFORE_MODAL.focus();
+    }
+    LAST_FOCUSED_BEFORE_MODAL = null;
+  }
+
+  function saveLeadModal(){
+    if(!MODAL_LEAD_ID) return;
+
+    const leads = getLeads();
+    const idx = leads.findIndex(l => l.id === MODAL_LEAD_ID);
+    if(idx === -1) return;
+
+    leads[idx].followUp = $("mFollowUp").value || "";
+    leads[idx].assignedTo = ($("mAssigned").value || "").trim();
+    leads[idx].notes = ($("mNotes").value || "").trim();
+    leads[idx].updatedAt = new Date().toISOString();
+
+    saveLeads(leads);
+    addActivity(`Lead edited: ${leads[idx].buyerName || MODAL_LEAD_ID}`, "info");
+    toast("✅ Saved");
+    closeLeadModal();
+    refreshLeads();
+    refreshStats();
+    renderPipelineSummary();
+    renderBrokerSummary();
+  }
+
+  function trapFocusInModal(e){
+    if($("leadModalBack").hidden) return;
+
+    if(e.key === "Escape"){
+      e.preventDefault();
+      closeLeadModal();
+      return;
+    }
+    if(e.key !== "Tab") return;
+
+    const modal = $("leadModalBack").querySelector(".modalCard");
+    const focusables = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const list = Array.from(focusables).filter(x => !x.disabled && x.offsetParent !== null);
+
+    if(!list.length) return;
+
+    const first = list[0];
+    const last = list[list.length - 1];
+
+    if(e.shiftKey && document.activeElement === first){
+      e.preventDefault();
+      last.focus();
+    }else if(!e.shiftKey && document.activeElement === last){
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  // ====== Filters ======
+  function leadMatchesSearch(lead, q){
+    if(!q) return true;
+    const hay = [
+      lead.listingTitle, lead.listingId,
+      lead.buyerName, lead.buyerPhone,
+      lead.message, lead.notes,
+      lead.assignedTo
+    ].join(" ").toLowerCase();
+    return hay.includes(q);
+  }
+
+  function applyLeadSort(list){
+    const mode = ($("sortFilter").value || "NEWEST").toUpperCase();
+    const arr = list.slice();
+
+    const dateVal = (v) => {
+      const d = new Date(v || 0);
+      return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+    };
+
+    const str = (v) => String(v || "").toLowerCase();
+
+    if(mode === "NEWEST") arr.sort((a,b)=> dateVal(b.createdAt) - dateVal(a.createdAt));
+    else if(mode === "OLDEST") arr.sort((a,b)=> dateVal(a.createdAt) - dateVal(b.createdAt));
+    else if(mode === "FOLLOWUP_ASC") arr.sort((a,b)=> str(a.followUp).localeCompare(str(b.followUp)));
+    else if(mode === "FOLLOWUP_DESC") arr.sort((a,b)=> str(b.followUp).localeCompare(str(a.followUp)));
+    else if(mode === "BUYER_AZ") arr.sort((a,b)=> str(a.buyerName).localeCompare(str(b.buyerName)));
+    else if(mode === "LISTING_AZ") arr.sort((a,b)=> str(a.listingTitle).localeCompare(str(b.listingTitle)));
+
+    return arr;
+  }
+
+  function applyLeadFilters(leadsRaw){
+    const q = ($("leadSearch").value || "").trim().toLowerCase();
+    const brokerF = ($("brokerFilter").value || "ALL");
+    const statusF = ($("statusFilter").value || "ALL").toUpperCase();
+    const odF = ($("overdueFilter").value || "ALL").toUpperCase();
+
+    let out = leadsRaw
+      .filter(l => leadMatchesSearch(l, q))
+      .filter(l => {
+        if(brokerF === "ALL") return true;
+        if(brokerF === "__UNASSIGNED__") return !(l.assignedTo || "").trim();
+        return (l.assignedTo || "") === brokerF;
+      })
+      .filter(l => statusF === "ALL" ? true : (l.status || "NEW").toUpperCase() === statusF)
+      .filter(l => {
+        if(odF === "ALL") return true;
+        const od = isOverdue(l);
+        if(odF === "OVERDUE") return od;
+        if(odF === "NOT_OVERDUE") return !od;
+        return true;
+      })
+      .filter(l => {
+        if(QUICK.unassignedOnly && (l.assignedTo || "").trim()) return false;
+        if(QUICK.overdueOnly && !isOverdue(l)) return false;
+        if(QUICK.dueTodayOnly && !isDueToday(l)) return false;
+        return true;
+      });
+
+    out = applyLeadSort(out);
+    return out;
+  }
+
+  function badgeEl(status){
+    const s = (status || "NEW").toUpperCase();
+    const span = el("span", { class:"pill", text:s });
+    const styles = {
+      NEW: "background:rgba(0,153,255,.16); border:1px solid rgba(0,153,255,.28);",
+      CONTACTED: "background:rgba(255,200,0,.14); border:1px solid rgba(255,200,0,.26);",
+      CLOSED: "background:rgba(0,255,150,.14); border:1px solid rgba(0,255,150,.28);",
+      ARCHIVED: "background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16);"
+    };
+    span.style.cssText = styles[s] || styles.NEW;
+    return span;
+  }
+
+  function renderAssignSelect(lead){
+    const sel = el("select", { style:"min-width:160px" });
+    sel.appendChild(el("option", { value:"", text:"Unassigned" }));
+    getBrokers().forEach(b => sel.appendChild(el("option", { value:b, text:b })));
+    sel.value = (lead.assignedTo || "").trim();
+    sel.addEventListener("change", () => setLeadAssigned(lead.id, sel.value));
+    return sel;
+  }
+
+  // ====== Menu ======
+  function closeMenu(){
+    const menu = $("overflowMenu");
+    menu.hidden = true;
+    menu.innerHTML = "";
+    MENU.open = false;
+    MENU.leadId = null;
+
+    if(MENU.anchorEl){
+      MENU.anchorEl.setAttribute("aria-expanded","false");
+      if(typeof MENU.anchorEl.focus === "function") MENU.anchorEl.focus();
+    }
+    MENU.anchorEl = null;
+  }
+
+  function openMenuForLead(leadId, anchorBtn){
+    const lead = getLeads().find(l => l.id === leadId);
+    if(!lead) return;
+
+    const menu = $("overflowMenu");
+    menu.innerHTML = "";
+
+    menu.appendChild(el("div", { class:"menuTitle", text:`Lead actions • ${lead.buyerName || "Buyer"}` }));
+
+    const items = [
+      { label:"📋 Copy message", sub:"Logs", onClick:()=>copyLeadMessageById(leadId) },
+      { label:"✏️ Edit lead", sub:"Follow-up/notes", onClick:()=>openLeadModal(leadId) },
+      { label:"✅ Mark contacted", sub:"Tomorrow follow-up", onClick:()=>setLeadStatus(leadId, "CONTACTED") },
+      { label:"✅ Close lead", sub:"Undo available", onClick:()=>setLeadStatus(leadId, "CLOSED") },
+      { label:"🗄️ Archive lead", sub:"Confirm", danger:true, onClick:()=>archiveLead(leadId) },
+    ];
+
+    items.forEach((it, idx) => {
+      const btn = el("button", {
+        type:"button",
+        class: "menuItem" + (it.danger ? " danger" : ""),
+        role:"menuitem",
+        "data-menu-index": String(idx),
+      }, [
+        el("span", { text: it.label }),
+        el("span", { class:"sub", text: it.sub })
+      ]);
+      btn.addEventListener("click", () => {
+        closeMenu();
+        it.onClick();
+      });
+      menu.appendChild(btn);
+    });
+
+    const r = anchorBtn.getBoundingClientRect();
+    const margin = 8;
+    const left = Math.min(window.innerWidth - 250, Math.max(10, r.left));
+    const top = Math.min(window.innerHeight - 10, r.bottom + margin);
+    menu.style.left = left + "px";
+    menu.style.top = top + "px";
+    menu.hidden = false;
+
+    MENU.open = true;
+    MENU.leadId = leadId;
+    MENU.anchorEl = anchorBtn;
+
+    const firstItem = menu.querySelector('[role="menuitem"]');
+    if(firstItem) firstItem.focus();
+  }
+
+  function onMenuKeydown(e){
+    if($("overflowMenu").hidden) return;
+
+    if(e.key === "Escape"){
+      e.preventDefault();
+      closeMenu();
+      return;
+    }
+
+    const items = Array.from($("overflowMenu").querySelectorAll('[role="menuitem"]'));
+    if(!items.length) return;
+
+    const cur = document.activeElement;
+    const idx = items.indexOf(cur);
+
+    if(e.key === "ArrowDown"){
+      e.preventDefault();
+      const next = items[(idx + 1) % items.length] || items[0];
+      next.focus();
+    }else if(e.key === "ArrowUp"){
+      e.preventDefault();
+      const prev = items[(idx - 1 + items.length) % items.length] || items[items.length - 1];
+      prev.focus();
+    }else if(e.key === "Home"){
+      e.preventDefault();
+      items[0].focus();
+    }else if(e.key === "End"){
+      e.preventDefault();
+      items[items.length - 1].focus();
+    }
+  }
+
+  function onDocClickToCloseMenu(e){
+    if($("overflowMenu").hidden) return;
+    const menu = $("overflowMenu");
+    const isInside = menu.contains(e.target);
+    const isAnchor = MENU.anchorEl && MENU.anchorEl.contains(e.target);
+    if(!isInside && !isAnchor){
+      closeMenu();
+    }
+  }
+
+  // ====== Pagination ======
+  function getPagedRows(rows){
+    PAGINATION.totalPages = Math.max(1, Math.ceil(rows.length / PAGINATION.pageSize));
+    if(PAGINATION.page > PAGINATION.totalPages) PAGINATION.page = PAGINATION.totalPages;
+    if(PAGINATION.page < 1) PAGINATION.page = 1;
+
+    const start = (PAGINATION.page - 1) * PAGINATION.pageSize;
+    const end = start + PAGINATION.pageSize;
+
+    $("currentPageText").textContent = String(PAGINATION.page);
+    $("totalPagesText").textContent = String(PAGINATION.totalPages);
+
+    if(rows.length === 0){
+      $("pageInfo").textContent = "0 results";
+    }else{
+      $("pageInfo").textContent = `${start + 1}-${Math.min(end, rows.length)} of ${rows.length} results`;
+    }
+
+    return rows.slice(start, end);
+  }
+
+  // ====== Leads render ======
+  function refreshLeads(){
+    const leadsRaw = getLeads();
+    saveLeads(leadsRaw);
+
+    $("leadCount").textContent = leadsRaw.length;
+    $("overdueCount").textContent = leadsRaw.filter(isOverdue).length;
+
+    const leads = applyLeadFilters(leadsRaw);
+    CURRENT_FILTERED_LEADS = leads;
+
+    const rows = getPagedRows(leads);
+    const tbody = $("leadsBody");
+    tbody.innerHTML = "";
+
+    if(rows.length === 0){
+      tbody.appendChild(el("tr", {}, [
+        el("td", { colspan:"9", style:"padding:14px; opacity:.80;", text:"No leads match your filters." })
+      ]));
+      refreshStats();
+      renderPipelineSummary();
+      renderTodaySnapshot();
+      return;
+    }
+
+    rows.forEach(l => {
+      const overdue = isOverdue(l);
+      const tr = el("tr", { class: overdue ? "overdueRow" : "" }, []);
+
+      tr.appendChild(el("td", { class:"nowrap", text: fmtDate(l.createdAt) }));
+
+      const listingTd = el("td", {}, [
+        el("div", { class:"title", text: l.listingTitle || "Listing" }),
+        el("div", { class:"mini", text: "ID: " + (l.listingId || "-") })
+      ]);
+      tr.appendChild(listingTd);
+
+      tr.appendChild(el("td", { text: l.buyerName || "-" }));
+      tr.appendChild(el("td", { class:"nowrap", text: l.buyerPhone || "-" }));
+
+      const assignedTd = el("td", { class:"nowrap" }, [ renderAssignSelect(l) ]);
+      tr.appendChild(assignedTd);
+
+      const statusTd = el("td", {}, [ badgeEl(l.status) ]);
+      if(overdue){
+        statusTd.appendChild(el("div", { class:"mini overdueLabel", text:"⚠ OVERDUE" }));
+      }
+      tr.appendChild(statusTd);
+
+      const fu = l.followUp ? String(l.followUp) : "—";
+      const lastC = l.lastContactedAt ? ("Last: " + fmtDate(l.lastContactedAt)) : "";
+      const followTd = el("td", { class:"nowrap" }, [
+        el("div", { text: fu }),
+        el("div", { class:"mini", text:lastC })
+      ]);
+      tr.appendChild(followTd);
+
+      const notesText = (l.notes || "").trim() ? (l.notes || "").trim() : "—";
+      tr.appendChild(el("td", { style:"max-width:420px;" }, [
+        el("div", { text: notesText })
+      ]));
+
+      const actionsTd = el("td", { class:"nowrap" }, []);
+      const row = el("div", { class:"row" }, []);
+
+      const callHref = "tel:" + encodeURIComponent(l.buyerPhone || "");
+      const callA = el("a", { class:"link", href: callHref, style:"padding:6px 10px;", "data-lead-id": l.id }, [ "📞 Call" ]);
+      callA.addEventListener("click", () => {
+        autoLogCommunication(l.id, "Call initiated");
+        addActivity(`Call initiated: ${l.buyerName || "lead"}`, "info");
+        toast("📞 Call initiated + Logged");
+      });
+
+      const waBtn = el("button", { type:"button", class:"btnSmall", "data-lead-id": l.id }, [ "💬 WhatsApp" ]);
+      waBtn.addEventListener("click", () => openWhatsAppForLead(l.id));
+
+      const moreBtn = el("button", {
+        type:"button",
+        class:"btnSmall",
+        "aria-haspopup":"menu",
+        "aria-expanded":"false",
+        "data-lead-id": l.id
+      }, [ "⋯ More" ]);
+
+      moreBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const expanded = moreBtn.getAttribute("aria-expanded") === "true";
+        if(expanded){
+          closeMenu();
+        }else{
+          closeMenu();
+          moreBtn.setAttribute("aria-expanded","true");
+          openMenuForLead(l.id, moreBtn);
+        }
+      });
+
+      row.appendChild(callA);
+      row.appendChild(waBtn);
+      row.appendChild(moreBtn);
+
+      actionsTd.appendChild(row);
+      tr.appendChild(actionsTd);
+
+      tbody.appendChild(tr);
+
+      if((l.message || "").trim()){
+        const tr2 = el("tr", { class: overdue ? "overdueRow" : "" }, []);
+        tr2.appendChild(el("td", {}, []));
+        tr2.appendChild(el("td", { colspan:"8", style:"opacity:.92; border-top:1px dashed rgba(255,255,255,.12);" }, [
+          el("span", { text:"📝 " + String(l.message).trim() })
+        ]));
+        tbody.appendChild(tr2);
+      }
+    });
+
+    refreshStats();
+    renderPipelineSummary();
+    renderTodaySnapshot();
+  }
+
+  // ====== CSV ======
+  function csvEscape(v){
+    const s = String(v ?? "");
+    return `"${s.replace(/"/g,'""')}"`;
+  }
+
+  function exportFilteredLeadsCSV(){
+    const rows = CURRENT_FILTERED_LEADS || [];
+    if(rows.length === 0){ alert("No filtered leads to export."); return; }
+
+    const header = ["CreatedAt","ListingTitle","ListingId","BuyerName","BuyerPhone","AssignedTo","Status","FollowUp","Notes","Message"];
+    const lines = [];
+    lines.push(header.map(csvEscape).join(","));
+
+    rows.forEach(l => {
+      const line = [
+        fmtDate(l.createdAt),
+        l.listingTitle || "",
+        l.listingId || "",
+        l.buyerName || "",
+        l.buyerPhone || "",
+        l.assignedTo || "",
+        (l.status || "NEW"),
+        l.followUp || "",
+        l.notes || "",
+        l.message || ""
+      ];
+      lines.push(line.map(csvEscape).join(","));
+    });
+
+    const csv = lines.join("\n");
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    const fname = `MEI_Leads_${yyyy}-${mm}-${dd}.csv`;
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    addActivity(`CSV exported: ${fname}`, "info");
+    toast(`⬇ Exported CSV: ${fname}`);
+  }
+
+  // ====== Backup JSON ======
+  function exportAllJSON(){
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      app: "MEI Admin Dashboard",
+      version: "upgrade-v2",
+      data: {
+        properties: getProps(),
+        leads: getLeads(),
+        brokers: getBrokers(),
+        waTemplate: getWATemplate(),
+        activities: getActivities()
+      }
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    const fname = `MEI_Backup_${yyyy}-${mm}-${dd}.json`;
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    addActivity(`JSON backup exported: ${fname}`, "info");
+    toast("⬇ JSON backup exported", { type:"info" });
+  }
+
+  function triggerImportJSON(){
+    $("importJSONFile").click();
+  }
+
+  function handleImportJSONFile(file){
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const parsed = JSON.parse(String(reader.result || "{}"));
+        const data = parsed && parsed.data ? parsed.data : parsed;
+
+        if(!data || typeof data !== "object"){
+          throw new Error("Invalid backup format");
+        }
+
+        if(Array.isArray(data.properties)) saveProps(data.properties);
+        if(Array.isArray(data.leads)) saveLeads(data.leads);
+        if(Array.isArray(data.brokers)) saveBrokers(data.brokers);
+        if(typeof data.waTemplate === "string") localStorage.setItem(WA_TEMPLATE_KEY, data.waTemplate);
+        if(Array.isArray(data.activities)) saveActivities(data.activities);
+
+        addActivity("JSON backup imported", "ok");
+        toast("✅ Backup imported");
+        refreshAll();
+      }catch(err){
+        console.error(err);
+        toast("Import failed — invalid JSON", { type:"danger" });
+      }finally{
+        $("importJSONFile").value = "";
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ====== Activity ======
+  function renderActivityFeed(){
+    const feed = $("activityFeed");
+    const items = getActivities();
+    feed.innerHTML = "";
+
+    if(!items.length){
+      feed.appendChild(el("div", { class:"empty", text:"No recent activity yet." }));
+      return;
+    }
+
+    items.slice(0, 8).forEach(item => {
+      const tone = item.type === "warn" ? "border-color:rgba(255,200,0,.22);" :
+                   item.type === "ok" ? "border-color:rgba(0,255,150,.22);" :
+                   item.type === "danger" ? "border-color:rgba(255,0,90,.22);" :
+                   "border-color:rgba(140,170,255,.22);";
+
+      feed.appendChild(el("div", { class:"activityItem", style:tone }, [
+        el("div", { style:"font-weight:900;", text:item.text || "Activity" }),
+        el("div", { class:"mini", style:"margin-top:6px;", text:fmtDate(item.at) })
+      ]));
+    });
+  }
+
+  // ====== Summary render ======
+  function renderPipelineSummary(){
+    const box = $("pipelineSummary");
+    const leads = getLeads();
+
+    const total = leads.length;
+    const fresh = leads.filter(l => (l.status || "").toUpperCase() === "NEW").length;
+    const contacted = leads.filter(l => (l.status || "").toUpperCase() === "CONTACTED").length;
+    const closed = leads.filter(l => (l.status || "").toUpperCase() === "CLOSED").length;
+    const archived = leads.filter(l => (l.status || "").toUpperCase() === "ARCHIVED").length;
+
+    box.innerHTML = "";
+
+    const items = [
+      { label:"NEW", val:fresh },
+      { label:"CONTACTED", val:contacted },
+      { label:"CLOSED", val:closed },
+      { label:"ARCHIVED", val:archived },
+      { label:"TOTAL", val:total }
+    ];
+
+    items.forEach(x => {
+      box.appendChild(el("div", { class:"summaryItem" }, [
+        el("div", { class:"mini", text:x.label }),
+        el("div", { class:"summaryMetric", text:String(x.val) })
+      ]));
+    });
+  }
+
+  function renderTodaySnapshot(){
+    const leads = getLeads();
+    $("todayDueCount").textContent = String(leads.filter(isDueToday).length);
+    $("unassignedCount").textContent = String(leads.filter(l => !(l.assignedTo || "").trim()).length);
+    $("contactedTodayCount").textContent = String(leads.filter(isContactedToday).length);
+  }
+
+  function refreshStats(){
+    const leads = getLeads();
+    const props = getProps();
+    const brokers = getBrokers();
+
+    $("statTotalLeads").textContent = String(leads.length);
+    $("statOverdue").textContent = String(leads.filter(isOverdue).length);
+    $("statPending").textContent = String(props.filter(p => (p.status || "pending").toLowerCase() === "pending").length);
+    $("statApproved").textContent = String(props.filter(p => (p.status || "").toLowerCase() === "approved").length);
+    $("statBrokers").textContent = String(brokers.length);
+  }
+
+  // ====== Refresh + Reset ======
+  function refreshAll(){
+    syncBrokerDropdowns();
+    $("waTemplate").value = getWATemplate();
+    updatePreview();
+    refreshProps();
+    refreshLeads();
+    renderCurrentUser();
+    renderBrokerSummary();
+    renderActivityFeed();
+    renderPipelineSummary();
+    renderTodaySnapshot();
+    refreshStats();
+  }
+
+  function resetDemo(){
+    const typed = prompt("Type RESET to confirm demo reset (clears local data).");
+    if(String(typed || "").trim().toUpperCase() !== "RESET"){
+      toast("Reset cancelled", { type:"warn" });
+      return;
+    }
+    localStorage.removeItem(PROPS_KEY);
+    localStorage.removeItem(LEADS_KEY);
+    localStorage.removeItem(WA_TEMPLATE_KEY);
+    localStorage.removeItem(BROKERS_KEY);
+    localStorage.removeItem(ACTIVITY_KEY);
+    addActivity("Demo reset completed", "warn");
+    toast("🧨 Reset done", { type:"warn" });
+    refreshAll();
+  }
+
+  function seedSampleData(){
+    const hasLeads = getLeads().length > 0;
+    const hasProps = getProps().length > 0;
+
+    if(hasLeads || hasProps){
+      if(!confirm("Sample data already exists. Add more sample data anyway?")) return;
+    }
+
+    if(getBrokers().length === 0){
+      saveBrokers(["Raj","Karthik","Priya"]);
+    }
+
+    const props = getProps();
+    props.push(
+      normalizeProp({ title:"2BHK Whitefield", city:"Bangalore", area:"Whitefield", price:"6200000", status:"pending" }),
+      normalizeProp({ title:"Villa Sarjapur", city:"Bangalore", area:"Sarjapur", price:"14500000", status:"approved", approvedAt:new Date().toISOString() }),
+      normalizeProp({ title:"Plot OMR", city:"Chennai", area:"OMR", price:"3500000", status:"pending" })
+    );
+    saveProps(props);
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate()+1);
+
+    const tY = tomorrow.getFullYear();
+    const tM = String(tomorrow.getMonth()+1).padStart(2,"0");
+    const tD = String(tomorrow.getDate()).padStart(2,"0");
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate()-1);
+    const yY = yesterday.getFullYear();
+    const yM = String(yesterday.getMonth()+1).padStart(2,"0");
+    const yD = String(yesterday.getDate()).padStart(2,"0");
+
+    const leads = getLeads();
+    leads.push(
+      normalizeLead({
+        listingTitle:"2BHK Whitefield",
+        listingId:"WF-201",
+        buyerName:"Arun",
+        buyerPhone:"9876543210",
+        status:"NEW",
+        assignedTo:"Raj",
+        followUp:`${tY}-${tM}-${tD}`,
+        message:"Need a site visit on weekend"
+      }),
+      normalizeLead({
+        listingTitle:"Villa Sarjapur",
+        listingId:"SP-811",
+        buyerName:"Meena",
+        buyerPhone:"9123456780",
+        status:"CONTACTED",
+        assignedTo:"Priya",
+        followUp:todayYMD(),
+        notes:"Budget approved. Wants loan support."
+      }),
+      normalizeLead({
+        listingTitle:"Plot OMR",
+        listingId:"OMR-119",
+        buyerName:"Rahul",
+        buyerPhone:"9012345678",
+        status:"NEW",
+        assignedTo:"",
+        followUp:`${yY}-${yM}-${yD}`,
+        notes:"Asked for final negotiation."
+      })
+    );
+    saveLeads(leads);
+
+    addActivity("Sample data seeded", "ok");
+    toast("✨ Sample data added");
+    refreshAll();
+  }
+
+  // ====== Quick filters ======
+  function setQuickFilter(mode){
+    QUICK.overdueOnly = false;
+    QUICK.dueTodayOnly = false;
+    QUICK.unassignedOnly = false;
+
+    if(mode === "OVERDUE") QUICK.overdueOnly = true;
+    if(mode === "DUE_TODAY") QUICK.dueTodayOnly = true;
+    if(mode === "UNASSIGNED") QUICK.unassignedOnly = true;
+
+    document.querySelectorAll("[data-qfilter]").forEach(btn => {
+      btn.classList.toggle("active", btn.getAttribute("data-qfilter") === mode && mode !== "CLEAR");
+    });
+
+    PAGINATION.page = 1;
+    refreshLeads();
+  }
+
+  // ====== Dispatcher ======
+  function dispatchAction(action){
+    switch(action){
+      case "refreshAll": refreshAll(); break;
+      case "resetDemo": resetDemo(); break;
+      case "addBroker": addBroker(); break;
+      case "seedBrokers": seedBrokers(); break;
+      case "saveWATemplate": saveWATemplateFn(); break;
+      case "resetWATemplate": resetWATemplate(); break;
+      case "updatePreview": updatePreview(); break;
+      case "copyPreview": copyPreview(); break;
+      case "refreshLeads": refreshLeads(); break;
+      case "clearClosedLeads": clearClosedLeads(); break;
+      case "exportCSV": exportFilteredLeadsCSV(); break;
+      case "closeLeadModal": closeLeadModal(); break;
+      case "saveLeadModal": saveLeadModal(); break;
+      case "exportJSON": exportAllJSON(); break;
+      case "triggerImportJSON": triggerImportJSON(); break;
+      case "seedSampleData": seedSampleData(); break;
+      case "logoutUser": logoutUserLocal(); break;
+      case "prevPage":
+        PAGINATION.page = Math.max(1, PAGINATION.page - 1);
+        refreshLeads();
+        break;
+      case "nextPage":
+        PAGINATION.page = Math.min(PAGINATION.totalPages, PAGINATION.page + 1);
+        refreshLeads();
+        break;
+      default: break;
+    }
+  }
+
+  // ====== Init ======
+  function init(){
+    $("toastAction").addEventListener("click", onToastAction);
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if(!btn) return;
+      const act = btn.getAttribute("data-action");
+      if(!act) return;
+      dispatchAction(act);
+    });
+
+    document.querySelectorAll("[data-insert]").forEach(b => {
+      b.addEventListener("click", () => {
+        insertAtCursor($("waTemplate"), b.getAttribute("data-insert"));
+        updatePreview();
+      });
+    });
+
+    $("leadSearch").addEventListener("input", () => {
+      clearTimeout(LEAD_SEARCH_TIMER);
+      LEAD_SEARCH_TIMER = setTimeout(() => {
+        PAGINATION.page = 1;
+        refreshLeads();
+      }, 180);
+    });
+
+    $("brokerFilter").addEventListener("change", () => {
+      PAGINATION.page = 1;
+      refreshLeads();
+    });
+    $("statusFilter").addEventListener("change", () => {
+      PAGINATION.page = 1;
+      refreshLeads();
+    });
+    $("overdueFilter").addEventListener("change", () => {
+      PAGINATION.page = 1;
+      refreshLeads();
+    });
+    $("sortFilter").addEventListener("change", () => {
+      PAGINATION.page = 1;
+      refreshLeads();
+    });
+
+    document.querySelectorAll("[data-qfilter]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const mode = btn.getAttribute("data-qfilter");
+        if(mode === "CLEAR") setQuickFilter("CLEAR");
+        else setQuickFilter(mode);
+      });
+    });
+
+    $("waTemplate").addEventListener("input", updatePreview);
+
+    document.addEventListener("keydown", onMenuKeydown);
+    document.addEventListener("click", onDocClickToCloseMenu);
+    document.addEventListener("keydown", trapFocusInModal);
+
+    $("leadModalBack").addEventListener("mousedown", (e) => {
+      if(e.target === $("leadModalBack")) closeLeadModal();
+    });
+
+    $("importJSONFile").addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      handleImportJSONFile(file);
+    });
+
+    $("pageSizeSelect").addEventListener("change", () => {
+      PAGINATION.pageSize = Math.max(1, Number($("pageSizeSelect").value || 20));
+      PAGINATION.page = 1;
+      refreshLeads();
+    });
+
+    $("brokerName").addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        addBroker();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "/" && document.activeElement !== $("leadSearch")){
+        const tag = (document.activeElement && document.activeElement.tagName) || "";
+        const isTypingField = ["INPUT","TEXTAREA","SELECT"].includes(tag);
+        if(!isTypingField){
+          e.preventDefault();
+          $("leadSearch").focus();
+        }
+      }
+
+      if(e.altKey && (e.key === "r" || e.key === "R")){
+        e.preventDefault();
+        refreshAll();
+        toast("🔄 Refreshed", { type:"info" });
+      }
+    });
+
+    refreshAll();
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+
