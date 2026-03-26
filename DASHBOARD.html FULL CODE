@@ -1,0 +1,2546 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MEI Admin Dashboard — Upgraded</title>
+  <style>
+    :root{
+      --bg:#08111f;
+      --bg2:#0c1628;
+      --card:#101b31;
+      --card2:rgba(255,255,255,.035);
+      --line:rgba(255,255,255,.12);
+      --line2:rgba(255,255,255,.08);
+      --txt:#e8eefc;
+      --mut:rgba(232,238,252,.82);
+      --mut2:rgba(232,238,252,.64);
+      --pill:rgba(255,255,255,.08);
+      --radius:18px;
+
+      --brand:#8caaff;
+      --brand2:#67e8f9;
+
+      --focus: rgba(140,170,255,.95);
+
+      --okBorder: rgba(0,255,150,.30);
+      --okBg: rgba(0,255,150,.12);
+
+      --warnBorder: rgba(255,200,0,.30);
+      --warnBg: rgba(255,200,0,.12);
+
+      --dangerBorder: rgba(255,0,90,.34);
+      --dangerBg: rgba(255,0,90,.14);
+
+      --blueBorder: rgba(0,153,255,.28);
+      --blueBg: rgba(0,153,255,.14);
+
+      --shadow: 0 18px 60px rgba(0,0,0,.32);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:
+        radial-gradient(circle at top right, rgba(103,232,249,.10), transparent 25%),
+        radial-gradient(circle at top left, rgba(140,170,255,.08), transparent 25%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      color:var(--txt);
+    }
+
+    .wrap{max-width:1380px;margin:0 auto;padding:18px}
+    .stickyTop{
+      position:sticky;
+      top:0;
+      z-index:40;
+      backdrop-filter: blur(10px);
+      background:linear-gradient(180deg, rgba(8,17,31,.92), rgba(8,17,31,.76));
+      border-bottom:1px solid rgba(255,255,255,.06);
+      margin:-18px -18px 18px -18px;
+      padding:18px;
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(16,27,49,.96), rgba(16,27,49,.88));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+
+    .glass{
+      background:linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.025));
+      border:1px solid rgba(255,255,255,.09);
+    }
+
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .h1{font-size:28px;font-weight:900;letter-spacing:.2px}
+    .h2{font-size:18px;font-weight:900;letter-spacing:.2px}
+    .muted{opacity:.88;color:var(--mut)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .spacer{flex:1}
+
+    .heroBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(140,170,255,.24);
+      background:rgba(140,170,255,.10);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    a.link{
+      color:var(--txt);
+      text-decoration:none;
+      padding:9px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:rgba(255,255,255,.04);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      min-height:38px;
+      font-weight:800;
+    }
+    a.link:hover{background:rgba(255,255,255,.07)}
+    a.link:active{transform:translateY(1px)}
+
+    button{
+      padding:9px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.07);
+      color:var(--txt);
+      cursor:pointer;
+      font-weight:800;
+      min-height:38px;
+    }
+    button:hover{background:rgba(255,255,255,.10)}
+    button:active{transform:translateY(1px)}
+    button[disabled]{opacity:.55; cursor:not-allowed}
+
+    .btnSmall{padding:6px 10px; min-height:32px; font-weight:800}
+    .iconBtn{padding:6px; min-height:32px; min-width:32px; display:inline-flex; align-items:center; justify-content:center}
+    .primary{
+      background:linear-gradient(135deg, rgba(140,170,255,.24), rgba(103,232,249,.14));
+      border-color:rgba(140,170,255,.34);
+    }
+    .danger{border-color:var(--dangerBorder);background:var(--dangerBg)}
+    .danger:hover{background:rgba(255,0,90,.20)}
+    .ok{border-color:var(--okBorder);background:var(--okBg)}
+    .ok:hover{background:rgba(0,255,150,.18)}
+    .warn{border-color:var(--warnBorder);background:var(--warnBg)}
+    .warn:hover{background:rgba(255,200,0,.18)}
+    .info{border-color:var(--blueBorder);background:var(--blueBg)}
+    .info:hover{background:rgba(0,153,255,.20)}
+
+    a.link:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [role="menuitem"]:focus-visible{
+      outline:3px solid var(--focus);
+      outline-offset:2px;
+    }
+
+    .statsGrid{
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    @media (max-width:1150px){ .statsGrid{grid-template-columns:repeat(3,minmax(0,1fr));} }
+    @media (max-width:760px){ .statsGrid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+    @media (max-width:520px){ .statsGrid{grid-template-columns:1fr;} }
+
+    .stat{
+      border-radius:18px;
+      padding:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background:
+        radial-gradient(circle at top right, rgba(140,170,255,.12), transparent 30%),
+        rgba(255,255,255,.03);
+      min-height:110px;
+    }
+    .stat .k{
+      font-size:28px;
+      font-weight:900;
+      margin-top:6px;
+    }
+    .stat .s{
+      font-size:12px;
+      color:var(--mut2);
+      margin-top:6px;
+    }
+
+    .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+    .grid3{display:grid;grid-template-columns:1.25fr .95fr .85fr;gap:12px;margin-top:12px}
+    @media (max-width:1100px){ .grid3{grid-template-columns:1fr} }
+    @media (max-width:900px){ .grid2{grid-template-columns:1fr} }
+
+    .tableWrap{overflow:auto;margin-top:10px;border-radius:14px;border:1px solid var(--line2)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;vertical-align:top}
+    thead th{
+      opacity:.92;
+      text-align:left;
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      background:var(--card);
+      z-index:2;
+      font-size:13px;
+    }
+    tbody tr{border-top:1px solid rgba(255,255,255,.10)}
+
+    .pill{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      background:var(--pill);
+      border:1px solid var(--line);
+      opacity:.98
+    }
+    .mini{font-size:12px;color:var(--mut2)}
+    .title{font-weight:900}
+    .nowrap{white-space:nowrap}
+
+    .toast{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--okBorder);
+      background:var(--okBg);
+    }
+    .toast[hidden]{display:none}
+    .toast.danger{border-color:var(--dangerBorder);background:var(--dangerBg)}
+    .toast.warn{border-color:var(--warnBorder);background:var(--warnBg)}
+    .toast.info{border-color:var(--blueBorder);background:var(--blueBg)}
+    .toastAction{
+      margin-left:auto;
+      padding:7px 10px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      font-weight:900;
+      cursor:pointer;
+      min-height:32px;
+    }
+    .toastAction[hidden]{display:none}
+
+    .overdueRow{
+      background:linear-gradient(90deg, rgba(255,0,90,.12), transparent 56%);
+      outline:1px solid rgba(255,0,90,.20);
+      outline-offset:-1px;
+    }
+    .overdueLabel{
+      margin-top:6px;
+      color:rgba(255,120,170,.98);
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+
+    .modalBack{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.62);
+      padding:20px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      overflow:auto;
+      z-index:100;
+    }
+    .modalBack[hidden]{display:none}
+    .modalCard{
+      width:min(720px, 100%);
+      margin:5vh auto;
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:0 12px 40px rgba(0,0,0,.55);
+    }
+
+    input, select, textarea{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.18);
+      background:#091222;
+      color:var(--txt);
+      outline:none;
+      min-height:40px;
+    }
+    input::placeholder, textarea::placeholder{color:rgba(232,238,252,.65)}
+    textarea{resize:vertical; min-height:130px}
+
+    .filterBar{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr .75fr .75fr .75fr .55fr;
+      gap:10px;
+      margin-top:12px;
+    }
+    @media (max-width:1250px){ .filterBar{grid-template-columns:1fr 1fr 1fr;} }
+    @media (max-width:820px){ .filterBar{grid-template-columns:1fr 1fr;} }
+    @media (max-width:560px){ .filterBar{grid-template-columns:1fr;} }
+
+    .quickFilters{
+      margin-top:10px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+    .qfBtn{padding:7px 10px; min-height:32px; font-weight:900}
+    .qfBtn.active{background:rgba(140,170,255,.18); border-color:rgba(140,170,255,.32)}
+
+    .templateGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+    @media (max-width:900px){ .templateGrid{grid-template-columns:1fr;} }
+
+    .brokerGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+    @media (max-width:900px){ .brokerGrid{grid-template-columns:1fr;} }
+
+    .chip{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      margin:4px 6px 0 0;
+    }
+    .chipBtn{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+      font-weight:900;
+      cursor:pointer;
+      min-height:32px;
+    }
+    .chipBtn:hover{background:rgba(255,255,255,.08)}
+
+    .menu{
+      position:fixed;
+      min-width:220px;
+      max-width:300px;
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:14px;
+      padding:6px;
+      box-shadow:0 12px 40px rgba(0,0,0,.6);
+      z-index:9999;
+    }
+    .menu[hidden]{display:none}
+    .menuTitle{
+      padding:8px 10px;
+      font-size:12px;
+      color:var(--mut2);
+      letter-spacing:.2px;
+    }
+    .menuItem{
+      width:100%;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:9px 10px;
+      border-radius:12px;
+      border:1px solid transparent;
+      background:transparent;
+      color:var(--txt);
+      cursor:pointer;
+      text-align:left;
+      font-weight:900;
+      min-height:36px;
+    }
+    .menuItem:hover{background:rgba(255,255,255,.07)}
+    .menuItem.danger:hover{background:rgba(255,0,90,.18)}
+    .menuItem .sub{margin-left:auto; font-size:12px; color:var(--mut2); font-weight:800}
+
+    .srOnly{
+      position:absolute;
+      width:1px;
+      height:1px;
+      padding:0;
+      margin:-1px;
+      overflow:hidden;
+      clip:rect(0,0,0,0);
+      border:0;
+      white-space:nowrap;
+    }
+
+    .userBox{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.04);
+    }
+    #currentUserText{
+      font-size:13px;
+      color:var(--mut);
+      font-weight:700;
+      max-width:260px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .panelList{
+      display:grid;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .activityItem, .summaryItem{
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+    }
+
+    .summaryMetric{
+      font-size:20px;
+      font-weight:900;
+      margin-top:4px;
+    }
+
+    .backupBox{
+      display:grid;
+      grid-template-columns:1fr auto auto auto;
+      gap:10px;
+      margin-top:12px;
+      align-items:center;
+    }
+    @media (max-width:900px){
+      .backupBox{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:560px){
+      .backupBox{grid-template-columns:1fr}
+    }
+
+    .paginationBar{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:12px;
+      align-items:center;
+    }
+
+    .kbd{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:22px;
+      height:22px;
+      padding:0 6px;
+      border-radius:7px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .empty{
+      padding:20px;
+      border-radius:14px;
+      border:1px dashed rgba(255,255,255,.14);
+      background:rgba(255,255,255,.02);
+      color:var(--mut2);
+      text-align:center;
+    }
+
+    .softHr{
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
+      margin:12px 0;
+      border:0;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrap" id="app">
+    <div class="stickyTop">
+      <div class="top">
+        <div>
+          <div class="heroBadge">⚡ MEI SaaS Admin Workspace</div>
+          <div class="h1" style="margin-top:10px;">MEI — Admin Dashboard</div>
+          <div class="muted">Broker Master + Assign + Leads CRM + Approval + Backup + Activity Feed</div>
+        </div>
+
+        <div class="row">
+          <a class="link" href="add-property.html">➕ Add Property</a>
+          <a class="link" href="buyer.html">👤 Buyer Portal</a>
+          <a class="link" href="today.html">📅 Today</a>
+          <button type="button" data-action="refreshAll">🔄 Refresh</button>
+          <button type="button" class="danger" data-action="resetDemo">🧨 Reset</button>
+
+          <div class="userBox">
+            <span id="currentUserText">Admin User</span>
+            <button type="button" class="btnSmall" data-action="logoutUser">Logout</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <span id="toastMsg">✅ Updated</span>
+        <button id="toastAction" class="toastAction" type="button" hidden>Undo</button>
+      </div>
+
+      <div class="statsGrid">
+        <div class="stat">
+          <div class="mini">Total Leads</div>
+          <div class="k" id="statTotalLeads">0</div>
+          <div class="s">All incoming buyer leads</div>
+        </div>
+        <div class="stat">
+          <div class="mini">Overdue Leads</div>
+          <div class="k" id="statOverdue">0</div>
+          <div class="s">Needs immediate follow-up</div>
+        </div>
+        <div class="stat">
+          <div class="mini">Pending Approvals</div>
+          <div class="k" id="statPending">0</div>
+          <div class="s">Listings waiting for admin action</div>
+        </div>
+        <div class="stat">
+          <div class="mini">Approved Listings</div>
+          <div class="k" id="statApproved">0</div>
+          <div class="s">Visible to buyer portal</div>
+        </div>
+        <div class="stat">
+          <div class="mini">Active Brokers</div>
+          <div class="k" id="statBrokers">0</div>
+          <div class="s">Assignable broker master list</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid3">
+      <div class="card glass">
+        <div class="top">
+          <div>
+            <div class="h2">System Backup</div>
+            <div class="muted">Export all local data as JSON or restore from backup file</div>
+          </div>
+        </div>
+
+        <div class="backupBox">
+          <div class="mini">
+            Keys included: properties, leads, brokers, WhatsApp template, activities.
+            <br>Safe for demo/local browser workflows.
+          </div>
+          <button type="button" class="info" data-action="exportJSON">⬇ Export JSON</button>
+          <button type="button" data-action="triggerImportJSON">⬆ Import JSON</button>
+          <button type="button" class="warn" data-action="seedSampleData">✨ Seed Sample</button>
+          <input id="importJSONFile" type="file" accept="application/json" hidden>
+        </div>
+      </div>
+
+      <div class="card glass">
+        <div class="top">
+          <div>
+            <div class="h2">Today Snapshot</div>
+            <div class="muted">Fast operational pulse</div>
+          </div>
+        </div>
+
+        <div class="panelList">
+          <div class="summaryItem">
+            <div class="mini">Due today</div>
+            <div class="summaryMetric" id="todayDueCount">0</div>
+          </div>
+          <div class="summaryItem">
+            <div class="mini">Unassigned leads</div>
+            <div class="summaryMetric" id="unassignedCount">0</div>
+          </div>
+          <div class="summaryItem">
+            <div class="mini">Contacted today</div>
+            <div class="summaryMetric" id="contactedTodayCount">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card glass">
+        <div class="top">
+          <div>
+            <div class="h2">Keyboard Tips</div>
+            <div class="muted">Speed up admin work</div>
+          </div>
+        </div>
+
+        <div class="panelList">
+          <div class="summaryItem"><span class="kbd">/</span> Search focus</div>
+          <div class="summaryItem"><span class="kbd">Esc</span> Close modal / menu</div>
+          <div class="summaryItem"><span class="kbd">Alt</span> + <span class="kbd">R</span> Refresh</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Broker Master -->
+    <div class="card" style="margin-top:12px;">
+      <div class="top">
+        <div>
+          <div class="h2">Broker Master</div>
+          <div class="muted">Brokers list → Assign dropdown + filter + performance summary</div>
+        </div>
+        <div class="row">
+          <button type="button" class="ok" data-action="addBroker">➕ Add Broker</button>
+          <button type="button" data-action="seedBrokers">✨ Seed Demo</button>
+        </div>
+      </div>
+
+      <div class="brokerGrid">
+        <div>
+          <label class="mini" for="brokerName" style="display:block;margin-bottom:6px;">Add broker name</label>
+          <input id="brokerName" placeholder="Eg: Raj / Karthik / Priya" autocomplete="off">
+          <div class="mini" style="margin-top:8px;">Tip: short unique names work best.</div>
+        </div>
+        <div>
+          <div class="mini" style="margin-bottom:6px;">Current brokers</div>
+          <div id="brokerChips"></div>
+          <div class="mini" style="margin-top:8px;">Deleting a broker won’t delete leads; it only removes the name from the list.</div>
+        </div>
+      </div>
+
+      <hr class="softHr">
+
+      <div class="top">
+        <div>
+          <div class="h2" style="font-size:16px;">Broker Summary</div>
+          <div class="muted">Lead load distribution</div>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table aria-label="Broker summary table">
+          <thead>
+            <tr>
+              <th>Broker</th>
+              <th>Total Leads</th>
+              <th>Contacted</th>
+              <th>Closed</th>
+              <th>Overdue</th>
+            </tr>
+          </thead>
+          <tbody id="brokerSummaryBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- WhatsApp Template -->
+    <div class="card" style="margin-top:12px;">
+      <div class="top">
+        <div>
+          <div class="h2">WhatsApp Template</div>
+          <div class="muted">
+            Insert placeholders:
+            <span class="srOnly" id="placeholderHelp">Click to insert into the template editor.</span>
+          </div>
+          <div class="row" style="margin-top:8px;" aria-describedby="placeholderHelp">
+            <button type="button" class="chipBtn" data-insert="{buyer}">{buyer}</button>
+            <button type="button" class="chipBtn" data-insert="{listing}">{listing}</button>
+            <button type="button" class="chipBtn" data-insert="{phone}">{phone}</button>
+            <button type="button" class="chipBtn" data-insert="{date}">{date}</button>
+          </div>
+        </div>
+        <div class="row">
+          <button type="button" class="ok" data-action="saveWATemplate">💾 Save Template</button>
+          <button type="button" data-action="resetWATemplate">↩ Reset Default</button>
+        </div>
+      </div>
+
+      <div class="templateGrid">
+        <div>
+          <label class="mini" for="waTemplate" style="display:block;margin-bottom:6px;">Template message</label>
+          <textarea id="waTemplate" rows="7"></textarea>
+          <div class="mini" style="margin-top:6px;">Tip: Short + clear = more replies.</div>
+        </div>
+
+        <div>
+          <div class="mini" style="margin-bottom:6px;">Preview (sample)</div>
+          <div class="card" style="background:var(--card2); box-shadow:none;">
+            <div class="mini">Sample Buyer: Arun • Listing: 2BHK Whitefield • Phone: 9876543210</div>
+            <div id="waPreview" style="white-space:pre-wrap; margin-top:10px; line-height:1.45;"></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button type="button" data-action="updatePreview">🔍 Update Preview</button>
+            <button type="button" class="ok" data-action="copyPreview">📋 Copy Preview</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- APPROVAL + LISTINGS -->
+    <div class="grid2">
+      <div class="card">
+        <div class="top">
+          <div>
+            <div class="h2">Pending Approvals</div>
+            <div class="muted">Admin only: approve/reject</div>
+          </div>
+          <div class="row">
+            <span class="pill">Pending: <b id="pendingCount">0</b></span>
+          </div>
+        </div>
+
+        <div class="tableWrap">
+          <table aria-label="Pending approvals table">
+            <thead>
+              <tr>
+                <th>Listing</th>
+                <th class="nowrap">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pendingBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="top">
+          <div>
+            <div class="h2">Approved Listings</div>
+            <div class="muted">Buyer portal shows only these</div>
+          </div>
+          <div class="row">
+            <span class="pill">Approved: <b id="approvedCount">0</b></span>
+          </div>
+        </div>
+
+        <div class="tableWrap">
+          <table aria-label="Approved listings table">
+            <thead>
+              <tr>
+                <th>Listing</th>
+                <th class="nowrap">Manage</th>
+              </tr>
+            </thead>
+            <tbody id="approvedBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADS -->
+    <div class="card" style="margin-top:12px;">
+      <div class="top">
+        <div>
+          <div class="h2">Leads — Mini CRM</div>
+          <div class="muted">Search + Filters + Sort + Broker Assign + Export + WhatsApp/Copy + Auto Log</div>
+        </div>
+        <div class="row">
+          <span class="pill">Total: <b id="leadCount">0</b></span>
+          <span class="pill">Overdue: <b id="overdueCount">0</b></span>
+          <button type="button" data-action="refreshLeads">Refresh</button>
+          <button type="button" class="warn" data-action="clearClosedLeads">Clear Closed/Archived</button>
+        </div>
+      </div>
+
+      <div class="filterBar" aria-label="Lead filters">
+        <div>
+          <label class="srOnly" for="leadSearch">Search leads</label>
+          <input id="leadSearch" placeholder="Search listing / phone / buyer / notes..." autocomplete="off">
+        </div>
+
+        <div>
+          <label class="srOnly" for="brokerFilter">Broker filter</label>
+          <select id="brokerFilter">
+            <option value="ALL">All Brokers</option>
+            <option value="__UNASSIGNED__">Unassigned</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="srOnly" for="statusFilter">Status filter</label>
+          <select id="statusFilter">
+            <option value="ALL">All Status</option>
+            <option value="NEW">NEW</option>
+            <option value="CONTACTED">CONTACTED</option>
+            <option value="CLOSED">CLOSED</option>
+            <option value="ARCHIVED">ARCHIVED</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="srOnly" for="overdueFilter">Overdue filter</label>
+          <select id="overdueFilter">
+            <option value="ALL">All</option>
+            <option value="OVERDUE">Overdue only</option>
+            <option value="NOT_OVERDUE">Not overdue</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="srOnly" for="sortFilter">Sort filter</label>
+          <select id="sortFilter">
+            <option value="NEWEST">Newest first</option>
+            <option value="OLDEST">Oldest first</option>
+            <option value="FOLLOWUP_ASC">Follow-up earliest</option>
+            <option value="FOLLOWUP_DESC">Follow-up latest</option>
+            <option value="BUYER_AZ">Buyer A → Z</option>
+            <option value="LISTING_AZ">Listing A → Z</option>
+          </select>
+        </div>
+
+        <button type="button" class="ok" data-action="exportCSV">⬇ Export CSV</button>
+      </div>
+
+      <div class="quickFilters" aria-label="Quick filters">
+        <button type="button" class="qfBtn" data-qfilter="OVERDUE">⚠ Overdue</button>
+        <button type="button" class="qfBtn" data-qfilter="DUE_TODAY">📅 Due today</button>
+        <button type="button" class="qfBtn" data-qfilter="UNASSIGNED">👤 Unassigned</button>
+        <button type="button" class="qfBtn" data-qfilter="CLEAR">🧼 Clear quick filters</button>
+      </div>
+
+      <div class="tableWrap" style="margin-top:12px;">
+        <table style="min-width:1540px;" aria-label="Leads table">
+          <thead>
+            <tr>
+              <th class="nowrap">Date</th>
+              <th>Listing</th>
+              <th>Buyer</th>
+              <th class="nowrap">Phone</th>
+              <th class="nowrap">Assigned</th>
+              <th>Status</th>
+              <th class="nowrap">Follow-up</th>
+              <th>Notes</th>
+              <th class="nowrap">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="leadsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="paginationBar">
+        <div class="mini">
+          Showing <b id="pageInfo">0</b>
+        </div>
+        <div class="row">
+          <select id="pageSizeSelect" style="width:auto;min-width:110px;">
+            <option value="10">10 / page</option>
+            <option value="20" selected>20 / page</option>
+            <option value="50">50 / page</option>
+            <option value="100">100 / page</option>
+          </select>
+          <button type="button" class="btnSmall" data-action="prevPage">← Prev</button>
+          <span class="pill">Page <b id="currentPageText">1</b> / <b id="totalPagesText">1</b></span>
+          <button type="button" class="btnSmall" data-action="nextPage">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="top">
+          <div>
+            <div class="h2">Recent Activity</div>
+            <div class="muted">Auto-logged actions from lead operations</div>
+          </div>
+        </div>
+        <div id="activityFeed" class="panelList"></div>
+      </div>
+
+      <div class="card">
+        <div class="top">
+          <div>
+            <div class="h2">Pipeline Summary</div>
+            <div class="muted">Simple operational overview</div>
+          </div>
+        </div>
+        <div id="pipelineSummary" class="panelList"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Overflow Menu -->
+  <div id="overflowMenu" class="menu" role="menu" aria-label="Lead actions" hidden></div>
+
+  <!-- Lead Edit Modal -->
+  <div id="leadModalBack" class="modalBack" hidden>
+    <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="leadModalTitle" aria-describedby="leadModalDesc">
+      <div class="top">
+        <div>
+          <div id="leadModalTitle" class="h2">Edit Lead</div>
+          <div id="leadModalDesc" class="srOnly">Update follow-up date, assignment, and notes, then save.</div>
+          <div id="mListing" class="muted"></div>
+        </div>
+        <div class="row">
+          <button type="button" data-action="closeLeadModal">✕ Close</button>
+        </div>
+      </div>
+
+      <div style="display:grid; gap:10px; margin-top:12px;">
+        <div>
+          <label class="mini" for="mFollowUp" style="display:block;margin-bottom:6px;">Follow-up date</label>
+          <input id="mFollowUp" type="date">
+        </div>
+        <div>
+          <label class="mini" for="mAssigned" style="display:block;margin-bottom:6px;">Assigned to (optional)</label>
+          <select id="mAssigned"></select>
+        </div>
+        <div>
+          <label class="mini" for="mNotes" style="display:block;margin-bottom:6px;">Notes</label>
+          <textarea id="mNotes" rows="6" placeholder="Call summary / site visit / budget / next step..."></textarea>
+        </div>
+
+        <div class="row">
+          <button type="button" class="ok" data-action="saveLeadModal">✅ Save</button>
+          <button type="button" data-action="closeLeadModal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ===== Role / Auth Compatibility =====
+  try{
+    if (typeof requireRole === "function") {
+      requireRole(["admin"]);
+    }
+  }catch(e){}
+
+  const currentUser = (typeof getCurrentUser === "function")
+    ? getCurrentUser()
+    : null;
+
+  // ====== Storage Keys ======
+  const PROPS_KEY = "mei_properties_v1";
+  const LEADS_KEY = "mei_leads_v1";
+  const WA_TEMPLATE_KEY = "mei_whatsapp_template_v1";
+  const BROKERS_KEY = "mei_brokers_v1";
+  const ACTIVITY_KEY = "mei_activity_v1";
+  const CURRENT_USER_KEY = "mei_current_user_v1";
+
+  // ====== State ======
+  let MODAL_LEAD_ID = null;
+  let CURRENT_FILTERED_LEADS = [];
+  let LAST_FOCUSED_BEFORE_MODAL = null;
+  let LEAD_SEARCH_TIMER = null;
+
+  const QUICK = {
+    overdueOnly: false,
+    dueTodayOnly: false,
+    unassignedOnly: false,
+  };
+
+  const MENU = {
+    open: false,
+    leadId: null,
+    anchorEl: null,
+  };
+
+  const PAGINATION = {
+    page: 1,
+    pageSize: 20,
+    totalPages: 1
+  };
+
+  const $ = (id)=>document.getElementById(id);
+
+  // ====== Tiny DOM helpers ======
+  function el(tag, attrs = {}, children = []){
+    const node = document.createElement(tag);
+    for (const [k,v] of Object.entries(attrs || {})){
+      if(k === "class") node.className = v;
+      else if(k === "text") node.textContent = v;
+      else if(k === "html") node.innerHTML = v;
+      else if(k === "style") node.style.cssText = v;
+      else if(k.startsWith("data-")) node.setAttribute(k, v);
+      else if(v === true) node.setAttribute(k, "");
+      else if(v !== false && v != null) node.setAttribute(k, String(v));
+    }
+    (children || []).forEach(ch => {
+      if(ch == null) return;
+      if(typeof ch === "string") node.appendChild(document.createTextNode(ch));
+      else node.appendChild(ch);
+    });
+    return node;
+  }
+
+  function uid(){
+    try{
+      if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    }catch(e){}
+    return "id_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+  }
+
+  // ====== Toast ======
+  let TOAST_TIMER = null;
+  let TOAST_ACTION_FN = null;
+
+  function toast(msg = "✅ Updated", opts = {}){
+    const { type = "ok", actionText = "", actionFn = null, timeout = 1800 } = opts;
+
+    const t = $("toast");
+    const m = $("toastMsg");
+    const a = $("toastAction");
+
+    t.classList.remove("danger","warn","info");
+    if(type === "danger") t.classList.add("danger");
+    if(type === "warn") t.classList.add("warn");
+    if(type === "info") t.classList.add("info");
+
+    m.textContent = msg;
+
+    TOAST_ACTION_FN = (typeof actionFn === "function") ? actionFn : null;
+    if(actionText && TOAST_ACTION_FN){
+      a.textContent = actionText;
+      a.hidden = false;
+    }else{
+      a.hidden = true;
+    }
+
+    t.hidden = false;
+
+    if(TOAST_TIMER) clearTimeout(TOAST_TIMER);
+    TOAST_TIMER = setTimeout(()=>{
+      t.hidden = true;
+      a.hidden = true;
+      TOAST_ACTION_FN = null;
+    }, timeout);
+  }
+
+  function onToastAction(){
+    if(typeof TOAST_ACTION_FN === "function"){
+      const fn = TOAST_ACTION_FN;
+      $("toast").hidden = true;
+      $("toastAction").hidden = true;
+      TOAST_ACTION_FN = null;
+      try{ fn(); }catch(e){}
+    }
+  }
+
+  // ====== Date helpers ======
+  function fmtDate(iso){
+    try {
+      const d = new Date(iso);
+      if(Number.isNaN(d.getTime())) return String(iso || "");
+      return d.toLocaleString();
+    } catch(e){
+      return String(iso || "");
+    }
+  }
+
+  function todayYMD(){
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function todayDateObj(){
+    const d = new Date();
+    d.setHours(0,0,0,0);
+    return d;
+  }
+
+  function isOverdue(lead){
+    const status = (lead.status || "").toUpperCase();
+    if(["CLOSED","ARCHIVED"].includes(status)) return false;
+    if(!lead.followUp) return false;
+    return String(lead.followUp) < todayYMD();
+  }
+
+  function isDueToday(lead){
+    const status = (lead.status || "").toUpperCase();
+    if(["CLOSED","ARCHIVED"].includes(status)) return false;
+    if(!lead.followUp) return false;
+    return String(lead.followUp) === todayYMD();
+  }
+
+  function isContactedToday(lead){
+    if(!lead.lastContactedAt) return false;
+    const d = new Date(lead.lastContactedAt);
+    if(Number.isNaN(d.getTime())) return false;
+    const today = todayDateObj();
+    d.setHours(0,0,0,0);
+    return d.getTime() === today.getTime();
+  }
+
+  // ====== Normalizers ======
+  function normalizeProp(p){
+    const out = Object.assign({}, p || {});
+    if(!out.id) out.id = uid();
+    if(!out.status) out.status = "pending";
+    if(!out.title && out.name) out.title = out.name;
+    if(out.createdAt == null) out.createdAt = new Date().toISOString();
+    return out;
+  }
+
+  function normalizeLead(lead){
+    const out = Object.assign({}, lead || {});
+    if(!out.id) out.id = uid();
+    if(!out.createdAt) out.createdAt = new Date().toISOString();
+    if(out.notes == null) out.notes = "";
+    if(out.message == null) out.message = "";
+    if(out.followUp == null) out.followUp = "";
+    if(out.lastContactedAt == null) out.lastContactedAt = "";
+    if(out.updatedAt == null) out.updatedAt = "";
+    if(out.status == null) out.status = "NEW";
+    if(out.assignedTo == null) out.assignedTo = "";
+    if(out.buyerName == null) out.buyerName = "";
+    if(out.buyerPhone == null) out.buyerPhone = "";
+    if(out.listingTitle == null) out.listingTitle = "";
+    if(out.listingId == null) out.listingId = "";
+    return out;
+  }
+
+  // ====== Data access ======
+  function safeReadJSON(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      if(!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      return parsed ?? fallback;
+    }catch(e){
+      return fallback;
+    }
+  }
+
+  function safeWriteJSON(key, value){
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function getProps(){ return safeReadJSON(PROPS_KEY, []).map(normalizeProp); }
+  function saveProps(props){ safeWriteJSON(PROPS_KEY, (props || []).map(normalizeProp)); }
+
+  function getLeads(){ return safeReadJSON(LEADS_KEY, []).map(normalizeLead); }
+  function saveLeads(leads){ safeWriteJSON(LEADS_KEY, (leads || []).map(normalizeLead)); }
+
+  function getBrokers(){ return safeReadJSON(BROKERS_KEY, []); }
+  function saveBrokers(list){
+    const cleaned = Array.from(new Set((list || [])
+      .map(x => String(x||"").trim())
+      .filter(Boolean)
+    ));
+    safeWriteJSON(BROKERS_KEY, cleaned);
+  }
+
+  function getActivities(){
+    const arr = safeReadJSON(ACTIVITY_KEY, []);
+    return Array.isArray(arr) ? arr : [];
+  }
+
+  function saveActivities(list){
+    const safe = Array.isArray(list) ? list.slice(0, 80) : [];
+    safeWriteJSON(ACTIVITY_KEY, safe);
+  }
+
+  function addActivity(text, type = "info"){
+    const items = getActivities();
+    items.unshift({
+      id: uid(),
+      text: String(text || ""),
+      type: String(type || "info"),
+      at: new Date().toISOString()
+    });
+    saveActivities(items.slice(0, 40));
+    renderActivityFeed();
+  }
+
+  // ====== User display ======
+  function renderCurrentUser(){
+    if(currentUser && $("currentUserText")){
+      const n = currentUser.name || "Admin";
+      const r = currentUser.role || "admin";
+      $("currentUserText").textContent = `${n} • ${r}`;
+      return;
+    }
+    $("currentUserText").textContent = "Admin • local";
+  }
+
+  function logoutUserLocal(){
+    try{
+      if(typeof logoutUser === "function"){
+        logoutUser();
+        return;
+      }
+    }catch(e){}
+    localStorage.removeItem(CURRENT_USER_KEY);
+    location.href = "login.html";
+  }
+
+  // ====== Broker master ======
+  function renderBrokerChips(){
+    const brokers = getBrokers();
+    const wrap = $("brokerChips");
+    wrap.innerHTML = "";
+
+    if(brokers.length === 0){
+      wrap.appendChild(el("div", { class:"mini", style:"opacity:.85", text:"No brokers yet. Add one." }));
+      return;
+    }
+
+    brokers.forEach(b => {
+      const name = String(b);
+      const chip = el("span", { class:"chip" }, [
+        el("span", { style:"font-weight:900", text:name }),
+        el("button", {
+          type:"button",
+          class:"danger iconBtn",
+          "aria-label":`Remove broker ${name}`
+        }, [ "✕" ])
+      ]);
+
+      chip.querySelector("button").addEventListener("click", () => deleteBroker(name));
+      wrap.appendChild(chip);
+    });
+  }
+
+  function addBroker(){
+    const name = ($("brokerName").value || "").trim();
+    if(!name){ alert("Enter broker name"); return; }
+    const brokers = getBrokers();
+    if(brokers.includes(name)){
+      toast("Broker already exists", { type:"warn" });
+      return;
+    }
+    brokers.push(name);
+    saveBrokers(brokers);
+    $("brokerName").value = "";
+    addActivity(`Broker added: ${name}`, "ok");
+    toast("✅ Broker added");
+    syncBrokerDropdowns();
+    refreshLeads();
+    renderBrokerSummary();
+    refreshStats();
+  }
+
+  function deleteBroker(name){
+    if(!confirm(`Delete broker "${name}" from list?`)) return;
+    const brokers = getBrokers().filter(b => b !== name);
+    saveBrokers(brokers);
+    addActivity(`Broker removed: ${name}`, "warn");
+    toast("🧹 Broker removed", { type:"warn" });
+    syncBrokerDropdowns();
+    refreshLeads();
+    renderBrokerSummary();
+    refreshStats();
+  }
+
+  function seedBrokers(){
+    const brokers = getBrokers();
+    if(brokers.length) { toast("Already has brokers"); return; }
+    saveBrokers(["Raj","Karthik","Priya","Sanjay"]);
+    addActivity("Demo brokers seeded", "info");
+    toast("✨ Demo brokers added");
+    syncBrokerDropdowns();
+    refreshLeads();
+    renderBrokerSummary();
+    refreshStats();
+  }
+
+  function syncBrokerDropdowns(){
+    renderBrokerChips();
+
+    const bf = $("brokerFilter");
+    const current = bf.value || "ALL";
+    bf.innerHTML = "";
+    bf.appendChild(el("option", { value:"ALL", text:"All Brokers" }));
+    bf.appendChild(el("option", { value:"__UNASSIGNED__", text:"Unassigned" }));
+    getBrokers().forEach(b => bf.appendChild(el("option", { value:b, text:b })));
+    const has = Array.from(bf.options).some(o => o.value === current);
+    bf.value = has ? current : "ALL";
+
+    const md = $("mAssigned");
+    const curM = md.value || "";
+    md.innerHTML = "";
+    md.appendChild(el("option", { value:"", text:"Unassigned" }));
+    getBrokers().forEach(b => md.appendChild(el("option", { value:b, text:b })));
+    md.value = Array.from(md.options).some(o => o.value === curM) ? curM : "";
+  }
+
+  function renderBrokerSummary(){
+    const body = $("brokerSummaryBody");
+    const brokers = getBrokers();
+    const leads = getLeads();
+    body.innerHTML = "";
+
+    if(!brokers.length){
+      body.appendChild(el("tr", {}, [
+        el("td", { colspan:"5", style:"padding:14px;opacity:.80;", text:"No brokers added yet." })
+      ]));
+      return;
+    }
+
+    brokers.forEach(name => {
+      const own = leads.filter(l => (l.assignedTo || "").trim() === name);
+      const contacted = own.filter(l => (l.status || "").toUpperCase() === "CONTACTED").length;
+      const closed = own.filter(l => (l.status || "").toUpperCase() === "CLOSED").length;
+      const overdue = own.filter(isOverdue).length;
+
+      body.appendChild(el("tr", {}, [
+        el("td", { text:name }),
+        el("td", { text:String(own.length) }),
+        el("td", { text:String(contacted) }),
+        el("td", { text:String(closed) }),
+        el("td", { text:String(overdue) }),
+      ]));
+    });
+  }
+
+  // ====== WhatsApp Template ======
+  function defaultWATemplate(){
+    return `Hello {buyer},
+
+Thanks for your interest in "{listing}".
+
+This is MEI Realty. Please share your preferred time to discuss today.
+
+- MEI`;
+  }
+
+  function getWATemplate(){
+    return localStorage.getItem(WA_TEMPLATE_KEY) || defaultWATemplate();
+  }
+
+  function saveWATemplateFn(){
+    const val = ($("waTemplate").value || "").trim();
+    if(!val){ alert("Template cannot be empty"); return; }
+    localStorage.setItem(WA_TEMPLATE_KEY, val);
+    addActivity("WhatsApp template saved", "ok");
+    toast("💾 WhatsApp template saved");
+    updatePreview();
+  }
+
+  function resetWATemplate(){
+    localStorage.setItem(WA_TEMPLATE_KEY, defaultWATemplate());
+    $("waTemplate").value = getWATemplate();
+    addActivity("WhatsApp template reset", "warn");
+    toast("↩ Template reset to default", { type:"warn" });
+    updatePreview();
+  }
+
+  function applyTemplate(tpl, lead){
+    const dateStr = new Date().toLocaleDateString();
+    return String(tpl || "")
+      .replaceAll("{buyer}", lead.buyerName || "")
+      .replaceAll("{listing}", lead.listingTitle || "property")
+      .replaceAll("{phone}", lead.buyerPhone || "")
+      .replaceAll("{date}", dateStr);
+  }
+
+  function updatePreview(){
+    const tpl = ($("waTemplate").value || "").trim() || defaultWATemplate();
+    const sample = { buyerName:"Arun", listingTitle:"2BHK Whitefield", buyerPhone:"9876543210" };
+    $("waPreview").textContent = applyTemplate(tpl, sample);
+  }
+
+  function insertAtCursor(textarea, insertText){
+    textarea.focus();
+    const start = textarea.selectionStart ?? textarea.value.length;
+    const end = textarea.selectionEnd ?? textarea.value.length;
+    const before = textarea.value.slice(0, start);
+    const after = textarea.value.slice(end);
+    textarea.value = before + insertText + after;
+    const newPos = start + insertText.length;
+    textarea.setSelectionRange(newPos, newPos);
+  }
+
+  // ====== Clipboard ======
+  async function copyToClipboard(text){
+    const t = String(text ?? "");
+    if(!t.trim()){ alert("Nothing to copy"); return false; }
+    try{
+      if(navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(t);
+        return true;
+      }
+    }catch(e){}
+    try{
+      const ta = document.createElement("textarea");
+      ta.value = t;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    }catch(e){
+      return false;
+    }
+  }
+
+  async function copyPreview(){
+    const txt = $("waPreview").textContent || "";
+    const ok = await copyToClipboard(txt);
+    if(ok) toast("📋 Preview copied");
+    else alert("Copy failed.");
+  }
+
+  // ====== WhatsApp + Copy ======
+  function cleanPhoneForWA(phone){
+    const clean = String(phone || "").replace(/[^\d]/g,'');
+    if(clean.length === 10) return "91" + clean;
+    return clean;
+  }
+
+  function buildLeadMessage(lead){
+    const tpl = getWATemplate();
+    return applyTemplate(tpl, lead);
+  }
+
+  function safeOpenNewTab(url){
+    const w = window.open(url, "_blank", "noopener,noreferrer");
+    if(w) w.opener = null;
+    return w;
+  }
+
+  function openWhatsAppForLead(leadId){
+    const lead = getLeads().find(l => l.id === leadId);
+    if(!lead) return;
+    if(!lead.buyerPhone){ alert("No phone number"); return; }
+
+    const finalPhone = cleanPhoneForWA(lead.buyerPhone);
+    const message = buildLeadMessage(lead);
+    const url = `https://wa.me/${finalPhone}?text=${encodeURIComponent(message)}`;
+
+    safeOpenNewTab(url);
+    autoLogCommunication(leadId, "WhatsApp opened");
+    addActivity(`WhatsApp opened for ${lead.buyerName || "lead"}`, "info");
+    toast("💬 WhatsApp opened + Logged");
+    refreshLeads();
+  }
+
+  async function copyLeadMessageById(leadId){
+    const lead = getLeads().find(l => l.id === leadId);
+    if(!lead) return;
+
+    const message = buildLeadMessage(lead);
+    const ok = await copyToClipboard(message);
+
+    if(ok){
+      autoLogCommunication(leadId, "Message copied");
+      addActivity(`Message copied for ${lead.buyerName || "lead"}`, "info");
+      toast("📋 Message copied + Logged");
+      refreshLeads();
+    }else{
+      alert("Copy failed.");
+    }
+  }
+
+  // ====== Auto Log ======
+  function autoLogCommunication(leadId, type){
+    const leads = getLeads();
+    const idx = leads.findIndex(l => l.id === leadId);
+    if(idx === -1) return;
+
+    const now = new Date();
+    const logLine = `[${now.toLocaleString()}] ${type}`;
+
+    const existing = (leads[idx].notes || "").trim();
+    leads[idx].notes = existing ? (existing + "\n" + logLine) : logLine;
+
+    leads[idx].status = "CONTACTED";
+    leads[idx].lastContactedAt = now.toISOString();
+    leads[idx].updatedAt = now.toISOString();
+
+    if(!leads[idx].followUp){
+      const d = new Date();
+      d.setDate(d.getDate()+1);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      leads[idx].followUp = `${yyyy}-${mm}-${dd}`;
+    }
+
+    saveLeads(leads);
+  }
+
+  // ====== Listings approvals ======
+  function approveProp(id){
+    const props = getProps();
+    const i = props.findIndex(p => p.id === id);
+    if(i === -1) return;
+    props[i].status = "approved";
+    props[i].approvedAt = new Date().toISOString();
+    saveProps(props);
+    addActivity(`Listing approved: ${props[i].title || props[i].name || props[i].id}`, "ok");
+    toast("✅ Approved");
+    refreshProps();
+    refreshStats();
+  }
+
+  function rejectProp(id){
+    const props = getProps();
+    const i = props.findIndex(p => p.id === id);
+    if(i === -1) return;
+    const title = props[i].title || props[i].name || props[i].id;
+    props[i].status = "rejected";
+    props[i].rejectedAt = new Date().toISOString();
+    saveProps(props);
+    addActivity(`Listing rejected: ${title}`, "warn");
+    toast("🗑️ Rejected", { type:"warn" });
+    refreshProps();
+    refreshStats();
+  }
+
+  function deleteProp(id){
+    if(!confirm("Delete this listing permanently?")) return;
+    const props = getProps();
+    const target = props.find(p => p.id === id);
+    saveProps(props.filter(p => p.id !== id));
+    addActivity(`Listing deleted: ${(target && (target.title || target.name)) || id}`, "warn");
+    toast("🧹 Deleted", { type:"warn" });
+    refreshProps();
+    refreshStats();
+  }
+
+  function rowListingCell(p){
+    const wrap = el("div", {}, []);
+    const title = p.title || p.name || "Listing";
+    const metaBits = [p.city, p.area, p.price ? ("₹"+p.price) : ""].filter(Boolean);
+    wrap.appendChild(el("div", { class:"title", text:title }));
+    wrap.appendChild(el("div", { class:"mini", text: metaBits.length ? metaBits.join(" • ") : "—" }));
+    wrap.appendChild(el("div", { class:"mini", text: "ID: " + (p.id || "-") }));
+    return wrap;
+  }
+
+  function refreshProps(){
+    const props = getProps();
+    const pending = props.filter(p => (p.status || "pending").toLowerCase() === "pending");
+    const approved = props.filter(p => (p.status || "").toLowerCase() === "approved");
+
+    $("pendingCount").textContent = pending.length;
+    $("approvedCount").textContent = approved.length;
+
+    const pBody = $("pendingBody");
+    pBody.innerHTML = "";
+    if(!pending.length){
+      pBody.appendChild(el("tr", {}, [
+        el("td", { colspan:"2", style:"opacity:.80;padding:14px;", text:"No pending approvals." })
+      ]));
+    }else{
+      pending.forEach(p => {
+        const tr = el("tr", {}, []);
+        const tdListing = el("td", {}, [ rowListingCell(p) ]);
+        const tdActions = el("td", { class:"nowrap" }, []);
+        const row = el("div", { class:"row" }, [
+          el("button", { type:"button", class:"ok btnSmall", text:"Approve" }),
+          el("button", { type:"button", class:"danger btnSmall", text:"Reject" }),
+        ]);
+        const [btnApprove, btnReject] = row.querySelectorAll("button");
+        btnApprove.addEventListener("click", ()=> approveProp(p.id));
+        btnReject.addEventListener("click", ()=> rejectProp(p.id));
+        tdActions.appendChild(row);
+        tr.appendChild(tdListing);
+        tr.appendChild(tdActions);
+        pBody.appendChild(tr);
+      });
+    }
+
+    const aBody = $("approvedBody");
+    aBody.innerHTML = "";
+    if(!approved.length){
+      aBody.appendChild(el("tr", {}, [
+        el("td", { colspan:"2", style:"opacity:.80;padding:14px;", text:"No approved listings yet." })
+      ]));
+    }else{
+      approved.forEach(p => {
+        const tr = el("tr", {}, []);
+        const tdListing = el("td", {}, [
+          rowListingCell(p),
+          el("div", { class:"mini", text: "Approved: " + fmtDate(p.approvedAt || "") })
+        ]);
+
+        const tdActions = el("td", { class:"nowrap" }, []);
+        const row = el("div", { class:"row" }, [
+          el("button", { type:"button", class:"warn btnSmall", text:"Re-Approve" }),
+          el("button", { type:"button", class:"danger btnSmall", text:"Delete" }),
+        ]);
+        const [btnReapprove, btnDelete] = row.querySelectorAll("button");
+        btnReapprove.addEventListener("click", ()=> approveProp(p.id));
+        btnDelete.addEventListener("click", ()=> deleteProp(p.id));
+        tdActions.appendChild(row);
+
+        tr.appendChild(tdListing);
+        tr.appendChild(tdActions);
+        aBody.appendChild(tr);
+      });
+    }
+  }
+
+  // ====== Lead assignment + status ======
+  function setLeadAssigned(id, broker){
+    const leads = getLeads();
+    const idx = leads.findIndex(l => l.id === id);
+    if(idx === -1) return;
+    const prev = leads[idx].assignedTo || "";
+    leads[idx].assignedTo = String(broker || "").trim();
+    leads[idx].updatedAt = new Date().toISOString();
+    saveLeads(leads);
+    addActivity(`Lead assignment changed: ${leads[idx].buyerName || id} → ${leads[idx].assignedTo || "Unassigned"}`, "info");
+    toast(prev !== broker ? "👤 Assigned updated" : "No change");
+    refreshLeads();
+    renderBrokerSummary();
+    refreshStats();
+  }
+
+  function setLeadStatus(id, status){
+    const leads = getLeads();
+    const idx = leads.findIndex(x => x.id === id);
+    if(idx === -1) return;
+
+    const prev = Object.assign({}, leads[idx]);
+    leads[idx].status = status;
+    leads[idx].updatedAt = new Date().toISOString();
+
+    if(String(status).toUpperCase() === "CONTACTED"){
+      leads[idx].lastContactedAt = new Date().toISOString();
+      if(!leads[idx].followUp){
+        const d = new Date(); d.setDate(d.getDate()+1);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,"0");
+        const dd = String(d.getDate()).padStart(2,"0");
+        leads[idx].followUp = `${yyyy}-${mm}-${dd}`;
+      }
+    }
+
+    saveLeads(leads);
+    addActivity(`Lead status changed: ${leads[idx].buyerName || id} → ${String(status).toUpperCase()}`, "ok");
+
+    const isUndoWorthy = ["CLOSED","ARCHIVED"].includes(String(status).toUpperCase());
+    if(isUndoWorthy){
+      toast(`✅ Lead marked ${String(status).toUpperCase()}`, {
+        actionText: "Undo",
+        actionFn: () => {
+          const ls = getLeads();
+          const i2 = ls.findIndex(x => x.id === id);
+          if(i2 === -1) return;
+          ls[i2] = normalizeLead(prev);
+          saveLeads(ls);
+          addActivity(`Undo status change for ${prev.buyerName || id}`, "warn");
+          toast("↩ Undone", { type:"warn" });
+          refreshLeads();
+          refreshStats();
+          renderPipelineSummary();
+          renderBrokerSummary();
+        },
+        timeout: 4500
+      });
+    }else{
+      toast("✅ Lead updated");
+    }
+
+    refreshLeads();
+    refreshStats();
+    renderPipelineSummary();
+    renderBrokerSummary();
+  }
+
+  function archiveLead(id){
+    if(!confirm("Archive this lead? (You can Undo right after)")) return;
+    setLeadStatus(id, "ARCHIVED");
+  }
+
+  function clearClosedLeads(){
+    if(!confirm("Clear all CLOSED and ARCHIVED leads from local storage?")) return;
+    const leads = getLeads();
+    const filtered = leads.filter(l => !["CLOSED","ARCHIVED"].includes((l.status||"").toUpperCase()));
+    const removed = leads.length - filtered.length;
+    saveLeads(filtered);
+    addActivity(`Cleared ${removed} closed/archived leads`, "warn");
+    toast("🧹 Cleared closed/archived", { type:"warn" });
+    refreshLeads();
+    refreshStats();
+    renderPipelineSummary();
+    renderBrokerSummary();
+  }
+
+  // ====== Modal ======
+  function openLeadModal(id){
+    const leads = getLeads();
+    const lead = leads.find(l => l.id === id);
+    if(!lead) return;
+
+    LAST_FOCUSED_BEFORE_MODAL = document.activeElement;
+    MODAL_LEAD_ID = id;
+
+    $("mListing").textContent = `${lead.listingTitle || "Listing"} • ${lead.buyerName || ""} • ${lead.buyerPhone || ""}`;
+    $("mFollowUp").value = lead.followUp || "";
+    syncBrokerDropdowns();
+    $("mAssigned").value = lead.assignedTo || "";
+    $("mNotes").value = lead.notes || "";
+
+    $("leadModalBack").hidden = false;
+    $("app").setAttribute("aria-hidden", "true");
+
+    setTimeout(()=> $("mFollowUp").focus(), 0);
+  }
+
+  function closeLeadModal(){
+    $("leadModalBack").hidden = true;
+    $("app").removeAttribute("aria-hidden");
+    MODAL_LEAD_ID = null;
+
+    if(LAST_FOCUSED_BEFORE_MODAL && typeof LAST_FOCUSED_BEFORE_MODAL.focus === "function"){
+      LAST_FOCUSED_BEFORE_MODAL.focus();
+    }
+    LAST_FOCUSED_BEFORE_MODAL = null;
+  }
+
+  function saveLeadModal(){
+    if(!MODAL_LEAD_ID) return;
+
+    const leads = getLeads();
+    const idx = leads.findIndex(l => l.id === MODAL_LEAD_ID);
+    if(idx === -1) return;
+
+    leads[idx].followUp = $("mFollowUp").value || "";
+    leads[idx].assignedTo = ($("mAssigned").value || "").trim();
+    leads[idx].notes = ($("mNotes").value || "").trim();
+    leads[idx].updatedAt = new Date().toISOString();
+
+    saveLeads(leads);
+    addActivity(`Lead edited: ${leads[idx].buyerName || MODAL_LEAD_ID}`, "info");
+    toast("✅ Saved");
+    closeLeadModal();
+    refreshLeads();
+    refreshStats();
+    renderPipelineSummary();
+    renderBrokerSummary();
+  }
+
+  function trapFocusInModal(e){
+    if($("leadModalBack").hidden) return;
+
+    if(e.key === "Escape"){
+      e.preventDefault();
+      closeLeadModal();
+      return;
+    }
+    if(e.key !== "Tab") return;
+
+    const modal = $("leadModalBack").querySelector(".modalCard");
+    const focusables = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const list = Array.from(focusables).filter(x => !x.disabled && x.offsetParent !== null);
+
+    if(!list.length) return;
+
+    const first = list[0];
+    const last = list[list.length - 1];
+
+    if(e.shiftKey && document.activeElement === first){
+      e.preventDefault();
+      last.focus();
+    }else if(!e.shiftKey && document.activeElement === last){
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  // ====== Filters ======
+  function leadMatchesSearch(lead, q){
+    if(!q) return true;
+    const hay = [
+      lead.listingTitle, lead.listingId,
+      lead.buyerName, lead.buyerPhone,
+      lead.message, lead.notes,
+      lead.assignedTo
+    ].join(" ").toLowerCase();
+    return hay.includes(q);
+  }
+
+  function applyLeadFilters(leadsRaw){
+    const q = ($("leadSearch").value || "").trim().toLowerCase();
+    const brokerF = ($("brokerFilter").value || "ALL");
+    const statusF = ($("statusFilter").value || "ALL").toUpperCase();
+    const odF = ($("overdueFilter").value || "ALL").toUpperCase();
+
+    let out = leadsRaw
+      .filter(l => leadMatchesSearch(l, q))
+      .filter(l => {
+        if(brokerF === "ALL") return true;
+        if(brokerF === "__UNASSIGNED__") return !(l.assignedTo || "").trim();
+        return (l.assignedTo || "") === brokerF;
+      })
+      .filter(l => statusF === "ALL" ? true : (l.status || "NEW").toUpperCase() === statusF)
+      .filter(l => {
+        if(odF === "ALL") return true;
+        const od = isOverdue(l);
+        if(odF === "OVERDUE") return od;
+        if(odF === "NOT_OVERDUE") return !od;
+        return true;
+      })
+      .filter(l => {
+        if(QUICK.unassignedOnly && (l.assignedTo || "").trim()) return false;
+        if(QUICK.overdueOnly && !isOverdue(l)) return false;
+        if(QUICK.dueTodayOnly && !isDueToday(l)) return false;
+        return true;
+      });
+
+    out = applyLeadSort(out);
+    return out;
+  }
+
+  function applyLeadSort(list){
+    const mode = ($("sortFilter").value || "NEWEST").toUpperCase();
+    const arr = list.slice();
+
+    const dateVal = (v) => {
+      const d = new Date(v || 0);
+      return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+    };
+
+    const str = (v) => String(v || "").toLowerCase();
+
+    if(mode === "NEWEST") arr.sort((a,b)=> dateVal(b.createdAt) - dateVal(a.createdAt));
+    else if(mode === "OLDEST") arr.sort((a,b)=> dateVal(a.createdAt) - dateVal(b.createdAt));
+    else if(mode === "FOLLOWUP_ASC") arr.sort((a,b)=> str(a.followUp).localeCompare(str(b.followUp)));
+    else if(mode === "FOLLOWUP_DESC") arr.sort((a,b)=> str(b.followUp).localeCompare(str(a.followUp)));
+    else if(mode === "BUYER_AZ") arr.sort((a,b)=> str(a.buyerName).localeCompare(str(b.buyerName)));
+    else if(mode === "LISTING_AZ") arr.sort((a,b)=> str(a.listingTitle).localeCompare(str(b.listingTitle)));
+
+    return arr;
+  }
+
+  function badgeEl(status){
+    const s = (status || "NEW").toUpperCase();
+    const span = el("span", { class:"pill", text:s });
+    const styles = {
+      NEW: "background:rgba(0,153,255,.16); border:1px solid rgba(0,153,255,.28);",
+      CONTACTED: "background:rgba(255,200,0,.14); border:1px solid rgba(255,200,0,.26);",
+      CLOSED: "background:rgba(0,255,150,.14); border:1px solid rgba(0,255,150,.28);",
+      ARCHIVED: "background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16);"
+    };
+    span.style.cssText = styles[s] || styles.NEW;
+    return span;
+  }
+
+  function renderAssignSelect(lead){
+    const sel = el("select", { style:"min-width:160px" });
+    sel.appendChild(el("option", { value:"", text:"Unassigned" }));
+    getBrokers().forEach(b => sel.appendChild(el("option", { value:b, text:b })));
+    sel.value = (lead.assignedTo || "").trim();
+    sel.addEventListener("change", () => setLeadAssigned(lead.id, sel.value));
+    return sel;
+  }
+
+  // ====== Menu ======
+  function closeMenu(){
+    const menu = $("overflowMenu");
+    menu.hidden = true;
+    menu.innerHTML = "";
+    MENU.open = false;
+    MENU.leadId = null;
+
+    if(MENU.anchorEl){
+      MENU.anchorEl.setAttribute("aria-expanded","false");
+      if(typeof MENU.anchorEl.focus === "function") MENU.anchorEl.focus();
+    }
+    MENU.anchorEl = null;
+  }
+
+  function openMenuForLead(leadId, anchorBtn){
+    const lead = getLeads().find(l => l.id === leadId);
+    if(!lead) return;
+
+    const menu = $("overflowMenu");
+    menu.innerHTML = "";
+
+    menu.appendChild(el("div", { class:"menuTitle", text:`Lead actions • ${lead.buyerName || "Buyer"}` }));
+
+    const items = [
+      { label:"📋 Copy message", sub:"Logs", onClick:()=>copyLeadMessageById(leadId) },
+      { label:"✏️ Edit lead", sub:"Follow-up/notes", onClick:()=>openLeadModal(leadId) },
+      { label:"✅ Mark contacted", sub:"Tomorrow follow-up", onClick:()=>setLeadStatus(leadId, "CONTACTED") },
+      { label:"✅ Close lead", sub:"Undo available", onClick:()=>setLeadStatus(leadId, "CLOSED") },
+      { label:"🗄️ Archive lead", sub:"Confirm", danger:true, onClick:()=>archiveLead(leadId) },
+    ];
+
+    items.forEach((it, idx) => {
+      const btn = el("button", {
+        type:"button",
+        class: "menuItem" + (it.danger ? " danger" : ""),
+        role:"menuitem",
+        "data-menu-index": String(idx),
+      }, [
+        el("span", { text: it.label }),
+        el("span", { class:"sub", text: it.sub })
+      ]);
+      btn.addEventListener("click", () => {
+        closeMenu();
+        it.onClick();
+      });
+      menu.appendChild(btn);
+    });
+
+    const r = anchorBtn.getBoundingClientRect();
+    const margin = 8;
+    const left = Math.min(window.innerWidth - 250, Math.max(10, r.left));
+    const top = Math.min(window.innerHeight - 10, r.bottom + margin);
+    menu.style.left = left + "px";
+    menu.style.top = top + "px";
+    menu.hidden = false;
+
+    MENU.open = true;
+    MENU.leadId = leadId;
+    MENU.anchorEl = anchorBtn;
+
+    const firstItem = menu.querySelector('[role="menuitem"]');
+    if(firstItem) firstItem.focus();
+  }
+
+  function onMenuKeydown(e){
+    if($("overflowMenu").hidden) return;
+
+    if(e.key === "Escape"){
+      e.preventDefault();
+      closeMenu();
+      return;
+    }
+
+    const items = Array.from($("overflowMenu").querySelectorAll('[role="menuitem"]'));
+    if(!items.length) return;
+
+    const cur = document.activeElement;
+    const idx = items.indexOf(cur);
+
+    if(e.key === "ArrowDown"){
+      e.preventDefault();
+      const next = items[(idx + 1) % items.length] || items[0];
+      next.focus();
+    }else if(e.key === "ArrowUp"){
+      e.preventDefault();
+      const prev = items[(idx - 1 + items.length) % items.length] || items[items.length - 1];
+      prev.focus();
+    }else if(e.key === "Home"){
+      e.preventDefault();
+      items[0].focus();
+    }else if(e.key === "End"){
+      e.preventDefault();
+      items[items.length - 1].focus();
+    }
+  }
+
+  function onDocClickToCloseMenu(e){
+    if($("overflowMenu").hidden) return;
+    const menu = $("overflowMenu");
+    const isInside = menu.contains(e.target);
+    const isAnchor = MENU.anchorEl && MENU.anchorEl.contains(e.target);
+    if(!isInside && !isAnchor){
+      closeMenu();
+    }
+  }
+
+  // ====== Pagination ======
+  function getPagedRows(rows){
+    PAGINATION.totalPages = Math.max(1, Math.ceil(rows.length / PAGINATION.pageSize));
+    if(PAGINATION.page > PAGINATION.totalPages) PAGINATION.page = PAGINATION.totalPages;
+    if(PAGINATION.page < 1) PAGINATION.page = 1;
+
+    const start = (PAGINATION.page - 1) * PAGINATION.pageSize;
+    const end = start + PAGINATION.pageSize;
+
+    $("currentPageText").textContent = String(PAGINATION.page);
+    $("totalPagesText").textContent = String(PAGINATION.totalPages);
+
+    if(rows.length === 0){
+      $("pageInfo").textContent = "0 results";
+    }else{
+      $("pageInfo").textContent = `${start + 1}-${Math.min(end, rows.length)} of ${rows.length} results`;
+    }
+
+    return rows.slice(start, end);
+  }
+
+  // ====== Leads render ======
+  function refreshLeads(){
+    const leadsRaw = getLeads();
+    saveLeads(leadsRaw);
+
+    $("leadCount").textContent = leadsRaw.length;
+    $("overdueCount").textContent = leadsRaw.filter(isOverdue).length;
+
+    const leads = applyLeadFilters(leadsRaw);
+    CURRENT_FILTERED_LEADS = leads;
+
+    const rows = getPagedRows(leads);
+    const tbody = $("leadsBody");
+    tbody.innerHTML = "";
+
+    if(rows.length === 0){
+      tbody.appendChild(el("tr", {}, [
+        el("td", { colspan:"9", style:"padding:14px; opacity:.80;", text:"No leads match your filters." })
+      ]));
+      refreshStats();
+      renderPipelineSummary();
+      renderTodaySnapshot();
+      return;
+    }
+
+    rows.forEach(l => {
+      const overdue = isOverdue(l);
+      const tr = el("tr", { class: overdue ? "overdueRow" : "" }, []);
+
+      tr.appendChild(el("td", { class:"nowrap", text: fmtDate(l.createdAt) }));
+
+      const listingTd = el("td", {}, [
+        el("div", { class:"title", text: l.listingTitle || "Listing" }),
+        el("div", { class:"mini", text: "ID: " + (l.listingId || "-") })
+      ]);
+      tr.appendChild(listingTd);
+
+      tr.appendChild(el("td", { text: l.buyerName || "-" }));
+      tr.appendChild(el("td", { class:"nowrap", text: l.buyerPhone || "-" }));
+
+      const assignedTd = el("td", { class:"nowrap" }, [ renderAssignSelect(l) ]);
+      tr.appendChild(assignedTd);
+
+      const statusTd = el("td", {}, [ badgeEl(l.status) ]);
+      if(overdue){
+        statusTd.appendChild(el("div", { class:"mini overdueLabel", text:"⚠ OVERDUE" }));
+      }
+      tr.appendChild(statusTd);
+
+      const fu = l.followUp ? String(l.followUp) : "—";
+      const lastC = l.lastContactedAt ? ("Last: " + fmtDate(l.lastContactedAt)) : "";
+      const followTd = el("td", { class:"nowrap" }, [
+        el("div", { text: fu }),
+        el("div", { class:"mini", text:lastC })
+      ]);
+      tr.appendChild(followTd);
+
+      const notesText = (l.notes || "").trim() ? (l.notes || "").trim() : "—";
+      tr.appendChild(el("td", { style:"max-width:420px;" }, [
+        el("div", { text: notesText })
+      ]));
+
+      const actionsTd = el("td", { class:"nowrap" }, []);
+      const row = el("div", { class:"row" }, []);
+
+      const callHref = "tel:" + encodeURIComponent(l.buyerPhone || "");
+      const callA = el("a", { class:"link", href: callHref, style:"padding:6px 10px;", "data-lead-id": l.id }, [ "📞 Call" ]);
+      callA.addEventListener("click", () => {
+        autoLogCommunication(l.id, "Call initiated");
+        addActivity(`Call initiated: ${l.buyerName || "lead"}`, "info");
+        toast("📞 Call initiated + Logged");
+      });
+
+      const waBtn = el("button", { type:"button", class:"btnSmall", "data-lead-id": l.id }, [ "💬 WhatsApp" ]);
+      waBtn.addEventListener("click", () => openWhatsAppForLead(l.id));
+
+      const moreBtn = el("button", {
+        type:"button",
+        class:"btnSmall",
+        "aria-haspopup":"menu",
+        "aria-expanded":"false",
+        "data-lead-id": l.id
+      }, [ "⋯ More" ]);
+
+      moreBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const expanded = moreBtn.getAttribute("aria-expanded") === "true";
+        if(expanded){
+          closeMenu();
+        }else{
+          closeMenu();
+          moreBtn.setAttribute("aria-expanded","true");
+          openMenuForLead(l.id, moreBtn);
+        }
+      });
+
+      row.appendChild(callA);
+      row.appendChild(waBtn);
+      row.appendChild(moreBtn);
+
+      actionsTd.appendChild(row);
+      tr.appendChild(actionsTd);
+
+      tbody.appendChild(tr);
+
+      if((l.message || "").trim()){
+        const tr2 = el("tr", { class: overdue ? "overdueRow" : "" }, []);
+        tr2.appendChild(el("td", {}, []));
+        tr2.appendChild(el("td", { colspan:"8", style:"opacity:.92; border-top:1px dashed rgba(255,255,255,.12);" }, [
+          el("span", { text:"📝 " + String(l.message).trim() })
+        ]));
+        tbody.appendChild(tr2);
+      }
+    });
+
+    refreshStats();
+    renderPipelineSummary();
+    renderTodaySnapshot();
+  }
+
+  // ====== CSV ======
+  function csvEscape(v){
+    const s = String(v ?? "");
+    return `"${s.replace(/"/g,'""')}"`;
+  }
+
+  function exportFilteredLeadsCSV(){
+    const rows = CURRENT_FILTERED_LEADS || [];
+    if(rows.length === 0){ alert("No filtered leads to export."); return; }
+
+    const header = ["CreatedAt","ListingTitle","ListingId","BuyerName","BuyerPhone","AssignedTo","Status","FollowUp","Notes","Message"];
+    const lines = [];
+    lines.push(header.map(csvEscape).join(","));
+
+    rows.forEach(l => {
+      const line = [
+        fmtDate(l.createdAt),
+        l.listingTitle || "",
+        l.listingId || "",
+        l.buyerName || "",
+        l.buyerPhone || "",
+        l.assignedTo || "",
+        (l.status || "NEW"),
+        l.followUp || "",
+        l.notes || "",
+        l.message || ""
+      ];
+      lines.push(line.map(csvEscape).join(","));
+    });
+
+    const csv = lines.join("\n");
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    const fname = `MEI_Leads_${yyyy}-${mm}-${dd}.csv`;
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    addActivity(`CSV exported: ${fname}`, "info");
+    toast(`⬇ Exported CSV: ${fname}`);
+  }
+
+  // ====== Backup JSON ======
+  function exportAllJSON(){
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      app: "MEI Admin Dashboard",
+      version: "upgrade-v2",
+      data: {
+        properties: getProps(),
+        leads: getLeads(),
+        brokers: getBrokers(),
+        waTemplate: getWATemplate(),
+        activities: getActivities()
+      }
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    const fname = `MEI_Backup_${yyyy}-${mm}-${dd}.json`;
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    addActivity(`JSON backup exported: ${fname}`, "info");
+    toast("⬇ JSON backup exported", { type:"info" });
+  }
+
+  function triggerImportJSON(){
+    $("importJSONFile").click();
+  }
+
+  function handleImportJSONFile(file){
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const parsed = JSON.parse(String(reader.result || "{}"));
+        const data = parsed && parsed.data ? parsed.data : parsed;
+
+        if(!data || typeof data !== "object"){
+          throw new Error("Invalid backup format");
+        }
+
+        if(Array.isArray(data.properties)) saveProps(data.properties);
+        if(Array.isArray(data.leads)) saveLeads(data.leads);
+        if(Array.isArray(data.brokers)) saveBrokers(data.brokers);
+        if(typeof data.waTemplate === "string") localStorage.setItem(WA_TEMPLATE_KEY, data.waTemplate);
+        if(Array.isArray(data.activities)) saveActivities(data.activities);
+
+        addActivity("JSON backup imported", "ok");
+        toast("✅ Backup imported");
+        refreshAll();
+      }catch(err){
+        console.error(err);
+        toast("Import failed — invalid JSON", { type:"danger" });
+      }finally{
+        $("importJSONFile").value = "";
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ====== Activity ======
+  function renderActivityFeed(){
+    const feed = $("activityFeed");
+    const items = getActivities();
+    feed.innerHTML = "";
+
+    if(!items.length){
+      feed.appendChild(el("div", { class:"empty", text:"No recent activity yet." }));
+      return;
+    }
+
+    items.slice(0, 8).forEach(item => {
+      const tone = item.type === "warn" ? "border-color:rgba(255,200,0,.22);" :
+                   item.type === "ok" ? "border-color:rgba(0,255,150,.22);" :
+                   item.type === "danger" ? "border-color:rgba(255,0,90,.22);" :
+                   "border-color:rgba(140,170,255,.22);";
+
+      feed.appendChild(el("div", { class:"activityItem", style:tone }, [
+        el("div", { style:"font-weight:900;", text:item.text || "Activity" }),
+        el("div", { class:"mini", style:"margin-top:6px;", text:fmtDate(item.at) })
+      ]));
+    });
+  }
+
+  // ====== Summary render ======
+  function renderPipelineSummary(){
+    const box = $("pipelineSummary");
+    const leads = getLeads();
+
+    const total = leads.length;
+    const fresh = leads.filter(l => (l.status || "").toUpperCase() === "NEW").length;
+    const contacted = leads.filter(l => (l.status || "").toUpperCase() === "CONTACTED").length;
+    const closed = leads.filter(l => (l.status || "").toUpperCase() === "CLOSED").length;
+    const archived = leads.filter(l => (l.status || "").toUpperCase() === "ARCHIVED").length;
+
+    box.innerHTML = "";
+
+    const items = [
+      { label:"NEW", val:fresh },
+      { label:"CONTACTED", val:contacted },
+      { label:"CLOSED", val:closed },
+      { label:"ARCHIVED", val:archived },
+      { label:"TOTAL", val:total }
+    ];
+
+    items.forEach(x => {
+      box.appendChild(el("div", { class:"summaryItem" }, [
+        el("div", { class:"mini", text:x.label }),
+        el("div", { class:"summaryMetric", text:String(x.val) })
+      ]));
+    });
+  }
+
+  function renderTodaySnapshot(){
+    const leads = getLeads();
+    $("todayDueCount").textContent = String(leads.filter(isDueToday).length);
+    $("unassignedCount").textContent = String(leads.filter(l => !(l.assignedTo || "").trim()).length);
+    $("contactedTodayCount").textContent = String(leads.filter(isContactedToday).length);
+  }
+
+  function refreshStats(){
+    const leads = getLeads();
+    const props = getProps();
+    const brokers = getBrokers();
+
+    $("statTotalLeads").textContent = String(leads.length);
+    $("statOverdue").textContent = String(leads.filter(isOverdue).length);
+    $("statPending").textContent = String(props.filter(p => (p.status || "pending").toLowerCase() === "pending").length);
+    $("statApproved").textContent = String(props.filter(p => (p.status || "").toLowerCase() === "approved").length);
+    $("statBrokers").textContent = String(brokers.length);
+  }
+
+  // ====== Refresh + Reset ======
+  function refreshAll(){
+    syncBrokerDropdowns();
+    $("waTemplate").value = getWATemplate();
+    updatePreview();
+    refreshProps();
+    refreshLeads();
+    renderCurrentUser();
+    renderBrokerSummary();
+    renderActivityFeed();
+    renderPipelineSummary();
+    renderTodaySnapshot();
+    refreshStats();
+  }
+
+  function resetDemo(){
+    const typed = prompt("Type RESET to confirm demo reset (clears local data).");
+    if(String(typed || "").trim().toUpperCase() !== "RESET"){
+      toast("Reset cancelled", { type:"warn" });
+      return;
+    }
+    localStorage.removeItem(PROPS_KEY);
+    localStorage.removeItem(LEADS_KEY);
+    localStorage.removeItem(WA_TEMPLATE_KEY);
+    localStorage.removeItem(BROKERS_KEY);
+    localStorage.removeItem(ACTIVITY_KEY);
+    addActivity("Demo reset completed", "warn");
+    toast("🧨 Reset done", { type:"warn" });
+    refreshAll();
+  }
+
+  function seedSampleData(){
+    const hasLeads = getLeads().length > 0;
+    const hasProps = getProps().length > 0;
+
+    if(hasLeads || hasProps){
+      if(!confirm("Sample data already exists. Add more sample data anyway?")) return;
+    }
+
+    if(getBrokers().length === 0){
+      saveBrokers(["Raj","Karthik","Priya"]);
+    }
+
+    const props = getProps();
+    props.push(
+      normalizeProp({ title:"2BHK Whitefield", city:"Bangalore", area:"Whitefield", price:"6200000", status:"pending" }),
+      normalizeProp({ title:"Villa Sarjapur", city:"Bangalore", area:"Sarjapur", price:"14500000", status:"approved", approvedAt:new Date().toISOString() }),
+      normalizeProp({ title:"Plot OMR", city:"Chennai", area:"OMR", price:"3500000", status:"pending" })
+    );
+    saveProps(props);
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate()+1);
+
+    const tY = tomorrow.getFullYear();
+    const tM = String(tomorrow.getMonth()+1).padStart(2,"0");
+    const tD = String(tomorrow.getDate()).padStart(2,"0");
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate()-1);
+    const yY = yesterday.getFullYear();
+    const yM = String(yesterday.getMonth()+1).padStart(2,"0");
+    const yD = String(yesterday.getDate()).padStart(2,"0");
+
+    const leads = getLeads();
+    leads.push(
+      normalizeLead({
+        listingTitle:"2BHK Whitefield",
+        listingId:"WF-201",
+        buyerName:"Arun",
+        buyerPhone:"9876543210",
+        status:"NEW",
+        assignedTo:"Raj",
+        followUp:`${tY}-${tM}-${tD}`,
+        message:"Need a site visit on weekend"
+      }),
+      normalizeLead({
+        listingTitle:"Villa Sarjapur",
+        listingId:"SP-811",
+        buyerName:"Meena",
+        buyerPhone:"9123456780",
+        status:"CONTACTED",
+        assignedTo:"Priya",
+        followUp:todayYMD(),
+        notes:"Budget approved. Wants loan support."
+      }),
+      normalizeLead({
+        listingTitle:"Plot OMR",
+        listingId:"OMR-119",
+        buyerName:"Rahul",
+        buyerPhone:"9012345678",
+        status:"NEW",
+        assignedTo:"",
+        followUp:`${yY}-${yM}-${yD}`,
+        notes:"Asked for final negotiation."
+      })
+    );
+    saveLeads(leads);
+
+    addActivity("Sample data seeded", "ok");
+    toast("✨ Sample data added");
+    refreshAll();
+  }
+
+  // ====== Quick filters ======
+  function setQuickFilter(mode){
+    QUICK.overdueOnly = false;
+    QUICK.dueTodayOnly = false;
+    QUICK.unassignedOnly = false;
+
+    if(mode === "OVERDUE") QUICK.overdueOnly = true;
+    if(mode === "DUE_TODAY") QUICK.dueTodayOnly = true;
+    if(mode === "UNASSIGNED") QUICK.unassignedOnly = true;
+
+    document.querySelectorAll("[data-qfilter]").forEach(btn => {
+      btn.classList.toggle("active", btn.getAttribute("data-qfilter") === mode && mode !== "CLEAR");
+    });
+
+    PAGINATION.page = 1;
+    refreshLeads();
+  }
+
+  // ====== Dispatcher ======
+  function dispatchAction(action){
+    switch(action){
+      case "refreshAll": refreshAll(); break;
+      case "resetDemo": resetDemo(); break;
+      case "addBroker": addBroker(); break;
+      case "seedBrokers": seedBrokers(); break;
+      case "saveWATemplate": saveWATemplateFn(); break;
+      case "resetWATemplate": resetWATemplate(); break;
+      case "updatePreview": updatePreview(); break;
+      case "copyPreview": copyPreview(); break;
+      case "refreshLeads": refreshLeads(); break;
+      case "clearClosedLeads": clearClosedLeads(); break;
+      case "exportCSV": exportFilteredLeadsCSV(); break;
+      case "closeLeadModal": closeLeadModal(); break;
+      case "saveLeadModal": saveLeadModal(); break;
+      case "exportJSON": exportAllJSON(); break;
+      case "triggerImportJSON": triggerImportJSON(); break;
+      case "seedSampleData": seedSampleData(); break;
+      case "logoutUser": logoutUserLocal(); break;
+      case "prevPage":
+        PAGINATION.page = Math.max(1, PAGINATION.page - 1);
+        refreshLeads();
+        break;
+      case "nextPage":
+        PAGINATION.page = Math.min(PAGINATION.totalPages, PAGINATION.page + 1);
+        refreshLeads();
+        break;
+      default: break;
+    }
+  }
+
+  // ====== Init ======
+  function init(){
+    $("toastAction").addEventListener("click", onToastAction);
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if(!btn) return;
+      const act = btn.getAttribute("data-action");
+      if(!act) return;
+      dispatchAction(act);
+    });
+
+    document.querySelectorAll("[data-insert]").forEach(b => {
+      b.addEventListener("click", () => {
+        insertAtCursor($("waTemplate"), b.getAttribute("data-insert"));
+        updatePreview();
+      });
+    });
+
+    $("leadSearch").addEventListener("input", () => {
+      clearTimeout(LEAD_SEARCH_TIMER);
+      LEAD_SEARCH_TIMER = setTimeout(() => {
+        PAGINATION.page = 1;
+        refreshLeads();
+      }, 180);
+    });
+
+    $("brokerFilter").addEventListener("change", () => {
+      PAGINATION.page = 1;
+      refreshLeads();
+    });
+    $("statusFilter").addEventListener("change", () => {
+      PAGINATION.page = 1;
+      refreshLeads();
+    });
+    $("overdueFilter").addEventListener("change", () => {
+      PAGINATION.page = 1;
+      refreshLeads();
+    });
+    $("sortFilter").addEventListener("change", () => {
+      PAGINATION.page = 1;
+      refreshLeads();
+    });
+
+    document.querySelectorAll("[data-qfilter]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const mode = btn.getAttribute("data-qfilter");
+        if(mode === "CLEAR") setQuickFilter("CLEAR");
+        else setQuickFilter(mode);
+      });
+    });
+
+    $("waTemplate").addEventListener("input", updatePreview);
+
+    document.addEventListener("keydown", onMenuKeydown);
+    document.addEventListener("click", onDocClickToCloseMenu);
+    document.addEventListener("keydown", trapFocusInModal);
+
+    $("leadModalBack").addEventListener("mousedown", (e) => {
+      if(e.target === $("leadModalBack")) closeLeadModal();
+    });
+
+    $("importJSONFile").addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      handleImportJSONFile(file);
+    });
+
+    $("pageSizeSelect").addEventListener("change", () => {
+      PAGINATION.pageSize = Math.max(1, Number($("pageSizeSelect").value || 20));
+      PAGINATION.page = 1;
+      refreshLeads();
+    });
+
+    $("brokerName").addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        addBroker();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "/" && document.activeElement !== $("leadSearch")){
+        const tag = (document.activeElement && document.activeElement.tagName) || "";
+        const isTypingField = ["INPUT","TEXTAREA","SELECT"].includes(tag);
+        if(!isTypingField){
+          e.preventDefault();
+          $("leadSearch").focus();
+        }
+      }
+
+      if(e.altKey && (e.key === "r" || e.key === "R")){
+        e.preventDefault();
+        refreshAll();
+        toast("🔄 Refreshed", { type:"info" });
+      }
+    });
+
+    refreshAll();
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
