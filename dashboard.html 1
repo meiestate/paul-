@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="ta">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MEI Admin Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <main class="wrap" id="app">
+    <div class="stickyTop">
+      <div class="top">
+        <div>
+          <div class="heroBadge">⚡ MEI SaaS Admin Workspace</div>
+          <div class="h1" style="margin-top:10px;">MEI — Admin Dashboard</div>
+          <div class="muted">Broker Master + Assign + Leads CRM + Approval + Backup + Activity Feed</div>
+        </div>
+
+        <div class="row">
+          <a class="link" href="add-property.html">➕ Add Property</a>
+          <a class="link" href="buyer.html">👤 Buyer Portal</a>
+          <a class="link" href="today.html">📅 Today</a>
+          <button type="button" data-action="refreshAll">🔄 Refresh</button>
+          <button type="button" class="danger" data-action="resetDemo">🧨 Reset</button>
+
+          <div class="userBox">
+            <span id="currentUserText">Admin User</span>
+            <button type="button" class="btnSmall" data-action="logoutUser">Logout</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <span id="toastMsg">✅ Updated</span>
+        <button id="toastAction" class="toastAction" type="button" hidden>Undo</button>
+      </div>
+
+      <div class="statsGrid">
+        <div class="stat">
+          <div class="mini">Total Leads</div>
+          <div class="k" id="statTotalLeads">0</div>
+          <div class="s">All incoming buyer leads</div>
+        </div>
+        <div class="stat">
+          <div class="mini">Overdue Leads</div>
+          <div class="k" id="statOverdue">0</div>
+          <div class="s">Needs immediate follow-up</div>
+        </div>
+        <div class="stat">
+          <div class="mini">Pending Approvals</div>
+          <div class="k" id="statPending">0</div>
+          <div class="s">Listings waiting for admin action</div>
+        </div>
+        <div class="stat">
+          <div class="mini">Approved Listings</div>
+          <div class="k" id="statApproved">0</div>
+          <div class="s">Visible to buyer portal</div>
+        </div>
+        <div class="stat">
+          <div class="mini">Active Brokers</div>
+          <div class="k" id="statBrokers">0</div>
+          <div class="s">Assignable broker master list</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid3">
+      <div class="card glass">
+        <div class="top">
+          <div>
+            <div class="h2">System Backup</div>
+            <div class="muted">Export all local data as JSON or restore from backup file</div>
+          </div>
+        </div>
+
+        <div class="backupBox">
+          <div class="mini">
+            Keys included: properties, leads, brokers, WhatsApp template, activities.
+            <br>Safe for demo/local browser workflows.
+          </div>
+          <button type="button" class="info" data-action="exportJSON">⬇ Export JSON</button>
+          <button type="button" data-action="triggerImportJSON">⬆ Import JSON</button>
+          <button type="button" class="warn" data-action="seedSampleData">✨ Seed Sample</button>
+          <input id="importJSONFile" type="file" accept="application/json" hidden>
+        </div>
+      </div>
+
+      <div class="card glass">
+        <div class="top">
+          <div>
+            <div class="h2">Today Snapshot</div>
+            <div class="muted">Fast operational pulse</div>
+          </div>
+        </div>
+
+        <div class="panelList">
+          <div class="summaryItem">
+            <div class="mini">Due today</div>
+            <div class="summaryMetric" id="todayDueCount">0</div>
+          </div>
+          <div class="summaryItem">
+            <div class="mini">Unassigned leads</div>
+            <div class="summaryMetric" id="unassignedCount">0</div>
+          </div>
+          <div class="summaryItem">
+            <div class="mini">Contacted today</div>
+            <div class="summaryMetric" id="contactedTodayCount">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card glass">
+        <div class="top">
+          <div>
+            <div class="h2">Keyboard Tips</div>
+            <div class="muted">Speed up admin work</div>
+          </div>
+        </div>
+
+        <div class="panelList">
+          <div class="summaryItem"><span class="kbd">/</span> Search focus</div>
+          <div class="summaryItem"><span class="kbd">Esc</span> Close modal / menu</div>
+          <div class="summaryItem"><span class="kbd">Alt</span> + <span class="kbd">R</span> Refresh</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Broker Master -->
+    <div class="card" style="margin-top:12px;">
+      <div class="top">
+        <div>
+          <div class="h2">Broker Master</div>
+          <div class="muted">Brokers list → Assign dropdown + filter + performance summary</div>
+        </div>
+        <div class="row">
+          <button type="button" class="ok" data-action="addBroker">➕ Add Broker</button>
+          <button type="button" data-action="seedBrokers">✨ Seed Demo</button>
+        </div>
+      </div>
+
+      <div class="brokerGrid">
+        <div>
+          <label class="mini" for="brokerName" style="display:block;margin-bottom:6px;">Add broker name</label>
+          <input id="brokerName" placeholder="Eg: Raj / Karthik / Priya" autocomplete="off">
+          <div class="mini" style="margin-top:8px;">Tip: short unique names work best.</div>
+        </div>
+        <div>
+          <div class="mini" style="margin-bottom:6px;">Current brokers</div>
+          <div id="brokerChips"></div>
+          <div class="mini" style="margin-top:8px;">Deleting a broker won’t delete leads; it only removes the name from the list.</div>
+        </div>
+      </div>
+
+      <hr class="softHr">
+
+      <div class="top">
+        <div>
+          <div class="h2" style="font-size:16px;">Broker Summary</div>
+          <div class="muted">Lead load distribution</div>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table aria-label="Broker summary table">
+          <thead>
+            <tr>
+              <th>Broker</th>
+              <th>Total Leads</th>
+              <th>Contacted</th>
+              <th>Closed</th>
+              <th>Overdue</th>
+            </tr>
+          </thead>
+          <tbody id="brokerSummaryBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- WhatsApp Template -->
+    <div class="card" style="margin-top:12px;">
+      <div class="top">
+        <div>
+          <div class="h2">WhatsApp Template</div>
+          <div class="muted">
+            Insert placeholders:
+            <span class="srOnly" id="placeholderHelp">Click to insert into the template editor.</span>
+          </div>
+          <div class="row" style="margin-top:8px;" aria-describedby="placeholderHelp">
+            <button type="button" class="chipBtn" data-insert="{buyer}">{buyer}</button>
+            <button type="button" class="chipBtn" data-insert="{listing}">{listing}</button>
+            <button type="button" class="chipBtn" data-insert="{phone}">{phone}</button>
+            <button type="button" class="chipBtn" data-insert="{date}">{date}</button>
+          </div>
+        </div>
+        <div class="row">
+          <button type="button" class="ok" data-action="saveWATemplate">💾 Save Template</button>
+          <button type="button" data-action="resetWATemplate">↩ Reset Default</button>
+        </div>
+      </div>
+
+      <div class="templateGrid">
+        <div>
+          <label class="mini" for="waTemplate" style="display:block;margin-bottom:6px;">Template message</label>
+          <textarea id="waTemplate" rows="7"></textarea>
+          <div class="mini" style="margin-top:6px;">Tip: Short + clear = more replies.</div>
+        </div>
+
+        <div>
+          <div class="mini" style="margin-bottom:6px;">Preview (sample)</div>
+          <div class="card previewBox">
+            <div class="mini">Sample Buyer: Arun • Listing: 2BHK Whitefield • Phone: 9876543210</div>
+            <div id="waPreview" class="waPreview"></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button type="button" data-action="updatePreview">🔍 Update Preview</button>
+            <button type="button" class="ok" data-action="copyPreview">📋 Copy Preview</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- APPROVAL + LISTINGS -->
+    <div class="grid2">
+      <div class="card">
+        <div class="top">
+          <div>
+            <div class="h2">Pending Approvals</div>
+            <div class="muted">Admin only: approve/reject</div>
+          </div>
+          <div class="row">
+            <span class="pill">Pending: <b id="pendingCount">0</b></span>
+          </div>
+        </div>
+
+        <div class="tableWrap">
+          <table aria-label="Pending approvals table">
+            <thead>
+              <tr>
+                <th>Listing</th>
+                <th class="nowrap">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pendingBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="top">
+          <div>
+            <div class="h2">Approved Listings</div>
+            <div class="muted">Buyer portal shows only these</div>
+          </div>
+          <div class="row">
+            <span class="pill">Approved: <b id="approvedCount">0</b></span>
+          </div>
+        </div>
+
+        <div class="tableWrap">
+          <table aria-label="Approved listings table">
+            <thead>
+              <tr>
+                <th>Listing</th>
+                <th class="nowrap">Manage</th>
+              </tr>
+            </thead>
+            <tbody id="approvedBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADS -->
+    <div class="card" style="margin-top:12px;">
+      <div class="top">
+        <div>
+          <div class="h2">Leads — Mini CRM</div>
+          <div class="muted">Search + Filters + Sort + Broker Assign + Export + WhatsApp/Copy + Auto Log</div>
+        </div>
+        <div class="row">
+          <span class="pill">Total: <b id="leadCount">0</b></span>
+          <span class="pill">Overdue: <b id="overdueCount">0</b></span>
+          <button type="button" data-action="refreshLeads">Refresh</button>
+          <button type="button" class="warn" data-action="clearClosedLeads">Clear Closed/Archived</button>
+        </div>
+      </div>
+
+      <div class="filterBar" aria-label="Lead filters">
+        <div>
+          <label class="srOnly" for="leadSearch">Search leads</label>
+          <input id="leadSearch" placeholder="Search listing / phone / buyer / notes..." autocomplete="off">
+        </div>
+
+        <div>
+          <label class="srOnly" for="brokerFilter">Broker filter</label>
+          <select id="brokerFilter">
+            <option value="ALL">All Brokers</option>
+            <option value="__UNASSIGNED__">Unassigned</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="srOnly" for="statusFilter">Status filter</label>
+          <select id="statusFilter">
+            <option value="ALL">All Status</option>
+            <option value="NEW">NEW</option>
+            <option value="CONTACTED">CONTACTED</option>
+            <option value="CLOSED">CLOSED</option>
+            <option value="ARCHIVED">ARCHIVED</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="srOnly" for="overdueFilter">Overdue filter</label>
+          <select id="overdueFilter">
+            <option value="ALL">All</option>
+            <option value="OVERDUE">Overdue only</option>
+            <option value="NOT_OVERDUE">Not overdue</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="srOnly" for="sortFilter">Sort filter</label>
+          <select id="sortFilter">
+            <option value="NEWEST">Newest first</option>
+            <option value="OLDEST">Oldest first</option>
+            <option value="FOLLOWUP_ASC">Follow-up earliest</option>
+            <option value="FOLLOWUP_DESC">Follow-up latest</option>
+            <option value="BUYER_AZ">Buyer A → Z</option>
+            <option value="LISTING_AZ">Listing A → Z</option>
+          </select>
+        </div>
+
+        <button type="button" class="ok" data-action="exportCSV">⬇ Export CSV</button>
+      </div>
+
+      <div class="quickFilters" aria-label="Quick filters">
+        <button type="button" class="qfBtn" data-qfilter="OVERDUE">⚠ Overdue</button>
+        <button type="button" class="qfBtn" data-qfilter="DUE_TODAY">📅 Due today</button>
+        <button type="button" class="qfBtn" data-qfilter="UNASSIGNED">👤 Unassigned</button>
+        <button type="button" class="qfBtn" data-qfilter="CLEAR">🧼 Clear quick filters</button>
+      </div>
+
+      <div class="tableWrap" style="margin-top:12px;">
+        <table class="leadsTable" aria-label="Leads table">
+          <thead>
+            <tr>
+              <th class="nowrap">Date</th>
+              <th>Listing</th>
+              <th>Buyer</th>
+              <th class="nowrap">Phone</th>
+              <th class="nowrap">Assigned</th>
+              <th>Status</th>
+              <th class="nowrap">Follow-up</th>
+              <th>Notes</th>
+              <th class="nowrap">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="leadsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="paginationBar">
+        <div class="mini">
+          Showing <b id="pageInfo">0</b>
+        </div>
+        <div class="row">
+          <select id="pageSizeSelect" class="pageSizeSelect">
+            <option value="10">10 / page</option>
+            <option value="20" selected>20 / page</option>
+            <option value="50">50 / page</option>
+            <option value="100">100 / page</option>
+          </select>
+          <button type="button" class="btnSmall" data-action="prevPage">← Prev</button>
+          <span class="pill">Page <b id="currentPageText">1</b> / <b id="totalPagesText">1</b></span>
+          <button type="button" class="btnSmall" data-action="nextPage">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="top">
+          <div>
+            <div class="h2">Recent Activity</div>
+            <div class="muted">Auto-logged actions from lead operations</div>
+          </div>
+        </div>
+        <div id="activityFeed" class="panelList"></div>
+      </div>
+
+      <div class="card">
+        <div class="top">
+          <div>
+            <div class="h2">Pipeline Summary</div>
+            <div class="muted">Simple operational overview</div>
+          </div>
+        </div>
+        <div id="pipelineSummary" class="panelList"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Overflow Menu -->
+  <div id="overflowMenu" class="menu" role="menu" aria-label="Lead actions" hidden></div>
+
+  <!-- Lead Edit Modal -->
+  <div id="leadModalBack" class="modalBack" hidden>
+    <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="leadModalTitle" aria-describedby="leadModalDesc">
+      <div class="top">
+        <div>
+          <div id="leadModalTitle" class="h2">Edit Lead</div>
+          <div id="leadModalDesc" class="srOnly">Update follow-up date, assignment, and notes, then save.</div>
+          <div id="mListing" class="muted"></div>
+        </div>
+        <div class="row">
+          <button type="button" data-action="closeLeadModal">✕ Close</button>
+        </div>
+      </div>
+
+      <div class="modalForm">
+        <div>
+          <label class="mini" for="mFollowUp">Follow-up date</label>
+          <input id="mFollowUp" type="date">
+        </div>
+        <div>
+          <label class="mini" for="mAssigned">Assigned to (optional)</label>
+          <select id="mAssigned"></select>
+        </div>
+        <div>
+          <label class="mini" for="mNotes">Notes</label>
+          <textarea id="mNotes" rows="6" placeholder="Call summary / site visit / budget / next step..."></textarea>
+        </div>
+
+        <div class="row">
+          <button type="button" class="ok" data-action="saveLeadModal">✅ Save</button>
+          <button type="button" data-action="closeLeadModal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
+
